@@ -1,0 +1,56 @@
+#pragma once
+
+#ifdef _WIN32
+# include "targetver.h"
+
+# include <WS2tcpip.h>
+# include <tchar.h>
+#else
+# include <fcntl.h>
+# include <poll.h>
+# include <string.h>
+# include <unistd.h>
+# include <netdb.h>
+#endif
+
+#include <cstddef>
+#include <cstdint>
+#include <ctime>
+#include <algorithm>
+#include <codecvt>
+#include <functional>
+#include <iostream>
+#include <iterator>
+#include <locale>
+#include <map>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#ifdef _WIN32
+# define close closesocket
+# undef errno
+# define errno (WSAGetLastError())
+# define ioctl ioctlsocket
+#else
+# define _countof(ar) (sizeof(ar) / sizeof((ar)[0]))
+# define SOCKET int
+# define WSAEWOULDBLOCK EWOULDBLOCK
+# define INVALID_SOCKET (-1)
+
+using nullptr_t= decltype(nullptr);
+
+# include "Fiber.h"
+#endif
+
+template<typename T>
+auto check_(T result, char const* s) {
+	if(static_cast<int>(result) < 0) {
+		std::cout << s << " error " << errno << std::endl;
+		throw std::runtime_error("an error occurred");
+	}
+	return result;
+}
+
+#define check(n) check_(n, #n)
