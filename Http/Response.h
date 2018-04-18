@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Socket.h"
+#include "TcpSocket.h"
 
 class Response {
 public:
@@ -8,5 +8,5 @@ public:
 	~Response();
 	void Ok(std::string const& text);
 	void End(unsigned short responseCode);
-	void Send(Socket& client);
+	void Send(TcpSocket& client);
 };

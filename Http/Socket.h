@@ -3,9 +3,8 @@
 class Socket {
 public:
 	explicit Socket(SOCKET socket);
-	~Socket();
-	size_t Receive(char const* buffer, size_t bufferSize);
+	virtual ~Socket();
 
-private:
+protected:
 	SOCKET socket;
 };

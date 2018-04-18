@@ -1,18 +1,17 @@
 #include "stdafx.h"
-#include "TcpServer.h"
-#include "Waiter.h"
+#include "TcpSocketFactory.h"
 
-TcpServer::TcpServer(fn_t onConnect) : onConnect(onConnect) {}
+TcpSocketFactory::TcpSocketFactory() {}
 
-TcpServer::~TcpServer() {}
+TcpSocketFactory::~TcpSocketFactory() {}
 
-void TcpServer::Listen(unsigned short port) {
+void TcpSocketFactory::CreateServer(unsigned short port, fn_t onConnect) {
 	char buf[6];
 	sprintf_s(buf, "%d", port);
-	Listen(buf);
+	CreateServer(buf, onConnect);
 }
 
-void TcpServer::Listen(char const* service) {
+void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 #ifdef _WIN32
 	// Initialize the socket library.
 	static bool isInitialized= [] {
@@ -20,7 +19,7 @@ void TcpServer::Listen(char const* service) {
 		auto result= WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if(result) {
 			std::cerr << "WSAStartup error " << result << std::endl;
-			throw std::runtime_error("TcpServer::Listen.WSAStartup");
+			throw std::runtime_error("TcpSocketFactory::CreateServer.WSAStartup");
 		}
 		return true;
 	}();
@@ -33,7 +32,7 @@ void TcpServer::Listen(char const* service) {
 	hints.ai_flags= AI_PASSIVE; // Use INADDR_ANY for the resulting addresses.
 	addrinfo* addresses;
 	if(getaddrinfo(nullptr, service, &hints, &addresses)) {
-		throw std::runtime_error("TcpServer::Listen.getaddrinfo");
+		throw std::runtime_error("TcpSocketFactory::CreateServer.getaddrinfo");
 	}
 	SOCKET server= INVALID_SOCKET;
 	socklen_t sock_addr_size= 0;
@@ -45,11 +44,11 @@ void TcpServer::Listen(char const* service) {
 			}
 			int reuse= 1;
 			if(setsockopt(server, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char const*>(&reuse), sizeof(reuse)) < 0) {
-				throw std::runtime_error("TcpServer::Listen.setsockopt(SO_REUSEADDR)");
+				throw std::runtime_error("TcpSocketFactory::CreateServer.setsockopt(SO_REUSEADDR)");
 			}
 #ifdef SO_REUSEPORT
 			if(setsockopt(server, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
-				throw std::runtime_error("TcpServer::Listen.setsockopt(SO_REUSEPORT)");
+				throw std::runtime_error("TcpSocketFactory::CreateServer.setsockopt(SO_REUSEPORT)");
 			}
 #endif
 			sock_addr_size= static_cast<int>(rp->ai_addrlen);
@@ -64,15 +63,15 @@ void TcpServer::Listen(char const* service) {
 		throw;
 	}
 	if(server == INVALID_SOCKET) {
-		throw std::runtime_error("TcpServer::Listen.socket");
+		throw std::runtime_error("TcpSocketFactory::CreateServer.socket");
 	}
 
-	// Listen for client connections.
+	// CreateServer for client connections.
 	check(listen(server, 1));
-	Accept(server, sock_addr_size);
+	Accept(server, sock_addr_size, onConnect);
 }
 
-void TcpServer::Accept(SOCKET server, socklen_t sock_addr_size) {
+void TcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn_t onConnect) {
 	try {
 		// Await connections and requests.
 		union {
@@ -99,7 +98,7 @@ void TcpServer::Accept(SOCKET server, socklen_t sock_addr_size) {
 			static_assert(sizeof(uint64_t) >= sizeof(SOCKET), "unexpected size");
 
 			// This is a new client connection.  Handle it.
-			onConnect(Socket(client));
+			onConnect(std::make_shared<TcpSocket>(client));
 		}
 	} catch(std::exception& ex) {
 		std::cout << "exception: " << ex.what() << std::endl;

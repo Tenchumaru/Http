@@ -23,6 +23,7 @@
 #include <iterator>
 #include <locale>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <unordered_map>

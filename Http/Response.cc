@@ -13,6 +13,6 @@ void Response::End(unsigned short responseCode) {
 	responseCode; // TODO
 }
 
-void Response::Send(Socket& client) {
+void Response::Send(TcpSocket& client) {
 	client; // TODO
 }
