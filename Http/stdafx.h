@@ -34,10 +34,13 @@
 # undef errno
 # define errno (WSAGetLastError())
 # define ioctl ioctlsocket
+# undef EALREADY
+# define EALREADY WSAEALREADY
+# undef EWOULDBLOCK
+# define EWOULDBLOCK WSAEWOULDBLOCK
 #else
 # define _countof(ar) (sizeof(ar) / sizeof((ar)[0]))
 # define SOCKET int
-# define WSAEWOULDBLOCK EWOULDBLOCK
 # define INVALID_SOCKET (-1)
 
 using nullptr_t= decltype(nullptr);
