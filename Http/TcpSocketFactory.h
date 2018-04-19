@@ -4,7 +4,7 @@
 
 class TcpSocketFactory {
 public:
-	using fn_t= std::function<void(std::shared_ptr<TcpSocket>)>;
+	using fn_t= std::function<void(TcpSocket&&)>;
 
 	TcpSocketFactory();
 	virtual ~TcpSocketFactory();

@@ -19,7 +19,7 @@ void HttpServer::Add(char const* path, fn_t fn) {
 }
 
 void HttpServer::Listen(unsigned short port) {
-	auto connectFn= [this](std::shared_ptr<TcpSocket> client) {
+	auto connectFn= [this](TcpSocket&& client) {
 		auto handlerFn= [this, &client](Request const& request) {
 			auto const& path= request.Uri.Path;
 
@@ -39,14 +39,14 @@ void HttpServer::Listen(unsigned short port) {
 			}
 
 			// Send the response to the client.
-			response.Send(*client);
+			response.Send(client);
 		};
 
 		char buf[1024];
 		RequestParser parser(handlerFn);
 		for(;;) {
 			// Read some data from the client.
-			auto n= client->Receive(buf, sizeof(buf));
+			auto n= client.Receive(buf, sizeof(buf));
 			if(n == 0) {
 				break;
 			}

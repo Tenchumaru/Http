@@ -98,7 +98,7 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn_t onCo
 			static_assert(sizeof(uint64_t) >= sizeof(SOCKET), "unexpected size");
 
 			// This is a new client connection.  Handle it.
-			onConnect(std::make_shared<TcpSocket>(client));
+			onConnect(TcpSocket(client));
 		}
 	} catch(std::exception& ex) {
 		std::cout << "exception: " << ex.what() << std::endl;
