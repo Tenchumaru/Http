@@ -143,6 +143,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FibrousTcpSocket.h" />
+    <ClInclude Include="FibrousTcpSocketFactory.h" />
     <ClInclude Include="HttpParser.h" />
     <ClInclude Include="HttpServer.h" />
     <ClInclude Include="Request.h" />
@@ -157,6 +159,8 @@
     <ClInclude Include="Waiter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FibrousTcpSocket.cc" />
+    <ClCompile Include="FibrousTcpSocketFactory.cc" />
     <ClCompile Include="HttpParser.cc" />
     <ClCompile Include="HttpServer.cc" />
     <ClCompile Include="RequestParser.cc" />
