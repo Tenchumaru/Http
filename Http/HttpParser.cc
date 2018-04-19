@@ -127,6 +127,12 @@ void HttpParser::CollectHeaderName(char const* p, char const* q) {
 			data.clear();
 			fn= &HttpParser::CollectData;
 			return (this->*fn)(p + 1, q);
+		} else if(isspace(*p)) {
+			if(name.empty()) {
+				name += ' ';
+			} else if(name != " ") {
+				throw std::runtime_error("HttpParser::CollectHeaderName.name");
+			}
 		} else {
 			name += *p;
 			if(name.size() >= maxNameSize) {
@@ -145,8 +151,10 @@ void HttpParser::CollectHeaderValue(char const* p, char const* q) {
 				throw std::runtime_error("HttpParser::CollectHeaderValue.name.empty");
 			}
 
-			// Add it and the header name to the collection of headers.
-			headers.insert({ name, value });
+			if(name[0] != ' ') {
+				// Add it and the header name to the collection of headers.
+				headers.insert({ name, value });
+			}
 
 			// Start collecting the next header.
 			name.clear();
