@@ -40,6 +40,21 @@ void HttpServer::Listen(unsigned short port) {
 
 			// Send the response to the client.
 			response.Send(client);
+
+			// If the HTTP version is at least 1.1 and there is a "Connection"
+			// header whose value is "Close", close the socket.  Otherwise, if
+			// the HTTP version is less than 1.1 and there is no "Connection"
+			// header whose value is "Keep-Alive", close the socket.
+			bool wantsClose= false;
+			auto header= request.Headers.find("connection");
+			if(request.Version >= 0x11) {
+				wantsClose= header != request.Headers.cend() && _stricmp(header->second.c_str(), "close") == 0;
+			} else {
+				wantsClose= header == request.Headers.cend() || _stricmp(header->second.c_str(), "keep-alive") != 0;
+			}
+			if(wantsClose) {
+				client.Close();
+			}
 		};
 
 		char buf[1024];
@@ -49,6 +64,13 @@ void HttpServer::Listen(unsigned short port) {
 			auto n= client.Receive(buf, sizeof(buf));
 			if(n == 0) {
 				break;
+			} else if(n < 0) {
+				auto v= errno;
+				if(v == EALREADY || v == EWOULDBLOCK) {
+					continue;
+				} else {
+					break;
+				}
 			}
 
 			// Give it to the response parser.
