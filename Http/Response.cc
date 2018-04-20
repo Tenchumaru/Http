@@ -2,6 +2,22 @@
 #include "Response.h"
 #include "ResultCodes.inl"
 
+namespace {
+	std::string GetTime() {
+		time_t t= time(nullptr);
+#ifdef _WIN32
+		tm m_;
+		gmtime_s(&m_, &t);
+		tm* m= &m_;
+#else
+		tm* m= gmtime(&t);
+#endif
+		char buf[88];
+		strftime(buf, sizeof(buf), "%a, %d %b %Y %T GMT", m);
+		return buf;
+	}
+}
+
 std::string const Response::empty;
 
 Response::Response() {}
@@ -19,6 +35,7 @@ void Response::End(unsigned short responseCode, std::string const& text/*= empty
 	auto contentLengthString= std::to_string(text.size());
 	response= "HTTP/1.1 " + responseCodeString + ' ' + responseText + "\r\n"
 		"Server: C++\r\n"
+		"Date: " + GetTime() + "\r\n"
 		"Content-Length: " + contentLengthString + "\r\n"
 		"\r\n" + text;
 }
