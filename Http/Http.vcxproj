@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="FibrousTcpSocket.h" />
     <ClInclude Include="FibrousTcpSocketFactory.h" />
+    <ClInclude Include="HeaderMap.h" />
     <ClInclude Include="HttpParser.h" />
     <ClInclude Include="HttpServer.h" />
     <ClInclude Include="Request.h" />

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "HeaderMap.h"
 #include "Uri.h"
 
 class Request {
@@ -7,13 +8,13 @@ public:
 	std::string const& GetVerb() const { return verb; }
 	Uri const& GetUri() const { return uri; }
 	int GetVersion() const { return version; }
-	std::map<std::string, std::string> const& GetHeaders() const { return headers; }
+	HeaderMap const& GetHeaders() const { return headers; }
 	std::string const& GetData() const { return data; }
 
 	__declspec(property(get=GetVerb)) std::string const& Verb;
 	__declspec(property(get=GetUri)) Uri const& Uri;
 	__declspec(property(get=GetVersion)) int Version;
-	__declspec(property(get=GetHeaders)) std::map<std::string, std::string> const& Headers;
+	__declspec(property(get=GetHeaders)) HeaderMap const& Headers;
 	__declspec(property(get=GetData)) std::string const& Data;
 
 private:
@@ -21,6 +22,6 @@ private:
 
 	::Uri uri;
 	std::string verb, data;
-	std::map<std::string, std::string> headers;
+	HeaderMap headers;
 	int version;
 };

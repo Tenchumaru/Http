@@ -57,6 +57,9 @@
     <ClInclude Include="FibrousTcpSocketFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HeaderMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

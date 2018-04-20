@@ -1,5 +1,6 @@
 #pragma once
 
+#include "HeaderMap.h"
 #include "Uri.h"
 
 class HttpParser {
@@ -10,7 +11,7 @@ public:
 
 protected:
 	std::string first, next, last, data;
-	std::map<std::string, std::string> headers;
+	HeaderMap headers;
 
 	void Reset();
 	bool ValidateVersion(std::string const& s);
