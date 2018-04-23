@@ -15,7 +15,10 @@ HttpParser::HttpParser() : fn(&HttpParser::CollectFirst) {}
 HttpParser::~HttpParser() {}
 
 void HttpParser::Add(char const* p, size_t n) {
-	return (this->*fn)(p, p + n);
+	char const* const q= p + n;
+	while(p != nullptr && p < q) {
+		p= (this->*fn)(p, q);
+	}
 }
 
 void HttpParser::Reset() {
@@ -23,7 +26,7 @@ void HttpParser::Reset() {
 	fn= &HttpParser::CollectFirst;
 }
 
-void HttpParser::CollectFirst(char const* p, char const* q) {
+char const* HttpParser::CollectFirst(char const* p, char const* const q) {
 	while(p < q) {
 		if(*p == ' ') {
 			// Validate it and start collecting the next part.
@@ -32,7 +35,7 @@ void HttpParser::CollectFirst(char const* p, char const* q) {
 			}
 			next.clear();
 			fn= &HttpParser::CollectNext;
-			return (this->*fn)(p + 1, q);
+			return p + 1;
 		} else if(*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
 			throw std::runtime_error("HttpParser::CollectFirst");
@@ -40,9 +43,10 @@ void HttpParser::CollectFirst(char const* p, char const* q) {
 		first += *p;
 		++p;
 	}
+	return p;
 }
 
-void HttpParser::CollectNext(char const* p, char const* q) {
+char const* HttpParser::CollectNext(char const* p, char const* const q) {
 	while(p < q) {
 		if(*p == ' ') {
 			// Validate it and start collecting the last part.
@@ -51,7 +55,7 @@ void HttpParser::CollectNext(char const* p, char const* q) {
 			}
 			last.clear();
 			fn= &HttpParser::CollectLast;
-			return (this->*fn)(p + 1, q);
+			return p + 1;
 		} else if(*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
 			throw std::runtime_error("HttpParser::CollectNext");
@@ -59,9 +63,10 @@ void HttpParser::CollectNext(char const* p, char const* q) {
 		next += *p;
 		++p;
 	}
+	return p;
 }
 
-void HttpParser::CollectLast(char const* p, char const* q) {
+char const* HttpParser::CollectLast(char const* p, char const* const q) {
 	while(p < q) {
 		if(*p == '\r') {
 			// Skip it.
@@ -72,15 +77,16 @@ void HttpParser::CollectLast(char const* p, char const* q) {
 			}
 			name.clear();
 			fn= &HttpParser::CollectHeaderName;
-			return (this->*fn)(p + 1, q);
+			return p + 1;
 		} else {
 			last += *p;
 		}
 		++p;
 	}
+	return p;
 }
 
-void HttpParser::CollectHeaderName(char const* p, char const* q) {
+char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 	// Check for too many headers.
 	if(headers.size() > maxHeaders) {
 		throw std::runtime_error("HttpParser::CollectHeaderName.maxHeaders");
@@ -97,7 +103,7 @@ void HttpParser::CollectHeaderName(char const* p, char const* q) {
 			// Start collecting the header value.
 			value.clear();
 			fn= &HttpParser::CollectHeaderValue;
-			return (this->*fn)(p + 1, q);
+			return p + 1;
 		} else if(*p == '\r') {
 			// Skip it.
 		} else if(*p == '\n') {
@@ -115,7 +121,7 @@ void HttpParser::CollectHeaderName(char const* p, char const* q) {
 
 				// Start collecting the next message.
 				Reset();
-				return (this->*fn)(p + 1, q);
+				return p + 1;
 			}
 			if(contentLength > maxContentLength) {
 				// && .49999999999999
@@ -126,7 +132,7 @@ void HttpParser::CollectHeaderName(char const* p, char const* q) {
 			// Start collecting the data.
 			data.clear();
 			fn= &HttpParser::CollectData;
-			return (this->*fn)(p + 1, q);
+			return p + 1;
 		} else if(isspace(*p)) {
 			if(name.empty()) {
 				name += ' ';
@@ -141,9 +147,10 @@ void HttpParser::CollectHeaderName(char const* p, char const* q) {
 		}
 		++p;
 	}
+	return p;
 }
 
-void HttpParser::CollectHeaderValue(char const* p, char const* q) {
+char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 	while(p < q) {
 		if(*p == '\n') {
 			// Found it; validate the name.
@@ -159,7 +166,7 @@ void HttpParser::CollectHeaderValue(char const* p, char const* q) {
 			// Start collecting the next header.
 			name.clear();
 			fn= &HttpParser::CollectHeaderName;
-			return (this->*fn)(p + 1, q);
+			return p + 1;
 		} else if(*p == '\r') {
 			// Skip it.
 		} else if(!value.empty() || !isspace(*p)) {
@@ -170,9 +177,10 @@ void HttpParser::CollectHeaderValue(char const* p, char const* q) {
 		}
 		++p;
 	}
+	return p;
 }
 
-void HttpParser::CollectData(char const* p, char const* q) {
+char const* HttpParser::CollectData(char const* p, char const* const q) {
 	// Determine the amout of data required and available.
 	auto const nRequired= contentLength - data.size();
 	decltype(nRequired) const nAvailable= q - p;
@@ -184,10 +192,11 @@ void HttpParser::CollectData(char const* p, char const* q) {
 
 		// Start collecting the next message.
 		Reset();
-		return (this->*fn)(p + nRequired, q);
+		return p + nRequired;
 	} else {
 		// Consume all available data.
 		data.append(p, q);
+		return q;
 	}
 }
 
