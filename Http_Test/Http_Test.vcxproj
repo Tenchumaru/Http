@@ -170,6 +170,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RequestParserTest.cpp" />
+    <ClCompile Include="TcpSocketFactoryTest.cpp" />
     <ClCompile Include="TcpSocketTest.cpp" />
     <ClCompile Include="UriTest.cpp" />
   </ItemGroup>
