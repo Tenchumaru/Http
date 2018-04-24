@@ -171,6 +171,7 @@
     </ClCompile>
     <ClCompile Include="RequestParserTest.cpp" />
     <ClCompile Include="TcpSocketTest.cpp" />
+    <ClCompile Include="UriTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Http\Http.vcxproj">
