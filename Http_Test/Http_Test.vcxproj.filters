@@ -29,10 +29,16 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RequestTest.cpp">
+    <ClCompile Include="RequestParserTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Socket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TcpSocketTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -4,10 +4,11 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace Http_Test {
-	TEST_CLASS(RequestTest) {
+	TEST_CLASS(RequestParserTest) {
 public:
 
 	TEST_METHOD(TestGetRequest) {
+		// Arrange
 		auto actualCount= 0;
 		std::string expectedPath= "/f/15";
 		std::vector<std::pair<std::string, std::string>> expectedHeaders{
@@ -41,6 +42,8 @@ public:
 		auto const* p= s.c_str();
 		auto const n= s.size();
 		RequestParser outerParser(fn);
+
+		// Act
 		outerParser.Add(p, n);
 		auto expectedCount= 1;
 		for(int i= 1; i < n; i <<= 1) {
@@ -52,10 +55,13 @@ public:
 				innerParser.Add(p + j, k);
 			}
 		}
+
+		// Assert
 		Assert::AreEqual(actualCount, expectedCount);
 	}
 
 	TEST_METHOD(TestPostRequest) {
+		// Arrange
 		auto actualCount= 0;
 		std::string expectedPath= "/w/index.php";
 		std::vector<std::pair<std::string, std::string>> expectedQuery{
@@ -113,6 +119,8 @@ public:
 		auto const* p= s.c_str();
 		auto const n= s.size();
 		RequestParser outerParser(fn);
+
+		// Act
 		outerParser.Add(p, n);
 		auto expectedCount= 1;
 		for(int i= 1; i < n; i <<= 1) {
@@ -124,6 +132,8 @@ public:
 				innerParser.Add(p + j, k);
 			}
 		}
+
+		// Assert
 		Assert::AreEqual(actualCount, expectedCount);
 	}
 	};
