@@ -4,41 +4,20 @@
 using namespace Http_Test::Sockets;
 
 namespace {
-	std::vector<Accept> acceptedSockets;
-
 	SOCKET WSAAPI test_accept(SOCKET s, struct sockaddr* addr, int* addrlen) {
-		if(addr == nullptr || addrlen == nullptr) {
-			return INVALID_SOCKET;
-		}
-		acceptedSockets.push_back({ s, addr, addrlen });
-		return s | (0x10000 * acceptedSockets.size());
+		return OnAccept(s, addr, addrlen);
 	}
-
-	std::vector<ReceiveSend> receivedSockets;
 
 	int WSAAPI test_recv(SOCKET s, char* buf, int len, int flags) {
-		if(buf == nullptr) {
-			return -1;
-		}
-		receivedSockets.push_back({ s, buf, static_cast<size_t>(len), flags });
-		return 0;
+		return OnReceive(s, buf, len, flags);
 	}
-
-	std::vector<ReceiveSend> sentSockets;
 
 	int WSAAPI test_send(SOCKET s, char const* buf, int len, int flags) {
-		if(buf == nullptr) {
-			return -1;
-		}
-		sentSockets.push_back({ s, buf, static_cast<size_t>(len), flags });
-		return 0;
+		return OnSend(s, buf, len, flags);
 	}
 
-	std::vector<SOCKET> closedSockets;
-
 	int WSAAPI test_closesocket(SOCKET s) {
-		closedSockets.push_back(s);
-		return 0;
+		return OnClose(s);
 	}
 }
 
@@ -48,6 +27,13 @@ extern "C" intptr_t __imp_send;
 extern "C" intptr_t __imp_closesocket;
 
 namespace Http_Test {
+	namespace Sockets {
+		std::function<SOCKET(SOCKET, struct sockaddr* addr, int* addrlen)> OnAccept;
+		std::function<int(SOCKET, char* buf, int len, int flags)> OnReceive;
+		std::function<int(SOCKET, char const* buf, int len, int flags)> OnSend;
+		std::function<int(SOCKET)> OnClose;
+	}
+
 	TEST_MODULE_INITIALIZE(ConfigureSockets) {
 		__imp_accept= reinterpret_cast<decltype(__imp_accept)>(&test_accept);
 		__imp_recv= reinterpret_cast<decltype(__imp_recv)>(&test_recv);
@@ -57,24 +43,8 @@ namespace Http_Test {
 }
 
 void Http_Test::Sockets::Initialize() {
-	acceptedSockets.clear();
-	receivedSockets.clear();
-	sentSockets.clear();
-	closedSockets.clear();
-}
-
-std::vector<Accept> const& Http_Test::Sockets::GetAcceptedSockets() {
-	return acceptedSockets;
-}
-
-std::vector<ReceiveSend> const& Http_Test::Sockets::GetReceivedSockets() {
-	return receivedSockets;
-}
-
-std::vector<ReceiveSend> const& Http_Test::Sockets::GetSentSockets() {
-	return sentSockets;
-}
-
-std::vector<SOCKET> const& Http_Test::Sockets::GetClosedSockets() {
-	return closedSockets;
+	OnAccept= [](SOCKET s, struct sockaddr* addr, int* addrlen) { return INVALID_SOCKET; };
+	OnReceive= [](SOCKET, char* buf, int len, int flags) { return 0; };
+	OnSend= [](SOCKET, char const* buf, int len, int flags) { return 0; };
+	OnClose= [](SOCKET) { return 0; };
 }

@@ -14,6 +14,17 @@ public:
 
 	TEST_METHOD(TestTcpSocketReceive) {
 		// Arrange
+		SOCKET actualSocket= INVALID_SOCKET;
+		char* actualBuf= nullptr;
+		int actualLen= 0;
+		int actualFlags= 0;
+		Sockets::OnReceive= [&](SOCKET s, char* buf, int len, int flags) {
+			actualSocket= s;
+			actualBuf= buf;
+			actualLen= len;
+			actualFlags= flags;
+			return 0;
+		};
 		TcpSocket s(value);
 		char buf[217];
 
@@ -22,17 +33,25 @@ public:
 
 		// Assert
 		Assert::AreEqual(0, result);
-		auto const& receivedSockets= Sockets::GetReceivedSockets();
-		Assert::AreEqual(1ull, receivedSockets.size());
-		auto const& receivedSocket= receivedSockets.back();
-		Assert::AreEqual(buf, receivedSocket.buf);
-		Assert::AreEqual(0, receivedSocket.flags);
-		Assert::AreEqual(sizeof(buf), receivedSocket.len);
-		Assert::AreEqual(value, receivedSocket.s);
+		Assert::AreEqual(buf, actualBuf);
+		Assert::AreEqual(0, actualFlags);
+		Assert::AreEqual(sizeof(buf), static_cast<size_t>(actualLen));
+		Assert::AreEqual(value, actualSocket);
 	}
 
 	TEST_METHOD(TestTcpSocketSend) {
 		// Arrange
+		SOCKET actualSocket= INVALID_SOCKET;
+		char const* actualBuf= nullptr;
+		int actualLen= 0;
+		int actualFlags= 0;
+		Sockets::OnSend= [&](SOCKET s, char const* buf, int len, int flags) {
+			actualSocket= s;
+			actualBuf= buf;
+			actualLen= len;
+			actualFlags= flags;
+			return 0;
+		};
 		TcpSocket s(value);
 		char buf[139];
 
@@ -41,13 +60,10 @@ public:
 
 		// Assert
 		Assert::AreEqual(0, result);
-		auto const& sentSockets= Sockets::GetSentSockets();
-		Assert::AreEqual(1ull, sentSockets.size());
-		auto const& sentSocket= sentSockets.back();
-		Assert::AreEqual(buf, sentSocket.buf);
-		Assert::AreEqual(0, sentSocket.flags);
-		Assert::AreEqual(sizeof(buf), sentSocket.len);
-		Assert::AreEqual(value, sentSocket.s);
+		Assert::AreEqual(buf, actualBuf);
+		Assert::AreEqual(0, actualFlags);
+		Assert::AreEqual(sizeof(buf), static_cast<size_t>(actualLen));
+		Assert::AreEqual(value, actualSocket);
 	}
 
 private:

@@ -14,6 +14,17 @@ public:
 
 	TEST_METHOD(CreateServerWithPort) {
 		// Arrange
+		SOCKET actualSocket= INVALID_SOCKET;
+		Sockets::OnAccept= [&](SOCKET s, struct sockaddr* addr, int* addrlen) {
+			actualSocket= s;
+			addr, addrlen;
+			return s | 0x10000;
+		};
+		std::vector<SOCKET> closedSockets;
+		Sockets::OnClose= [&closedSockets](SOCKET s) {
+			closedSockets.push_back(s);
+			return 0;
+		};
 		bool invoked= false;
 		auto fn= [&invoked](TcpSocket&&) {
 			invoked= true;
@@ -26,10 +37,9 @@ public:
 
 		// Assert
 		Assert::IsTrue(invoked);
-		auto const& acceptedSockets= Sockets::GetAcceptedSockets();
-		Assert::AreEqual(1ull, acceptedSockets.size());
-		auto const& closedSockets= Http_Test::Sockets::GetClosedSockets();
 		Assert::AreEqual(2ull, closedSockets.size());
+		Assert::AreEqual(closedSockets.front(), actualSocket | 0x10000);
+		Assert::AreEqual(closedSockets.back(), actualSocket);
 	}
 	};
 }

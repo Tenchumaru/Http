@@ -4,23 +4,11 @@
 
 namespace Http_Test {
 	namespace Sockets {
-		struct Accept {
-			SOCKET s;
-			struct sockaddr* addr;
-			int* addrlen;
-		};
-
-		struct ReceiveSend {
-			SOCKET s;
-			char const* buf;
-			size_t len;
-			int flags;
-		};
+		extern std::function<SOCKET(SOCKET, struct sockaddr* addr, int* addrlen)> OnAccept;
+		extern std::function<int(SOCKET, char* buf, int len, int flags)> OnReceive;
+		extern std::function<int(SOCKET, char const* buf, int len, int flags)> OnSend;
+		extern std::function<int(SOCKET)> OnClose;
 
 		void Initialize();
-		std::vector<Accept> const& GetAcceptedSockets();
-		std::vector<ReceiveSend> const& GetReceivedSockets();
-		std::vector<ReceiveSend> const& GetSentSockets();
-		std::vector<SOCKET> const& GetClosedSockets();
 	}
 }

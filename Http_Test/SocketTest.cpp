@@ -14,28 +14,42 @@ public:
 
 	TEST_METHOD(TestSocketClose) {
 		// Arrange
+		SOCKET closedSocket= INVALID_SOCKET;
+		Sockets::OnClose= [&closedSocket](SOCKET s) {
+			closedSocket= s;
+			return 0;
+			Sockets::OnClose= [&closedSocket](SOCKET) {
+				closedSocket= INVALID_SOCKET;
+				return -1;
+			};
+		};
 		Socket s(value);
 
 		// Act
 		s.Close();
 
 		// Assert
-		auto const& closedSockets= Http_Test::Sockets::GetClosedSockets();
-		Assert::AreEqual(1ull, closedSockets.size());
-		Assert::AreEqual(value, closedSockets.back());
+		Assert::AreEqual(value, closedSocket);
 	}
 
 	TEST_METHOD(TestSocketDestructor) {
 		// Arrange
+		SOCKET closedSocket= INVALID_SOCKET;
+		Sockets::OnClose= [&closedSocket](SOCKET s) {
+			closedSocket= s;
+			return 0;
+			Sockets::OnClose= [&closedSocket](SOCKET) {
+				closedSocket= INVALID_SOCKET;
+				return -1;
+			};
+		};
 		auto p= std::make_unique<Socket>(value);
 
 		// Act
 		p.reset();
 
 		// Assert
-		auto const& closedSockets= Http_Test::Sockets::GetClosedSockets();
-		Assert::AreEqual(1ull, closedSockets.size());
-		Assert::AreEqual(value, closedSockets.back());
+		Assert::AreEqual(value, closedSocket);
 	}
 
 private:
