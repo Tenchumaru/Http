@@ -28,7 +28,7 @@ static void set_nonblocking(SOCKET s) {
 #endif
 }
 
-Waiter::Waiter() {}
+Waiter::Waiter() : current(fds.size()) {}
 
 Waiter::~Waiter() {}
 

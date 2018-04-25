@@ -19,12 +19,22 @@ namespace {
 	int WSAAPI test_closesocket(SOCKET s) {
 		return OnClose(s);
 	}
+
+	int WSAAPI test_WSAPoll(LPWSAPOLLFD fdArray, ULONG fds, INT timeout) {
+		return OnPoll(fdArray, fds, timeout);
+	}
+
+	int WSAAPI test_ioctlsocket(SOCKET s, long cmd, u_long* argp) {
+		return OnIoctl(s, cmd, argp);
+	}
 }
 
 extern "C" intptr_t __imp_accept;
 extern "C" intptr_t __imp_recv;
 extern "C" intptr_t __imp_send;
 extern "C" intptr_t __imp_closesocket;
+extern "C" intptr_t __imp_WSAPoll;
+extern "C" intptr_t __imp_ioctlsocket;
 
 namespace Http_Test {
 	namespace Sockets {
@@ -32,6 +42,8 @@ namespace Http_Test {
 		std::function<int(SOCKET, char* buf, int len, int flags)> OnReceive;
 		std::function<int(SOCKET, char const* buf, int len, int flags)> OnSend;
 		std::function<int(SOCKET)> OnClose;
+		std::function<int(LPWSAPOLLFD fdArray, ULONG fds, INT timeout)> OnPoll;
+		std::function<int(SOCKET s, long cmd, u_long* argp)> OnIoctl;
 	}
 
 	TEST_MODULE_INITIALIZE(ConfigureSockets) {
@@ -39,6 +51,8 @@ namespace Http_Test {
 		__imp_recv= reinterpret_cast<decltype(__imp_recv)>(&test_recv);
 		__imp_send= reinterpret_cast<decltype(__imp_send)>(&test_send);
 		__imp_closesocket= reinterpret_cast<decltype(__imp_closesocket)>(&test_closesocket);
+		__imp_WSAPoll= reinterpret_cast<decltype(__imp_WSAPoll)>(&test_WSAPoll);
+		__imp_ioctlsocket= reinterpret_cast<decltype(__imp_ioctlsocket)>(&test_ioctlsocket);
 	}
 }
 
@@ -47,4 +61,6 @@ void Http_Test::Sockets::Initialize() {
 	OnReceive= [](SOCKET, char* buf, int len, int flags) { return 0; };
 	OnSend= [](SOCKET, char const* buf, int len, int flags) { return 0; };
 	OnClose= [](SOCKET) { return 0; };
+	OnPoll= [](LPWSAPOLLFD fdArray, ULONG fds, INT timeout) { return 0; };
+	OnIoctl= [](SOCKET s, long cmd, u_long* argp) { return 0; };
 }
