@@ -157,6 +157,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HttpServerTest.cpp" />
     <ClCompile Include="ResponseTest.cpp" />
     <ClCompile Include="Sockets.cpp" />
     <ClCompile Include="SocketTest.cpp" />
