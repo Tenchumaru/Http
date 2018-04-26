@@ -157,6 +157,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ResponseTest.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="SocketTest.cpp" />
     <ClCompile Include="stdafx.cpp">
