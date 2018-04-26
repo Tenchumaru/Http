@@ -7,7 +7,7 @@ namespace Http_Test {
 	TEST_CLASS(UriTest) {
 public:
 
-	TEST_METHOD(CreateEmpty) {
+	TEST_METHOD(UriCreateEmpty) {
 		// Arrange
 		std::string s;
 		Uri uri;
@@ -19,7 +19,7 @@ public:
 		Assert::IsFalse(result);
 	}
 
-	TEST_METHOD(CreateFull) {
+	TEST_METHOD(UriCreateFull) {
 		// Arrange
 		std::string s= "scheme://username:password@host:port/the/path?name1=value1&name2=value2#fragment";
 		Uri uri;
@@ -45,7 +45,7 @@ public:
 		Assert::AreEqual("scheme", uri.Scheme.c_str());
 	}
 
-	TEST_METHOD(CreatePathOnly) {
+	TEST_METHOD(UriCreatePathOnly) {
 		// Arrange
 		std::string s= "/this/is/only/a/path";
 		Uri uri;
@@ -65,7 +65,7 @@ public:
 		Assert::IsTrue(uri.Scheme.empty());
 	}
 
-	TEST_METHOD(DecodeResource) {
+	TEST_METHOD(UriDecodeResource) {
 		// Arrange
 		std::string s= "/this/is%0aonly%0Da+path";
 
@@ -77,7 +77,7 @@ public:
 		Assert::AreEqual("/this/is\nonly\ra+path", s.c_str());
 	}
 
-	TEST_METHOD(DecodeQueryResource) {
+	TEST_METHOD(UriDecodeQueryResource) {
 		// Arrange
 		std::string s= "/this/is%0aonly%0Da+path";
 
@@ -89,7 +89,7 @@ public:
 		Assert::AreEqual("/this/is\nonly\ra path", s.c_str());
 	}
 
-	TEST_METHOD(FailDecodeResource1) {
+	TEST_METHOD(UriFailDecodeResource1) {
 		// Arrange
 		std::string s= "/this/is%0aonly%0Da+pa%th";
 
@@ -101,7 +101,7 @@ public:
 		Assert::AreEqual("/this/is%0aonly%0Da+pa%th", s.c_str());
 	}
 
-	TEST_METHOD(FailDecodeResource2) {
+	TEST_METHOD(UriFailDecodeResource2) {
 		// Arrange
 		std::string s= "/this/is%0aonly%0Da+path%";
 
@@ -113,7 +113,7 @@ public:
 		Assert::AreEqual("/this/is%0aonly%0Da+path%", s.c_str());
 	}
 
-	TEST_METHOD(ParseNameValue) {
+	TEST_METHOD(UriParseNameValue) {
 		// Arrange
 		std::string s= "/this/is%0ao=nly%0Da+path";
 		Uri::pair nameValue;
@@ -127,7 +127,7 @@ public:
 		Assert::AreEqual("nly\ra path", nameValue.second.c_str());
 	}
 
-	TEST_METHOD(ParseQuery) {
+	TEST_METHOD(UriParseQuery) {
 		// Arrange
 		std::string s= "/this/i=s%0aonl&y%0Da+p=ath";
 		Uri::map query;

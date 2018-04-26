@@ -5,19 +5,50 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace Http_Test {
-	TEST_CLASS(TcpSocketTest) {
+	TEST_CLASS(TcpSocketFactoryTest) {
 public:
 
 	TEST_METHOD_INITIALIZE(Initialize) {
 		Sockets::Initialize();
 	}
 
-	TEST_METHOD(CreateServerWithPort) {
+	TEST_METHOD(TcpSocketFactoryCreateServerWithName) {
 		// Arrange
-		SOCKET actualSocket= INVALID_SOCKET;
-		Sockets::OnAccept= [&](SOCKET s, struct sockaddr* addr, int* addrlen) {
-			actualSocket= s;
-			addr, addrlen;
+		SOCKET expectedSocket= INVALID_SOCKET;
+		Sockets::OnAccept= [&](SOCKET s, sockaddr* addr, int* addrlen) {
+			if(addr == nullptr || addrlen == nullptr) {
+				return INVALID_SOCKET;
+			}
+			expectedSocket= s;
+			return s | 0x10000;
+		};
+		std::vector<SOCKET> closedSockets;
+		Sockets::OnClose= [&closedSockets](SOCKET s) {
+			closedSockets.push_back(s);
+			return 0;
+		};
+		bool invoked= false;
+		auto onConnect= [&invoked](TcpSocket&&) {
+			invoked= true;
+			throw std::runtime_error("exit");
+		};
+		TcpSocketFactory factory;
+
+		// Act
+		auto fn= [&] { factory.CreateServer("http", onConnect); };
+
+		// Assert
+		Assert::ExpectException<std::runtime_error, decltype(fn)>(fn);
+	}
+
+	TEST_METHOD(TcpSocketFactoryCreateServerWithPort) {
+		// Arrange
+		SOCKET expectedSocket= INVALID_SOCKET;
+		Sockets::OnAccept= [&](SOCKET s, sockaddr* addr, int* addrlen) {
+			if(addr == nullptr || addrlen == nullptr) {
+				return INVALID_SOCKET;
+			}
+			expectedSocket= s;
 			return s | 0x10000;
 		};
 		std::vector<SOCKET> closedSockets;
@@ -37,9 +68,12 @@ public:
 
 		// Assert
 		Assert::IsTrue(invoked);
+		Assert::AreNotEqual(expectedSocket, INVALID_SOCKET);
 		Assert::AreEqual(2ull, closedSockets.size());
-		Assert::AreEqual(closedSockets.front(), actualSocket | 0x10000);
-		Assert::AreEqual(closedSockets.back(), actualSocket);
+		if(!closedSockets.empty()) {
+			Assert::AreEqual(expectedSocket | 0x10000, closedSockets.front());
+			Assert::AreEqual(expectedSocket, closedSockets.back());
+		}
 	}
 	};
 }

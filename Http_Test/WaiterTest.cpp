@@ -12,7 +12,7 @@ public:
 		Sockets::Initialize();
 	}
 
-	TEST_METHOD(TestWaiterAdd) {
+	TEST_METHOD(WaiterAdd) {
 		// Arrange
 		bool invoked= false;
 		SOCKET actualSocket;
@@ -31,16 +31,16 @@ public:
 		Waiter waiter;
 
 		// Act
-		waiter.Add(value, POLLIN);
+		waiter.Add(expectedSocket, POLLIN);
 
 		// Assert
 		Assert::IsTrue(invoked);
-		Assert::AreEqual(value, actualSocket);
+		Assert::AreEqual(expectedSocket, actualSocket);
 		Assert::AreEqual(static_cast<decltype(actualCmd)>(FIONBIO), actualCmd);
 		Assert::AreEqual(1ul, actualArg);
 	}
 
-	TEST_METHOD(TestWaiterWait) {
+	TEST_METHOD(WaiterWait) {
 		// Arrange
 		bool invoked= false;
 		Sockets::OnPoll= [&](LPWSAPOLLFD fdArray, ULONG fds, INT timeout) {
@@ -48,32 +48,22 @@ public:
 				return -1;
 			}
 			invoked= true;
-			fdArray[0].fd= value;
+			fdArray[0].fd= expectedSocket;
 			fdArray[0].revents= POLLIN;
 			return 0;
 		};
 		Waiter waiter;
-		waiter.Add(value, POLLIN);
+		waiter.Add(expectedSocket, POLLIN);
 
 		// Act
 		auto actualSocket= waiter.Wait();
 
 		// Assert
 		Assert::IsTrue(invoked);
-		Assert::AreEqual(value, actualSocket);
-	}
-
-	TEST_METHOD(TestWaiter) {
-		// Arrange
-		Sockets::OnIoctl= [](SOCKET s, long cmd, u_long* argp) {
-			return 0;
-		};
-		Sockets::OnPoll= [](LPWSAPOLLFD fdArray, ULONG fds, INT timeout) {
-			return 0;
-		};
+		Assert::AreEqual(expectedSocket, actualSocket);
 	}
 
 private:
-	SOCKET value= 410;
+	SOCKET expectedSocket= 410;
 	};
 }

@@ -7,7 +7,7 @@ namespace Http_Test {
 	TEST_CLASS(RequestParserTest) {
 public:
 
-	TEST_METHOD(TestGetRequest) {
+	TEST_METHOD(RequestParserGet) {
 		// Arrange
 		auto actualCount= 0;
 		std::string expectedPath= "/f/15";
@@ -23,12 +23,12 @@ public:
 		};
 		auto fn= [&actualCount, &expectedPath, &expectedHeaders](Request const& request) {
 			++actualCount;
-			Assert::AreEqual(request.Uri.Path, expectedPath);
+			Assert::AreEqual(expectedPath, request.Uri.Path);
 			Assert::AreEqual(expectedHeaders.size(), request.Headers.size());
 			for(auto const& header : expectedHeaders) {
 				auto const it= request.Headers.find(header.first);
 				if(it != request.Headers.cend()) {
-					Assert::AreEqual(it->second, header.second);
+					Assert::AreEqual(header.second, it->second);
 				} else {
 					Assert::IsTrue(it != request.Headers.cend());
 				}
@@ -57,10 +57,10 @@ public:
 		}
 
 		// Assert
-		Assert::AreEqual(actualCount, expectedCount);
+		Assert::AreEqual(expectedCount, actualCount);
 	}
 
-	TEST_METHOD(TestPostRequest) {
+	TEST_METHOD(RequestParserPost) {
 		// Arrange
 		auto actualCount= 0;
 		std::string expectedPath= "/w/index.php";
@@ -89,26 +89,26 @@ public:
 			"&wpForceHttps=1&wpFromhttp=1";
 		auto fn= [&actualCount, &expectedPath, &expectedQuery, &expectedRawQuery, &expectedHeaders, &expectedData](Request const& request) {
 			++actualCount;
-			Assert::AreEqual(request.Uri.Path, expectedPath);
+			Assert::AreEqual(expectedPath, request.Uri.Path);
 			for(auto const& nameValue : expectedQuery) {
 				auto const it= request.Uri.Query.find(nameValue.first);
 				if(it != request.Uri.Query.cend()) {
-					Assert::AreEqual(it->second, nameValue.second);
+					Assert::AreEqual(nameValue.second, it->second);
 				} else {
 					Assert::IsTrue(it != request.Uri.Query.cend());
 				}
 			}
-			Assert::AreEqual(request.Uri.RawQuery, expectedRawQuery);
+			Assert::AreEqual(expectedRawQuery, request.Uri.RawQuery);
 			Assert::AreEqual(expectedHeaders.size(), request.Headers.size());
 			for(auto const& header : expectedHeaders) {
 				auto const it= request.Headers.find(header.first);
 				if(it != request.Headers.cend()) {
-					Assert::AreEqual(it->second, header.second);
+					Assert::AreEqual(header.second, it->second);
 				} else {
 					Assert::IsTrue(it != request.Headers.cend());
 				}
 			}
-			Assert::AreEqual(request.Data, expectedData);
+			Assert::AreEqual(expectedData, request.Data);
 		};
 		std::string s= "POST " + expectedPath + '?' + expectedRawQuery + " HTTP/1.1\r\n";
 		for(auto const& header : expectedHeaders) {
@@ -134,7 +134,7 @@ public:
 		}
 
 		// Assert
-		Assert::AreEqual(actualCount, expectedCount);
+		Assert::AreEqual(expectedCount, actualCount);
 	}
 	};
 }

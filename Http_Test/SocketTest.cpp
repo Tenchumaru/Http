@@ -12,7 +12,7 @@ public:
 		Sockets::Initialize();
 	}
 
-	TEST_METHOD(TestSocketClose) {
+	TEST_METHOD(SocketClose) {
 		// Arrange
 		SOCKET closedSocket= INVALID_SOCKET;
 		Sockets::OnClose= [&closedSocket](SOCKET s) {
@@ -23,16 +23,16 @@ public:
 				return -1;
 			};
 		};
-		Socket s(value);
+		Socket s(expectedSocket);
 
 		// Act
 		s.Close();
 
 		// Assert
-		Assert::AreEqual(value, closedSocket);
+		Assert::AreEqual(expectedSocket, closedSocket);
 	}
 
-	TEST_METHOD(TestSocketDestructor) {
+	TEST_METHOD(SocketDestructor) {
 		// Arrange
 		SOCKET closedSocket= INVALID_SOCKET;
 		Sockets::OnClose= [&closedSocket](SOCKET s) {
@@ -43,16 +43,16 @@ public:
 				return -1;
 			};
 		};
-		auto p= std::make_unique<Socket>(value);
+		auto p= std::make_unique<Socket>(expectedSocket);
 
 		// Act
 		p.reset();
 
 		// Assert
-		Assert::AreEqual(value, closedSocket);
+		Assert::AreEqual(expectedSocket, closedSocket);
 	}
 
 private:
-	SOCKET value= 170;
+	SOCKET expectedSocket= 170;
 	};
 }

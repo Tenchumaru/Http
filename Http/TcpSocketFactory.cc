@@ -55,7 +55,11 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 			if(bind(server, rp->ai_addr, sock_addr_size) == 0) {
 				break;
 			}
+#ifdef _DEBUG
+			std::cout << "bind failed: " << errno << std::endl;
+#endif
 			close(server);
+			server= INVALID_SOCKET;
 		}
 		freeaddrinfo(addresses);
 	} catch(std::exception const&) {

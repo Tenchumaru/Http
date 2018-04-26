@@ -13,7 +13,7 @@ public:
 		Sockets::Initialize();
 	}
 
-	TEST_METHOD(TestResponseOk) {
+	TEST_METHOD(ResponseOk) {
 		// Arrange
 		bool invoked= false;
 		SOCKET actualSocket= INVALID_SOCKET;
@@ -29,7 +29,7 @@ public:
 			text.assign(p, len);
 			return len;
 		};
-		TcpSocket socket(value);
+		TcpSocket socket(expectedSocket);
 		Response response;
 
 		// Act
@@ -38,21 +38,21 @@ public:
 
 		// Assert
 		Assert::IsTrue(invoked);
-		Assert::AreEqual(value, actualSocket);
+		Assert::AreEqual(expectedSocket, actualSocket);
 		Assert::AreEqual(0, actualFlags);
 		Assert::AreEqual(0ull, text.find("HTTP/1.1 200 OK"));
 		Assert::AreNotEqual(text.npos, text.find("Content-Length: 4\r\n"));
 		Assert::AreEqual("okay", text.substr(text.size() - 4).c_str());
 	}
 
-	TEST_METHOD(TestResponseEnd) {
+	TEST_METHOD(ResponseEnd) {
 		// Arrange
 		std::string text;
 		Sockets::OnSend= [&text](SOCKET s, char const* p, int len, int flags) {
 			text.assign(p, len);
 			return len;
 		};
-		TcpSocket socket(value);
+		TcpSocket socket(expectedSocket);
 		Response response;
 
 		// Act
@@ -66,6 +66,6 @@ public:
 	}
 
 private:
-	SOCKET value= 110;
+	SOCKET expectedSocket= 110;
 	};
 }

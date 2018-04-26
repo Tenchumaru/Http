@@ -12,7 +12,7 @@ public:
 		Sockets::Initialize();
 	}
 
-	TEST_METHOD(TestTcpSocketReceive) {
+	TEST_METHOD(TcpSocketReceive) {
 		// Arrange
 		SOCKET actualSocket= INVALID_SOCKET;
 		char* actualBuf= nullptr;
@@ -25,7 +25,7 @@ public:
 			actualFlags= flags;
 			return 0;
 		};
-		TcpSocket s(value);
+		TcpSocket s(expectedSocket);
 		char buf[217];
 
 		// Act
@@ -34,12 +34,12 @@ public:
 		// Assert
 		Assert::AreEqual(0, result);
 		Assert::AreEqual(buf, actualBuf);
-		Assert::AreEqual(0, actualFlags);
 		Assert::AreEqual(sizeof(buf), static_cast<size_t>(actualLen));
-		Assert::AreEqual(value, actualSocket);
+		Assert::AreEqual(0, actualFlags);
+		Assert::AreEqual(expectedSocket, actualSocket);
 	}
 
-	TEST_METHOD(TestTcpSocketSend) {
+	TEST_METHOD(TcpSocketSend) {
 		// Arrange
 		SOCKET actualSocket= INVALID_SOCKET;
 		char const* actualBuf= nullptr;
@@ -52,7 +52,7 @@ public:
 			actualFlags= flags;
 			return 0;
 		};
-		TcpSocket s(value);
+		TcpSocket s(expectedSocket);
 		char buf[139];
 
 		// Act
@@ -61,12 +61,12 @@ public:
 		// Assert
 		Assert::AreEqual(0, result);
 		Assert::AreEqual(buf, actualBuf);
-		Assert::AreEqual(0, actualFlags);
 		Assert::AreEqual(sizeof(buf), static_cast<size_t>(actualLen));
-		Assert::AreEqual(value, actualSocket);
+		Assert::AreEqual(0, actualFlags);
+		Assert::AreEqual(expectedSocket, actualSocket);
 	}
 
 private:
-	SOCKET value= 230;
+	SOCKET expectedSocket= 230;
 	};
 }
