@@ -29,15 +29,23 @@ void Response::Ok(std::string const& text) {
 }
 
 void Response::End(unsigned short responseCode, std::string const& text/*= empty*/) {
+	// Add the overridable headers.
+	headers.insert({ "Server", "C++" });
+
+	// Add the non-overridable headers.
+	headers["Date"]= GetTime();
+	headers["Content-Length"]= std::to_string(text.size());
+
+	// Construct the response.
 	auto it= result_codes.find(responseCode);
-	auto const* responseText= it == result_codes.cend() ? "Custom Response Code" : it->second;
-	auto responseCodeString= std::to_string(responseCode);
-	auto contentLengthString= std::to_string(text.size());
-	response= "HTTP/1.1 " + responseCodeString + ' ' + responseText + "\r\n"
-		"Server: C++\r\n"
-		"Date: " + GetTime() + "\r\n"
-		"Content-Length: " + contentLengthString + "\r\n"
-		"\r\n" + text;
+	auto const* responseCodeText= it == result_codes.cend() ? "Custom Response Code" : it->second;
+	std::stringstream ss;
+	ss << "HTTP/1.1 " << std::to_string(responseCode) << ' ' << responseCodeText << "\r\n";
+	for(auto const& header : headers) {
+		ss << header.first << ": " << header.second << "\r\n";
+	}
+	ss << "\r\n" << text;
+	response= ss.str();
 }
 
 void Response::Send(TcpSocket& client) {
