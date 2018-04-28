@@ -102,8 +102,10 @@ RootValue Parser::InternalParse(char const* s_) {
 	return RootValue(value);
 }
 
-Parser::char_t Parser::Get() noexcept {
-	SkipWhitespace();
+Parser::char_t Parser::Get(bool acceptWhitespace/*= false*/) noexcept {
+	if(!acceptWhitespace) {
+		SkipWhitespace();
+	}
 	if(*next) {
 		return *next++;
 	}
@@ -148,20 +150,20 @@ double Parser::ParseNumber(char_t ch) noexcept {
 		number= ch - '0';
 		isNegative= false;
 	}
-	while(ch= Get(), isdigit(ch)) {
+	while(ch= Get(true), isdigit(ch)) {
 		number *= 10;
 		number += ch - '0';
 	}
 	if(ch == '.') {
 		double multiplier= .1;
-		while(ch= Get(), isdigit(ch)) {
+		while(ch= Get(true), isdigit(ch)) {
 			number += (ch - '0') * multiplier;
 			multiplier *= .1;
 		}
 	}
 	if(tolower(ch) == 'e') {
 		int exponent= 0;
-		while(ch= Get(), isdigit(ch)) {
+		while(ch= Get(true), isdigit(ch)) {
 			exponent *= 10;
 			exponent += ch - '0';
 		}
@@ -203,7 +205,7 @@ Value Parser::ParseObject() {
 char32_t Parser::ParseUnicodeEscape() {
 	char32_t ch= 0;
 	for(int i= 0; i < 4; ++i) {
-		char d= Get();
+		char d= Get(true);
 		if(!isxdigit(d)) {
 			throw std::runtime_error("invalid unicode escape");
 		}
@@ -218,7 +220,7 @@ void Parser::AddUnicode(std::string& s) {
 	// surrogate pair.
 	char32_t ch= ParseUnicodeEscape();
 	if(ch >= 0xd800 && ch <= 0xdbff) {
-		if(Get() == '\\' && Get() == 'u') {
+		if(Get(true) == '\\' && Get(true) == 'u') {
 			ch= 0x10000 + ((ch & 0x3ff) << 10) + (ParseUnicodeEscape() & 0x3ff);
 		} else {
 			throw std::runtime_error("unmatched surrogate pair");
@@ -245,9 +247,9 @@ void Parser::AddUnicode(std::string& s) {
 
 std::string Parser::ParseString() {
 	std::string rv;
-	for(char ch; ch= Get(), ch != '"'; ) {
+	for(char ch; ch= Get(true), ch != '"'; ) {
 		if(ch == '\\') {
-			switch(Get()) {
+			switch(Get(true)) {
 			case '"':
 				rv += '"';
 				break;
@@ -297,17 +299,17 @@ Value Parser::ParseValue() {
 	case '"': // begin string
 		return Value(ParseString());
 	case 'f': // check for false
-		if(Get() == 'a' && Get() == 'l' && Get() == 's' && Get() == 'e') {
+		if(Get(true) == 'a' && Get(true) == 'l' && Get(true) == 's' && Get(true) == 'e') {
 			return Value(false);
 		}
 		break;
 	case 'n': // check for null
-		if(Get() == 'u' && Get() == 'l' && Get() == 'l') {
+		if(Get(true) == 'u' && Get(true) == 'l' && Get(true) == 'l') {
 			return Value(nullptr);
 		}
 		break;
 	case 't': // check for true
-		if(Get() == 'r' && Get() == 'u' && Get() == 'e') {
+		if(Get(true) == 'r' && Get(true) == 'u' && Get(true) == 'e') {
 			return Value(true);
 		}
 		break;
