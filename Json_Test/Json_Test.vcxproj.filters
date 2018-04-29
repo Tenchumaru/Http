@@ -40,8 +40,12 @@
     <Text Include="failures.json.txt" />
     <Text Include="successes.json.txt" />
     <Text Include="roundtrips.json.txt" />
+    <Text Include="arrays.json.txt" />
+    <Text Include="objects.json.txt" />
+    <Text Include="strings.json.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="google-calendar.json" />
+    <None Include="large.json" />
   </ItemGroup>
 </Project>
