@@ -112,18 +112,18 @@ Parser::char_t Parser::Get(bool acceptWhitespace/*= false*/) noexcept {
 	return '\0';
 }
 
-void Parser::Unget() noexcept {
-	if(*next) {
-		--next;
+Parser::char_t Parser::Next(bool acceptWhitespace/*= false*/) noexcept {
+	if(!acceptWhitespace) {
+		SkipWhitespace();
 	}
+	return *next;
 }
 
 Value Parser::ParseArray() {
 	Value rv;
 	rv.array= new std::vector<Value>;
-	auto ch= Get();
+	auto ch= Next();
 	if(ch != ']') {
-		Unget();
 		for(;;) {
 			rv.array->push_back(ParseValue());
 			ch= Get();
@@ -135,6 +135,8 @@ Value Parser::ParseArray() {
 				throw std::runtime_error("invalid array");
 			}
 		}
+	} else {
+		++next;
 	}
 	rv.type= Value::Type::Array;
 	return rv;
@@ -168,7 +170,9 @@ double Parser::ParseNumber(char_t ch) {
 			ch= Get(true);
 		}
 	}
-	Unget();
+	if(ch) {
+		--next;
+	}
 	char* p;
 	double number= strtod(s.c_str(), &p);
 	if(*p) {
@@ -180,9 +184,8 @@ double Parser::ParseNumber(char_t ch) {
 Value Parser::ParseObject() {
 	Value rv;
 	rv.object= new std::unordered_map<std::string, Value>;
-	auto ch= Get();
+	auto ch= Next();
 	if(ch != '}') {
-		Unget();
 		for(;;) {
 			if(Get() != '"') {
 				throw std::runtime_error("invalid object name");
@@ -201,6 +204,8 @@ Value Parser::ParseObject() {
 				throw std::runtime_error("invalid object");
 			}
 		}
+	} else {
+		++next;
 	}
 	rv.type= Value::Type::Object;
 	return rv;

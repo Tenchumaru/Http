@@ -72,7 +72,7 @@ private:
 	Parser() {}
 	RootValue InternalParse(char const* s);
 	char_t Get(bool acceptWhitespace= false) noexcept;
-	void Unget() noexcept;
+	char_t Next(bool acceptWhitespace= false) noexcept;
 	Value ParseArray();
 	double ParseNumber(char_t ch);
 	Value ParseObject();
