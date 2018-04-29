@@ -350,6 +350,15 @@ void WriteJson(std::ostream& os, bool b) {
 	os << s;
 }
 
+void WriteJson(std::ostream& os, double d) {
+	if(isinf(d)) {
+		throw std::runtime_error("number is infinite");
+	}
+	std::streamsize precision= os.precision();
+	// https://en.wikipedia.org/wiki/Double-precision_floating-point_format#IEEE_754_double-precision_binary_floating-point_format:_binary64
+	os << std::setprecision(15) << d << std::setprecision(precision);
+}
+
 void WriteJson(std::ostream& os, std::string const& s) {
 	WriteJson(os, s.c_str());
 }

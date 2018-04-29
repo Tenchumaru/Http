@@ -5,6 +5,7 @@
 #endif
 
 #include <codecvt>
+#include <iomanip>
 #include <memory>
 #include <ostream>
 #include <string>

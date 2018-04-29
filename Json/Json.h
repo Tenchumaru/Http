@@ -85,6 +85,7 @@ private:
 
 void WriteJson(std::ostream& os, nullptr_t);
 void WriteJson(std::ostream& os, bool b);
+void WriteJson(std::ostream& os, double d);
 void WriteJson(std::ostream& os, std::string const& s);
 void WriteJson(std::ostream& os, std::wstring const& s);
 void WriteJson(std::ostream& os, char const* s);

@@ -30,5 +30,14 @@ public:
 		auto fn2= [text2] { Parser::Parse(text2); };
 		Assert::ExpectException<std::runtime_error, decltype(fn2)>(fn2);
 	}
+
+	TEST_METHOD(JsonFailuresInfinity) {
+		auto fn= [] {
+			double n= 1.79769313486231e+308;
+			n += 1e+307;
+			WriteJson(std::cout, n);
+		};
+		Assert::ExpectException<std::runtime_error, decltype(fn)>(fn);
+	}
 	};
 }
