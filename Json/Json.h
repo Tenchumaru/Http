@@ -74,7 +74,7 @@ private:
 	char_t Get(bool acceptWhitespace= false) noexcept;
 	void Unget() noexcept;
 	Value ParseArray();
-	double ParseNumber(char_t ch) noexcept;
+	double ParseNumber(char_t ch);
 	Value ParseObject();
 	void AddUnicode(std::string& s);
 	std::string ParseString();

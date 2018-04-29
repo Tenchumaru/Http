@@ -140,37 +140,41 @@ Value Parser::ParseArray() {
 	return rv;
 }
 
-double Parser::ParseNumber(char_t ch) noexcept {
-	double number;
-	bool isNegative;
+double Parser::ParseNumber(char_t ch) {
+	std::string s;
 	if(ch == '-') {
-		number= 0;
-		isNegative= true;
-	} else {
-		number= ch - '0';
-		isNegative= false;
+		s += '-';
+		ch= Get(true);
 	}
-	while(ch= Get(true), isdigit(ch)) {
-		number *= 10;
-		number += ch - '0';
+	while(isdigit(ch)) {
+		s += ch;
+		ch= Get(true);
 	}
 	if(ch == '.') {
-		double multiplier= .1;
+		s += '.';
 		while(ch= Get(true), isdigit(ch)) {
-			number += (ch - '0') * multiplier;
-			multiplier *= .1;
+			s += ch;
 		}
 	}
 	if(tolower(ch) == 'e') {
-		int exponent= 0;
-		while(ch= Get(true), isdigit(ch)) {
-			exponent *= 10;
-			exponent += ch - '0';
+		s += 'e';
+		ch= Get(true);
+		if(ch == '-' || ch == '+') {
+			s += ch;
+			ch= Get(true);
 		}
-		number *= pow(10, exponent);
+		while(isdigit(ch)) {
+			s += ch;
+			ch= Get(true);
+		}
 	}
 	Unget();
-	return isNegative ? -number : number;
+	char* p;
+	double number= strtod(s.c_str(), &p);
+	if(*p) {
+		throw std::runtime_error("invalid number");
+	}
+	return number;
 }
 
 Value Parser::ParseObject() {
