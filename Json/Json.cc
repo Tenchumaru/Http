@@ -148,9 +148,14 @@ double Parser::ParseNumber(char_t ch) {
 		s += '-';
 		ch= Get(true);
 	}
-	while(isdigit(ch)) {
-		s += ch;
+	if(ch == '0') {
+		s += '0';
 		ch= Get(true);
+	} else {
+		while(isdigit(ch)) {
+			s += ch;
+			ch= Get(true);
+		}
 	}
 	if(ch == '.') {
 		s += '.';
