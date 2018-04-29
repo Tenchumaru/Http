@@ -157,6 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FailuresTest.cpp" />
+    <ClCompile Include="RoundtripsTest.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -172,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="failures.json.txt" />
+    <Text Include="roundtrips.json.txt" />
     <Text Include="successes.json.txt" />
   </ItemGroup>
   <ItemGroup>

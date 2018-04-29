@@ -32,10 +32,14 @@
     <ClCompile Include="SuccessesTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RoundtripsTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="failures.json.txt" />
     <Text Include="successes.json.txt" />
+    <Text Include="roundtrips.json.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="google-calendar.json" />
