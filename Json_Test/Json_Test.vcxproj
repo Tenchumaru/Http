@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="failures.json.txt" />
+    <Text Include="successes.json.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="google-calendar.json" />
