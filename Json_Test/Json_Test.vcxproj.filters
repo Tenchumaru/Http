@@ -37,15 +37,31 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="failures.json.txt" />
-    <Text Include="successes.json.txt" />
-    <Text Include="roundtrips.json.txt" />
-    <Text Include="arrays.json.txt" />
-    <Text Include="objects.json.txt" />
-    <Text Include="strings.json.txt" />
+    <Text Include="arrays.json.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="failures.json.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="objects.json.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="roundtrips.json.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="strings.json.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="successes.json.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
-    <None Include="google-calendar.json" />
-    <None Include="large.json" />
+    <None Include="google-calendar.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="large.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
