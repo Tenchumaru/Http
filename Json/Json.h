@@ -83,30 +83,78 @@ private:
 	void SkipWhitespace() noexcept;
 };
 
-void WriteJson(std::ostream& os, nullptr_t);
-void WriteJson(std::ostream& os, bool b);
 void WriteJson(std::ostream& os, double d);
-void WriteJson(std::ostream& os, std::string const& s);
-void WriteJson(std::ostream& os, std::wstring const& s);
 void WriteJson(std::ostream& os, char const* s);
 void WriteJson(std::ostream& os, wchar_t const* s);
 
+inline void WriteJson(std::ostream& os, nullptr_t) {
+	os << "null";
+}
+
+inline void WriteJson(std::ostream& os, bool b) {
+	auto const* s = b ? "true" : "false";
+	os << s;
+}
+
+inline void WriteJson(std::ostream& os, std::string const& s) {
+	WriteJson(os, s.c_str());
+}
+
+inline void WriteJson(std::ostream& os, std::wstring const& s) {
+	WriteJson(os, s.c_str());
+}
+
+inline void WriteJson(std::ostream& os, char ch) {
+	char s[2]{ ch };
+	WriteJson(os, s);
+}
+
+inline void WriteJson(std::ostream& os, wchar_t ch) {
+	wchar_t s[2]{ ch };
+	WriteJson(os, s);
+}
+
+template <typename...>
+using void_t = void;
+
+template <typename, typename = void>
+struct has_mapped_type : std::false_type {};
+
+template <typename T>
+struct has_mapped_type<T, void_t<typename T::mapped_type>> : std::true_type {};
+
+template <typename, typename = void>
+struct has_const_iterator : std::false_type {};
+
+template <typename T>
+struct has_const_iterator<T, void_t<typename T::const_iterator>> : std::true_type {};
+
 template<typename T>
-void WriteJson(std::ostream& os, T const& t) {
+using is_character = std::integral_constant<bool, std::is_same_v<char, T> || std::is_same_v<char16_t, T> ||
+	std::is_same_v<char32_t, T> || std::is_same_v<wchar_t, T>>;
+
+template<typename T>
+using is_string = std::integral_constant<bool, std::is_same_v<std::string, T> || std::is_same_v<std::wstring, T>>;
+
+template<typename T>
+using is_integer = std::integral_constant<bool, std::is_integral_v<T> && !std::is_same_v<bool, T> && !is_character<T>::value>;
+
+template<typename T>
+using is_iterable = std::integral_constant<bool, has_const_iterator<T>::value && !has_mapped_type<T>::value && !is_string<T>::value>;
+
+template<typename T>
+std::enable_if_t<is_integer<T>::value> WriteJson(std::ostream& os, T const& t) {
 	os << t;
 }
 
 template<typename T>
-void WriteJson(std::ostream& os, std::vector<T> const& m);
-
-template<typename K, typename V>
-void WriteJson(std::ostream& os, std::unordered_map<K, V> const& m) {
+std::enable_if_t<has_mapped_type<T>::value && is_string<typename T::key_type>::value> WriteJson(std::ostream& os, T const& m) {
 	os << '{';
-	for(typename std::unordered_map<K, V>::const_iterator i= m.cbegin(), x= m.cend(); i != x; ) {
-		WriteJson(os, i->first);
+	for(typename T::const_iterator it= m.cbegin(), end= m.cend(); it != end; ) {
+		WriteJson(os, it->first);
 		os << ':';
-		WriteJson(os, i->second);
-		if(++i != x) {
+		WriteJson(os, it->second);
+		if(++it != end) {
 			os << ',';
 		}
 	}
@@ -114,11 +162,25 @@ void WriteJson(std::ostream& os, std::unordered_map<K, V> const& m) {
 }
 
 template<typename T>
-void WriteJson(std::ostream& os, std::vector<T> const& m) {
+std::enable_if_t<has_mapped_type<T>::value && is_integer<typename T::key_type>::value> WriteJson(std::ostream& os, T const& m) {
+	os << '{';
+	for(typename T::const_iterator it= m.cbegin(), end= m.cend(); it != end; ) {
+		WriteJson(os, std::to_string(it->first));
+		os << ':';
+		WriteJson(os, it->second);
+		if(++it != end) {
+			os << ',';
+		}
+	}
+	os << '}';
+}
+
+template<typename T>
+std::enable_if_t<is_iterable<T>::value> WriteJson(std::ostream& os, T const& m) {
 	os << '[';
-	for(typename std::vector<T>::const_iterator i= m.cbegin(), x= m.cend(); i != x; ) {
-		WriteJson(os, *i);
-		if(++i != x) {
+	for(typename T::const_iterator it= m.cbegin(), end= m.cend(); it != end; ) {
+		WriteJson(os, *it);
+		if(++it != end) {
 			os << ',';
 		}
 	}

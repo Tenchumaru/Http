@@ -341,15 +341,6 @@ void Parser::SkipWhitespace() noexcept {
 	}
 }
 
-void WriteJson(std::ostream& os, nullptr_t) {
-	os << "null";
-}
-
-void WriteJson(std::ostream& os, bool b) {
-	auto const s= b ? "true" : "false";
-	os << s;
-}
-
 void WriteJson(std::ostream& os, double d) {
 	if(isinf(d)) {
 		throw std::runtime_error("number is infinite");
@@ -357,14 +348,6 @@ void WriteJson(std::ostream& os, double d) {
 	std::streamsize precision= os.precision();
 	// https://en.wikipedia.org/wiki/Double-precision_floating-point_format#IEEE_754_double-precision_binary_floating-point_format:_binary64
 	os << std::setprecision(15) << d << std::setprecision(precision);
-}
-
-void WriteJson(std::ostream& os, std::string const& s) {
-	WriteJson(os, s.c_str());
-}
-
-void WriteJson(std::ostream& os, std::wstring const& s) {
-	WriteJson(os, s.c_str());
 }
 
 inline char AsHexDigit(int value) noexcept {
@@ -379,14 +362,14 @@ void WriteJson(std::ostream& os, char const* s) {
 			if(static_cast<unsigned char>(ch) < ' ') {
 				if(ch == '\b') {
 					os << "\\b";
-				} else if(ch == '\t') {
-					os << "\\t";
-				} else if(ch == '\n') {
-					os << "\\n";
 				} else if(ch == '\f') {
 					os << "\\f";
+				} else if(ch == '\n') {
+					os << "\\n";
 				} else if(ch == '\r') {
 					os << "\\r";
+				} else if(ch == '\t') {
+					os << "\\t";
 				} else {
 					os << "\\u00" << AsHexDigit(ch >> 4) << AsHexDigit(ch);
 				}
