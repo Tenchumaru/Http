@@ -7,5 +7,6 @@
 
 #include <functional>
 #include <map>
+#include <sstream>
 #include <string>
 #include <unordered_map>

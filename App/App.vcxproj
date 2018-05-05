@@ -149,6 +149,9 @@
     <ProjectReference Include="..\Http\Http.vcxproj">
       <Project>{459779cb-e200-434f-9192-4825befc4219}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Json\Json.vcxproj">
+      <Project>{f5b1597d-2ad2-4921-a0d0-ead4839dc863}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
