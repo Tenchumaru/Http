@@ -19,17 +19,17 @@ void HttpServer::Add(char const* path, fn_t fn) {
 }
 
 void HttpServer::Listen(unsigned short port) {
-	auto connectFn= [this](TcpSocket&& client) {
-		auto handlerFn= [this, &client](Request const& request) {
-			auto const& path= request.Uri.Path;
+	auto connectFn = [this](TcpSocket&& client) {
+		auto handlerFn = [this, &client](Request const& request) {
+			auto const& path = request.Uri.Path;
 
 			// Determine which handler to invoke.
-			auto it= std::find_if(handlers.cbegin(), handlers.cend(), [path](auto const& p) {
+			auto it = std::find_if(handlers.cbegin(), handlers.cend(), [path](auto const& p) {
 				return strncmp(p.first.c_str(), path.c_str(), p.first.size()) == 0;
 			});
 
-			// Create the response.
-			Response response;
+			// Create the response and send it to the client.
+			Response response(client);
 			if(it != handlers.cend()) {
 				// Invoke the handler.
 				it->second(request, response);
@@ -37,20 +37,18 @@ void HttpServer::Listen(unsigned short port) {
 				// Return a 404.
 				response.End(404);
 			}
-
-			// Send the response to the client.
-			response.Send(client);
+			response.ResponseStream.flush();
 
 			// If the HTTP version is at least 1.1 and there is a "Connection"
 			// header whose value is "Close", close the socket.  Otherwise, if
 			// the HTTP version is less than 1.1 and there is no "Connection"
 			// header whose value is "Keep-Alive", close the socket.
-			bool wantsClose= false;
-			auto header= request.Headers.find("connection");
+			bool wantsClose;
+			auto header = request.Headers.find("connection");
 			if(request.Version >= 0x11) {
-				wantsClose= header != request.Headers.cend() && _stricmp(header->second.c_str(), "close") == 0;
+				wantsClose = header != request.Headers.cend() && _stricmp(header->second.c_str(), "close") == 0;
 			} else {
-				wantsClose= header == request.Headers.cend() || _stricmp(header->second.c_str(), "keep-alive") != 0;
+				wantsClose = header == request.Headers.cend() || _stricmp(header->second.c_str(), "keep-alive") != 0;
 			}
 			if(wantsClose) {
 				client.Close();
@@ -61,11 +59,11 @@ void HttpServer::Listen(unsigned short port) {
 		RequestParser parser(handlerFn);
 		for(;;) {
 			// Read some data from the client.
-			auto n= client.Receive(buf, sizeof(buf));
+			auto n = client.Receive(buf, sizeof(buf));
 			if(n == 0) {
 				break;
 			} else if(n < 0) {
-				auto v= errno;
+				auto v = errno;
 				if(v == EALREADY || v == EWOULDBLOCK) {
 					continue;
 				} else {

@@ -15,26 +15,26 @@ public:
 
 	TEST_METHOD(ResponseOk) {
 		// Arrange
-		bool invoked= false;
-		SOCKET actualSocket= INVALID_SOCKET;
-		int actualFlags= -1;
+		bool invoked = false;
+		SOCKET actualSocket = INVALID_SOCKET;
+		int actualFlags = -1;
 		std::string text;
-		Sockets::OnSend= [&](SOCKET s, char const* p, int len, int flags) {
+		Sockets::OnSend = [&](SOCKET s, char const* p, int len, int flags) {
 			if(p == nullptr) {
 				return -1;
 			}
-			invoked= true;
-			actualSocket= s;
-			actualFlags= flags;
+			invoked = true;
+			actualSocket = s;
+			actualFlags = flags;
 			text.assign(p, len);
 			return len;
 		};
 		TcpSocket socket(expectedSocket);
-		Response response;
+		Response response(socket);
 
 		// Act
 		response.Ok("okay");
-		response.Send(socket);
+		response.ResponseStream.flush();
 
 		// Assert
 		Assert::IsTrue(invoked);
@@ -48,16 +48,16 @@ public:
 	TEST_METHOD(ResponseEnd) {
 		// Arrange
 		std::string text;
-		Sockets::OnSend= [&text](SOCKET s, char const* p, int len, int flags) {
+		Sockets::OnSend = [&text](SOCKET s, char const* p, int len, int flags) {
 			text.assign(p, len);
 			return len;
 		};
 		TcpSocket socket(expectedSocket);
-		Response response;
+		Response response(socket);
 
 		// Act
 		response.End(204);
-		response.Send(socket);
+		response.ResponseStream.flush();
 
 		// Assert
 		Assert::AreEqual(0ull, text.find("HTTP/1.1 204 No Content"));
@@ -66,6 +66,6 @@ public:
 	}
 
 private:
-	SOCKET expectedSocket= 110;
+	SOCKET expectedSocket = 110;
 	};
 }
