@@ -8,17 +8,19 @@ namespace {
 	size_t const maxValueSize = 888;
 	size_t const maxContentLength = 1024 * 1024;
 	size_t const maxHeaders = 99;
+	char const* const closeSignal = reinterpret_cast<char const*>(8);
 }
 
 HttpParser::HttpParser() : fn(&HttpParser::CollectFirst) {}
 
 HttpParser::~HttpParser() {}
 
-void HttpParser::Add(char const* p, size_t n) {
+bool HttpParser::Add(char const* p, size_t n) {
 	char const* const q = p + n;
-	while(p != nullptr && p < q) {
+	while(p != nullptr && p != closeSignal && p < q) {
 		p = (this->*fn)(p, q);
 	}
+	return p == closeSignal;
 }
 
 void HttpParser::Reset() {
@@ -31,14 +33,14 @@ char const* HttpParser::CollectFirst(char const* p, char const* const q) {
 		if(*p == ' ') {
 			// Validate it and start collecting the next part.
 			if(!ValidateFirst(first)) {
-				throw std::runtime_error("HttpParser::CollectFirst.ValidateFirst");
+				throw Exception(Exception::MethodNotAllowed);
 			}
 			next.clear();
 			fn = &HttpParser::CollectNext;
 			return p + 1;
 		} else if(*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
-			throw std::runtime_error("HttpParser::CollectFirst");
+			throw Exception(Exception::BadRequest);
 		}
 		first += *p;
 		++p;
@@ -51,14 +53,14 @@ char const* HttpParser::CollectNext(char const* p, char const* const q) {
 		if(*p == ' ') {
 			// Validate it and start collecting the last part.
 			if(!ValidateNext(next)) {
-				throw std::runtime_error("HttpParser::CollectNext.ValidateNext");
+				throw Exception(Exception::BadRequest);
 			}
 			last.clear();
 			fn = &HttpParser::CollectLast;
 			return p + 1;
 		} else if(*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
-			throw std::runtime_error("HttpParser::CollectNext");
+			throw Exception(Exception::BadRequest);
 		}
 		next += *p;
 		++p;
@@ -73,7 +75,7 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 		} else if(*p == '\n') {
 			// Validate it and start collecting the first header name.
 			if(!ValidateLast(last)) {
-				throw std::runtime_error("HttpParser::CollectLast");
+				throw Exception(Exception::BadRequest);
 			}
 			name.clear();
 			fn = &HttpParser::CollectHeaderName;
@@ -89,7 +91,7 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 	// Check for too many headers.
 	if(headers.size() > maxHeaders) {
-		throw std::runtime_error("HttpParser::CollectHeaderName.maxHeaders");
+		throw Exception(Exception::BadRequest);
 	}
 
 	// Look for the end of the name (a colon).
@@ -97,7 +99,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 		if(*p == ':') {
 			// Found it; validate the name.
 			if(name.empty()) {
-				throw std::runtime_error("HttpParser::CollectHeaderName.name.empty");
+				throw Exception(Exception::BadRequest);
 			}
 
 			// Start collecting the header value.
@@ -109,19 +111,17 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 		} else if(*p == '\n') {
 			// Didn't find it.  If there is a name, it's an invalid message.
 			if(!name.empty()) {
-				throw std::runtime_error("HttpParser::CollectHeaderName.!name.empty");
+				throw Exception(Exception::BadRequest);
 			}
 
 			// Get the content length, if any.
-			// TODO:  for requests, consider requiring this header and
-			// responding with "411 Length Required" if it's missing.  However,
-			// section 3.3.2 of RFC 7230 says user agents mustn't send this
-			// header if there is no data and the method doesn't expect any.
 			auto const it = headers.find("Content-Length");
 			contentLength = it == headers.cend() ? 0 : std::stoul(it->second);
 			if(contentLength == 0) {
 				// There isn't one or it's zero; assume there's no data.
-				HandleMessage();
+				if(HandleMessage()) {
+					return closeSignal;
+				}
 
 				// Start collecting the next message.
 				Reset();
@@ -130,8 +130,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			if(contentLength > maxContentLength) {
 				// && .49999999999999
 				// : ]
-				// TODO:  for requests, respond with "413 Payload Too Large".
-				throw std::runtime_error("HttpParser::CollectHeaderName.contentLength");
+				throw Exception(Exception::PayloadTooLarge);
 			}
 			// TODO:  for requests, check for the "Expect: 100-continue" header.
 
@@ -143,12 +142,12 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			if(name.empty()) {
 				name += ' ';
 			} else if(name != " ") {
-				throw std::runtime_error("HttpParser::CollectHeaderName.name");
+				throw Exception(Exception::BadRequest);
 			}
 		} else {
 			name += *p;
 			if(name.size() >= maxNameSize) {
-				throw std::runtime_error("HttpParser::CollectHeaderName.maxNameSize");
+				throw Exception(Exception::BadRequest);
 			}
 		}
 		++p;
@@ -161,7 +160,7 @@ char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 		if(*p == '\n') {
 			// Found it; validate the name.
 			if(name.empty()) {
-				throw std::runtime_error("HttpParser::CollectHeaderValue.name.empty");
+				throw Exception(Exception::BadRequest);
 			}
 
 			if(name[0] != ' ') {
@@ -178,7 +177,7 @@ char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 		} else if(!value.empty() || !isspace(*p)) {
 			value += *p;
 			if(value.size() >= maxValueSize) {
-				throw std::runtime_error("HttpParser::CollectHeaderValue.maxValueSize");
+				throw Exception(Exception::BadRequest);
 			}
 		}
 		++p;

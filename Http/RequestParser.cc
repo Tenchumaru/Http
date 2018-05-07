@@ -13,13 +13,13 @@ bool RequestParser::ValidateLast(std::string const& s) {
 	return ValidateVersion(s);
 }
 
-void RequestParser::HandleMessage() {
+bool RequestParser::HandleMessage() {
 	Request rv;
 	rv.verb.swap(first);
 	std::swap(rv.uri, uri);
-	rv.version= ((last[5] - '0') << 4) | (last[7] - '0');
+	rv.version = ((last[5] - '0') << 4) | (last[7] - '0');
 	rv.headers.swap(headers);
 	rv.data.swap(data);
 	HttpParser::Reset();
-	requestHandler(rv);
+	return requestHandler(rv);
 }

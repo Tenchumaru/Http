@@ -7,7 +7,7 @@
 
 class RequestParser : public HttpParser {
 public:
-	using fn_t= std::function<void(Request const& request)>;
+	using fn_t = std::function<bool(Request const& request)>;
 
 	explicit RequestParser(fn_t requestHandler);
 	~RequestParser();
@@ -18,5 +18,5 @@ private:
 
 	bool ValidateNext(std::string const& s) override;
 	bool ValidateLast(std::string const& s) override;
-	void HandleMessage() override;
+	bool HandleMessage() override;
 };

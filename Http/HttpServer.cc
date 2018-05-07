@@ -31,6 +31,13 @@ void HttpServer::Listen(unsigned short port) {
 
 			// Create the response and send it to the client.
 			ClosableResponse response(client);
+
+			// TODO:  consider requiring the "Content-Length" header and
+			// responding with "411 Length Required" if it's missing.  However,
+			// section 3.3.2 of RFC 7230 says user agents mustn't send this
+			// header if there is no data and the method doesn't expect any so
+			// check the request verb.
+
 			if(it != handlers.cend()) {
 				// Invoke the handler.
 				it->second(request, response);
@@ -51,9 +58,7 @@ void HttpServer::Listen(unsigned short port) {
 			} else {
 				wantsClose = header == request.Headers.cend() || _stricmp(header->second.c_str(), "keep-alive") != 0;
 			}
-			if(wantsClose) {
-				client.Close();
-			}
+			return wantsClose;
 		};
 
 		char buf[1024];
@@ -73,7 +78,27 @@ void HttpServer::Listen(unsigned short port) {
 			}
 
 			// Give it to the response parser.
-			parser.Add(buf, n);
+			try {
+				if(parser.Add(buf, n)) {
+					break;
+				}
+			} catch(HttpParser::Exception const& ex) {
+				// Respond with the appropriate status code.
+				ClosableResponse response(client);
+				response.End(ex.StatusCode < 600 ? ex.StatusCode : 500);
+				response.Close();
+
+				// Close the connection.
+				break;
+			} catch(std::exception const& /*ex*/) {
+				// Send a 500 Internal Server Error status code.
+				ClosableResponse response(client);
+				response.End(500);
+				response.Close();
+
+				// Close the connection.
+				break;
+			}
 		}
 	};
 	TcpSocketFactory server;

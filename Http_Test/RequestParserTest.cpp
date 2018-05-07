@@ -9,8 +9,8 @@ public:
 
 	TEST_METHOD(RequestParserGet) {
 		// Arrange
-		auto actualCount= 0;
-		std::string expectedPath= "/f/15";
+		auto actualCount = 0;
+		std::string expectedPath = "/f/15";
 		std::vector<std::pair<std::string, std::string>> expectedHeaders{
 			{ "Host", "localhost:6006" },
 			{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0" },
@@ -21,36 +21,37 @@ public:
 			{ "Connection", "keep-alive" },
 			{ "Upgrade-Insecure-Requests", "1" },
 		};
-		auto fn= [&actualCount, &expectedPath, &expectedHeaders](Request const& request) {
+		auto fn = [&actualCount, &expectedPath, &expectedHeaders](Request const& request) {
 			++actualCount;
 			Assert::AreEqual(expectedPath, request.Uri.Path);
 			Assert::AreEqual(expectedHeaders.size(), request.Headers.size());
 			for(auto const& header : expectedHeaders) {
-				auto const it= request.Headers.find(header.first);
+				auto const it = request.Headers.find(header.first);
 				if(it != request.Headers.cend()) {
 					Assert::AreEqual(header.second, it->second);
 				} else {
 					Assert::IsTrue(it != request.Headers.cend());
 				}
 			}
+			return false;
 		};
-		std::string s= "GET " + expectedPath + " HTTP/1.1\r\n";
+		std::string s = "GET " + expectedPath + " HTTP/1.1\r\n";
 		for(auto const& header : expectedHeaders) {
 			s += header.first + ": " + header.second + "\r\n";
 		}
 		s += "\r\n";
-		auto const* p= s.c_str();
-		auto const n= s.size();
+		auto const* p = s.c_str();
+		auto const n = s.size();
 		RequestParser outerParser(fn);
 
 		// Act
 		outerParser.Add(p, n);
-		auto expectedCount= 1;
-		for(int i= 1; i < n; i <<= 1) {
+		auto expectedCount = 1;
+		for(int i = 1; i < n; i <<= 1) {
 			expectedCount += 2;
 			RequestParser innerParser(fn);
-			for(int j= 0; j < n; j += i) {
-				auto k= j + i >= n ? n - j : i;
+			for(int j = 0; j < n; j += i) {
+				auto k = j + i >= n ? n - j : i;
 				outerParser.Add(p + j, k);
 				innerParser.Add(p + j, k);
 			}
@@ -62,13 +63,13 @@ public:
 
 	TEST_METHOD(RequestParserPost) {
 		// Arrange
-		auto actualCount= 0;
-		std::string expectedPath= "/w/index.php";
+		auto actualCount = 0;
+		std::string expectedPath = "/w/index.php";
 		std::vector<std::pair<std::string, std::string>> expectedQuery{
 			{ "title", "Special:UserLogin" },
 			{ "returnto", "Main Page" },
 		};
-		std::string expectedRawQuery= "title=Special:UserLogin&returnto=Main+Page";
+		std::string expectedRawQuery = "title=Special:UserLogin&returnto=Main+Page";
 		std::vector<std::pair<std::string, std::string>> expectedHeaders{
 			{ "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
 			{ "Accept-Encoding", "gzip, deflate, br" },
@@ -84,14 +85,14 @@ public:
 			{ "Upgrade-Insecure-Requests", "1" },
 			{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0" },
 		};
-		std::string expectedData= "wpName=Username&wpPassword=Password&wploginattempt=Log+in&wpEditToken=%2B%5C"
+		std::string expectedData = "wpName=Username&wpPassword=Password&wploginattempt=Log+in&wpEditToken=%2B%5C"
 			"&title=Special%3AUserLogin&authAction=login&force=&wpLoginToken=6e47a09fa7efb01ef29268e7585160945ad4071d%2B%5C"
 			"&wpForceHttps=1&wpFromhttp=1";
-		auto fn= [&actualCount, &expectedPath, &expectedQuery, &expectedRawQuery, &expectedHeaders, &expectedData](Request const& request) {
+		auto fn = [&actualCount, &expectedPath, &expectedQuery, &expectedRawQuery, &expectedHeaders, &expectedData](Request const& request) {
 			++actualCount;
 			Assert::AreEqual(expectedPath, request.Uri.Path);
 			for(auto const& nameValue : expectedQuery) {
-				auto const it= request.Uri.Query.find(nameValue.first);
+				auto const it = request.Uri.Query.find(nameValue.first);
 				if(it != request.Uri.Query.cend()) {
 					Assert::AreEqual(nameValue.second, it->second);
 				} else {
@@ -101,7 +102,7 @@ public:
 			Assert::AreEqual(expectedRawQuery, request.Uri.RawQuery);
 			Assert::AreEqual(expectedHeaders.size(), request.Headers.size());
 			for(auto const& header : expectedHeaders) {
-				auto const it= request.Headers.find(header.first);
+				auto const it = request.Headers.find(header.first);
 				if(it != request.Headers.cend()) {
 					Assert::AreEqual(header.second, it->second);
 				} else {
@@ -109,25 +110,26 @@ public:
 				}
 			}
 			Assert::AreEqual(expectedData, request.Data);
+			return false;
 		};
-		std::string s= "POST " + expectedPath + '?' + expectedRawQuery + " HTTP/1.1\r\n";
+		std::string s = "POST " + expectedPath + '?' + expectedRawQuery + " HTTP/1.1\r\n";
 		for(auto const& header : expectedHeaders) {
 			s += header.first + ": " + header.second + "\r\n";
 		}
 		s += "\r\n";
 		s += expectedData;
-		auto const* p= s.c_str();
-		auto const n= s.size();
+		auto const* p = s.c_str();
+		auto const n = s.size();
 		RequestParser outerParser(fn);
 
 		// Act
 		outerParser.Add(p, n);
-		auto expectedCount= 1;
-		for(int i= 1; i < n; i <<= 1) {
+		auto expectedCount = 1;
+		for(int i = 1; i < n; i <<= 1) {
 			expectedCount += 2;
 			RequestParser innerParser(fn);
-			for(int j= 0; j < n; j += i) {
-				auto k= j + i >= n ? n - j : i;
+			for(int j = 0; j < n; j += i) {
+				auto k = j + i >= n ? n - j : i;
 				outerParser.Add(p + j, k);
 				innerParser.Add(p + j, k);
 			}

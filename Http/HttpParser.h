@@ -5,9 +5,22 @@
 
 class HttpParser {
 public:
+	class Exception : public std::runtime_error {
+	public:
+		enum : unsigned short { Close = 0, BadRequest = 400, MethodNotAllowed = 405, PayloadTooLarge = 413 };
+
+		explicit Exception(unsigned short statusCode) : statusCode(statusCode), std::runtime_error("HttpParser") {}
+		~Exception() {}
+		unsigned short GetStatusCode() const { return statusCode; }
+		__declspec(property(get = GetStatusCode)) unsigned short const StatusCode;
+
+	private:
+		unsigned short statusCode;
+	};
+
 	HttpParser();
 	virtual ~HttpParser();
-	void Add(char const* p, size_t n);
+	bool Add(char const* p, size_t n);
 
 protected:
 	std::string first, next, last, data;
@@ -17,7 +30,7 @@ protected:
 	bool ValidateVersion(std::string const& s);
 
 private:
-	using fn_t= char const*(HttpParser::*)(char const* p, char const* const q);
+	using fn_t = char const*(HttpParser::*)(char const* p, char const* const q);
 
 	fn_t fn;
 	std::string name, value;
@@ -32,5 +45,5 @@ private:
 	virtual bool ValidateFirst(std::string const& s);
 	virtual bool ValidateNext(std::string const& s);
 	virtual bool ValidateLast(std::string const& s);
-	virtual void HandleMessage()= 0;
+	virtual bool HandleMessage() = 0;
 };
