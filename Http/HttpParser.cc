@@ -2,12 +2,12 @@
 #include "HttpParser.h"
 
 namespace {
-	size_t const versionSize= 8; // Eight characters for "HTTP #.#".  See https://tools.ietf.org/html/rfc7230#appendix-B.
+	size_t const versionSize = 8; // Eight characters for "HTTP #.#".  See https://tools.ietf.org/html/rfc7230#appendix-B.
 	// TODO:  the following are configurable.
-	size_t const maxNameSize= 222;
-	size_t const maxValueSize= 888;
-	size_t const maxContentLength= 1024 * 1024;
-	size_t const maxHeaders= 99;
+	size_t const maxNameSize = 222;
+	size_t const maxValueSize = 888;
+	size_t const maxContentLength = 1024 * 1024;
+	size_t const maxHeaders = 99;
 }
 
 HttpParser::HttpParser() : fn(&HttpParser::CollectFirst) {}
@@ -15,15 +15,15 @@ HttpParser::HttpParser() : fn(&HttpParser::CollectFirst) {}
 HttpParser::~HttpParser() {}
 
 void HttpParser::Add(char const* p, size_t n) {
-	char const* const q= p + n;
+	char const* const q = p + n;
 	while(p != nullptr && p < q) {
-		p= (this->*fn)(p, q);
+		p = (this->*fn)(p, q);
 	}
 }
 
 void HttpParser::Reset() {
 	first.clear();
-	fn= &HttpParser::CollectFirst;
+	fn = &HttpParser::CollectFirst;
 }
 
 char const* HttpParser::CollectFirst(char const* p, char const* const q) {
@@ -34,7 +34,7 @@ char const* HttpParser::CollectFirst(char const* p, char const* const q) {
 				throw std::runtime_error("HttpParser::CollectFirst.ValidateFirst");
 			}
 			next.clear();
-			fn= &HttpParser::CollectNext;
+			fn = &HttpParser::CollectNext;
 			return p + 1;
 		} else if(*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
@@ -54,7 +54,7 @@ char const* HttpParser::CollectNext(char const* p, char const* const q) {
 				throw std::runtime_error("HttpParser::CollectNext.ValidateNext");
 			}
 			last.clear();
-			fn= &HttpParser::CollectLast;
+			fn = &HttpParser::CollectLast;
 			return p + 1;
 		} else if(*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
@@ -76,7 +76,7 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 				throw std::runtime_error("HttpParser::CollectLast");
 			}
 			name.clear();
-			fn= &HttpParser::CollectHeaderName;
+			fn = &HttpParser::CollectHeaderName;
 			return p + 1;
 		} else {
 			last += *p;
@@ -102,7 +102,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 
 			// Start collecting the header value.
 			value.clear();
-			fn= &HttpParser::CollectHeaderValue;
+			fn = &HttpParser::CollectHeaderValue;
 			return p + 1;
 		} else if(*p == '\r') {
 			// Skip it.
@@ -113,8 +113,12 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			}
 
 			// Get the content length, if any.
-			auto const it= headers.find("Content-Length");
-			contentLength= it == headers.cend() ? 0 : std::stoul(it->second);
+			// TODO:  for requests, consider requiring this header and
+			// responding with "411 Length Required" if it's missing.  However,
+			// section 3.3.2 of RFC 7230 says user agents mustn't send this
+			// header if there is no data and the method doesn't expect any.
+			auto const it = headers.find("Content-Length");
+			contentLength = it == headers.cend() ? 0 : std::stoul(it->second);
 			if(contentLength == 0) {
 				// There isn't one or it's zero; assume there's no data.
 				HandleMessage();
@@ -126,12 +130,14 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			if(contentLength > maxContentLength) {
 				// && .49999999999999
 				// : ]
+				// TODO:  for requests, respond with "413 Payload Too Large".
 				throw std::runtime_error("HttpParser::CollectHeaderName.contentLength");
 			}
+			// TODO:  for requests, check for the "Expect: 100-continue" header.
 
 			// Start collecting the data.
 			data.clear();
-			fn= &HttpParser::CollectData;
+			fn = &HttpParser::CollectData;
 			return p + 1;
 		} else if(isspace(*p)) {
 			if(name.empty()) {
@@ -165,7 +171,7 @@ char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 
 			// Start collecting the next header.
 			name.clear();
-			fn= &HttpParser::CollectHeaderName;
+			fn = &HttpParser::CollectHeaderName;
 			return p + 1;
 		} else if(*p == '\r') {
 			// Skip it.
@@ -182,8 +188,8 @@ char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 
 char const* HttpParser::CollectData(char const* p, char const* const q) {
 	// Determine the amout of data required and available.
-	auto const nRequired= contentLength - data.size();
-	decltype(nRequired) const nAvailable= q - p;
+	auto const nRequired = contentLength - data.size();
+	decltype(nRequired) const nAvailable = q - p;
 
 	if(nAvailable >= nRequired) {
 		// Consume data necessary to complete the current message.
