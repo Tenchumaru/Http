@@ -3,6 +3,8 @@
 #include "ResultCodes.inl"
 
 namespace {
+	std::string const contentLengthKey = "Content-Length";
+
 	std::string GetTime() {
 		time_t t = time(nullptr);
 #ifdef _WIN32
@@ -20,7 +22,10 @@ namespace {
 
 std::string const Response::empty;
 
-Response::Response(TcpSocket& client) : outputStreamBuffer(client), responseStream(&outputStreamBuffer) {}
+Response::Response(TcpSocket& client) :
+	outputStreamBuffer(*this, client),
+	responseStream(&outputStreamBuffer),
+	statusCode(200) {}
 
 Response::~Response() {}
 
@@ -28,34 +33,54 @@ void Response::Ok(std::string const& text) {
 	End(200, text);
 }
 
-void Response::End(unsigned short statusCode, std::string const& text/*= empty*/) {
+void Response::End(unsigned short statusCode_, std::string const& text/*= empty*/) {
+	statusCode = statusCode_;
+
+	// Add the non-overridable headers.
+	headers[contentLengthKey] = std::to_string(text.size());
+
+	// Send the response.
+	responseStream << text;
+}
+
+void Response::Close() {
+	outputStreamBuffer.Close();
+}
+
+bool Response::SendHeaders() {
 	// Add the overridable headers.
 	headers.insert({ "Server", "C++" });
 
 	// Add the non-overridable headers.
 	headers["Date"] = GetTime();
-	headers["Content-Length"] = std::to_string(text.size());
+	bool isChunked = headers.find(contentLengthKey) == headers.cend();
+	if(isChunked) {
+		headers["Transfer-Encoding"] = "chunked";
+	}
 
-	// Construct the response.
+	// Construct and send the response headers.
 	auto it = result_codes.find(statusCode);
 	auto const* responseCodeText = it == result_codes.cend() ? "Custom Response Code" : it->second;
 	responseStream << "HTTP/1.1 " << std::to_string(statusCode) << ' ' << responseCodeText << "\r\n";
 	for(auto const& header : headers) {
 		responseStream << header.first << ": " << header.second << "\r\n";
 	}
-	responseStream << "\r\n" << text;
+	responseStream << "\r\n";
+	return isChunked;
 }
 
-Response::nstreambuf::nstreambuf(TcpSocket& client) : client(client) {}
+Response::nstreambuf::nstreambuf(Response& response, TcpSocket& client) :
+	response(response),
+	client(client),
+	sendFn(&nstreambuf::InitialSend),
+	closeFn(&nstreambuf::SimpleClose) {}
 
-int Response::nstreambuf::sync() {
-	Send(true);
-	return 0;
+void Response::nstreambuf::Close() {
+	(this->*closeFn)();
 }
 
 std::streamsize Response::nstreambuf::xsputn(char_type const* s, std::streamsize n) {
-	buffer.insert(buffer.cend(), s, s + n);
-	Send();
+	(this->*sendFn)(s, n);
 	return n;
 }
 
@@ -67,16 +92,84 @@ int Response::nstreambuf::overflow(int c) {
 	return c;
 }
 
-void Response::nstreambuf::Send(bool any /*= false*/) {
-	if(any || buffer.size() >= 0x800) {
-		for(size_t i = 0, n = buffer.size(); i < n;) {
-			auto v = client.Send(buffer.data() + i, n - i);
-			if(v > 0) {
-				i += v;
-			} else {
-				throw std::runtime_error("Response::nstreambuf::Send");
-			}
+bool Response::nstreambuf::GetIsFull() const {
+	return buffer.size() >= 0x800;
+}
+
+void Response::nstreambuf::InitialSend(char_type const* s, std::streamsize n) {
+	// Have the Response object send its headers.
+	sendFn = &nstreambuf::SimpleSend;
+	bool isChunked = response.SendHeaders();
+
+	// Flush the response so far.
+	InternalSend();
+
+	// If this is a chunked response, switch to ChunkedSend and ChunkedClose.
+	if(isChunked) {
+		sendFn = &nstreambuf::ChunkedSend;
+		closeFn = &nstreambuf::ChunkedClose;
+	}
+
+	// Send the data provided in [s, s + n).
+	(this->*sendFn)(s, n);
+}
+
+void Response::nstreambuf::ChunkedSend(char_type const* s, std::streamsize n) {
+	// Add the data provided in [s, s + n) to the buffer.
+	buffer.insert(buffer.cend(), s, s + n);
+
+	// If the buffer is large enough, send it as a chunk.
+	if(IsFull) {
+		InternalSendChunk();
+	}
+}
+
+void Response::nstreambuf::SimpleSend(char_type const* s, std::streamsize n) {
+	// Add the data provided in [s, s + n) to the buffer.
+	buffer.insert(buffer.cend(), s, s + n);
+
+	// If the buffer is large enough, send it.
+	if(IsFull) {
+		InternalSend();
+	}
+}
+
+void Response::nstreambuf::ChunkedClose() {
+	// Send any remaining data as a chunk.
+	InternalSendChunk();
+
+	// Send the "last-chunk" and CRLF.
+	InternalSend("0\r\n\r\n", 5);
+}
+
+void Response::nstreambuf::SimpleClose() {
+	// Send any remaining data.
+	InternalSend();
+}
+
+void Response::nstreambuf::InternalSend() {
+	InternalSend(buffer.data(), buffer.size());
+	buffer.clear();
+}
+
+void Response::nstreambuf::InternalSend(char const* s, size_t n) {
+	for(size_t i = 0; i < n;) {
+		auto v = client.Send(s + i, n - i);
+		if(v > 0) {
+			i += v;
+		} else {
+			throw std::runtime_error("Response::nstreambuf::InternalSend");
 		}
-		buffer.clear();
+	}
+}
+
+void Response::nstreambuf::InternalSendChunk() {
+	unsigned n = static_cast<unsigned>(buffer.size());
+	if(n > 0) {
+		char chunkSize[16];
+		unsigned count = snprintf(chunkSize, _countof(chunkSize), "%x\r\n", n);
+		InternalSend(chunkSize, count);
+		InternalSend();
+		InternalSend("\r\n", 2);
 	}
 }

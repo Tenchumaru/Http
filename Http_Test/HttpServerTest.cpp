@@ -14,23 +14,23 @@ public:
 
 	TEST_METHOD(HttpServerListenWithHandler) {
 		// Arrange
-		SOCKET expectedSocket= INVALID_SOCKET;
-		Sockets::OnAccept= [&](SOCKET s, sockaddr* addr, int* addrlen) {
+		SOCKET expectedSocket = INVALID_SOCKET;
+		Sockets::OnAccept = [&](SOCKET s, sockaddr* addr, int* addrlen) {
 			if(addr == nullptr || addrlen == nullptr) {
 				return INVALID_SOCKET;
 			}
 			if(expectedSocket != INVALID_SOCKET) {
 				throw std::runtime_error("exit");
 			}
-			expectedSocket= s | 0x10000;
+			expectedSocket = s | 0x10000;
 			return expectedSocket;
 		};
-		bool invoked= false;
-		Sockets::OnReceive= [&](SOCKET s, char* buf, int len, int flags) {
+		bool invoked = false;
+		Sockets::OnReceive = [&](SOCKET s, char* buf, int len, int flags) {
 			if(expectedSocket != s || flags != 0 || invoked) {
 				return -1;
 			}
-			char const request[]= "GET /f/15 HTTP/1.1\r\n"
+			char const request[] = "GET /f/15 HTTP/1.1\r\n"
 				"Host: localhost:6006\r\n"
 				"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0\r\n"
 				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
@@ -40,26 +40,26 @@ public:
 				"Connection: keep-alive\r\n"
 				"Upgrade-Insecure-Requests: 1\r\n"
 				"\r\n";
-			int const size= _countof(request) - 1;
-			char ch= request[size]; ch;
+			int const size = _countof(request) - 1;
+			char ch = request[size]; ch;
 			if(len < size) {
 				return -1;
 			}
-			invoked= true;
+			invoked = true;
 			memcpy_s(buf, len, request, size);
 			return size;
 		};
 		std::string response;
-		Sockets::OnSend= [&](SOCKET s, char const* buf, int len, int flags) {
-			if(expectedSocket != s || flags != 0 || !response.empty()) {
+		Sockets::OnSend = [&](SOCKET s, char const* buf, int len, int flags) {
+			if(expectedSocket != s || flags != 0 || buf == nullptr) {
 				return -1;
 			}
-			response.assign(buf, len);
+			response.append(buf, len);
 			return len;
 		};
 		std::string path;
-		auto fn= [&path](Request const& request, Response& response) {
-			path= request.Uri.Path;
+		auto fn = [&path](Request const& request, Response& response) {
+			path = request.Uri.Path;
 			response.Ok("okay");
 		};
 		HttpServer server;
@@ -77,23 +77,23 @@ public:
 
 	TEST_METHOD(HttpServerListenWithoutHandler) {
 		// Arrange
-		SOCKET expectedSocket= INVALID_SOCKET;
-		Sockets::OnAccept= [&](SOCKET s, sockaddr* addr, int* addrlen) {
+		SOCKET expectedSocket = INVALID_SOCKET;
+		Sockets::OnAccept = [&](SOCKET s, sockaddr* addr, int* addrlen) {
 			if(addr == nullptr || addrlen == nullptr) {
 				return INVALID_SOCKET;
 			}
 			if(expectedSocket != INVALID_SOCKET) {
 				throw std::runtime_error("exit");
 			}
-			expectedSocket= s | 0x10000;
+			expectedSocket = s | 0x10000;
 			return expectedSocket;
 		};
-		bool invoked= false;
-		Sockets::OnReceive= [&](SOCKET s, char* buf, int len, int flags) {
+		bool invoked = false;
+		Sockets::OnReceive = [&](SOCKET s, char* buf, int len, int flags) {
 			if(expectedSocket != s || flags != 0 || invoked) {
 				return -1;
 			}
-			char const request[]= "GET /f/15 HTTP/1.1\r\n"
+			char const request[] = "GET /f/15 HTTP/1.1\r\n"
 				"Host: localhost:6006\r\n"
 				"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0\r\n"
 				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
@@ -103,21 +103,21 @@ public:
 				"Connection: keep-alive\r\n"
 				"Upgrade-Insecure-Requests: 1\r\n"
 				"\r\n";
-			int const size= _countof(request) - 1;
-			char ch= request[size]; ch;
+			int const size = _countof(request) - 1;
+			char ch = request[size]; ch;
 			if(len < size) {
 				return -1;
 			}
-			invoked= true;
+			invoked = true;
 			memcpy_s(buf, len, request, size);
 			return size;
 		};
 		std::string response;
-		Sockets::OnSend= [&](SOCKET s, char const* buf, int len, int flags) {
-			if(expectedSocket != s || flags != 0 || !response.empty()) {
+		Sockets::OnSend = [&](SOCKET s, char const* buf, int len, int flags) {
+			if(expectedSocket != s || flags != 0 || buf == nullptr) {
 				return -1;
 			}
-			response.assign(buf, len);
+			response.append(buf, len);
 			return len;
 		};
 		HttpServer server;

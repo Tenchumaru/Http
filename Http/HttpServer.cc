@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TcpSocketFactory.h"
 #include "RequestParser.h"
+#include "ClosableResponse.h"
 #include "HttpServer.h"
 
 // TODO:  consider an alternate design in which the Request object produced by
@@ -29,7 +30,7 @@ void HttpServer::Listen(unsigned short port) {
 			});
 
 			// Create the response and send it to the client.
-			Response response(client);
+			ClosableResponse response(client);
 			if(it != handlers.cend()) {
 				// Invoke the handler.
 				it->second(request, response);
@@ -37,7 +38,7 @@ void HttpServer::Listen(unsigned short port) {
 				// Return a 404.
 				response.End(404);
 			}
-			response.ResponseStream.flush();
+			response.Close();
 
 			// If the HTTP version is at least 1.1 and there is a "Connection"
 			// header whose value is "Close", close the socket.  Otherwise, if
