@@ -42,10 +42,9 @@
 # define _countof(ar) (sizeof(ar) / sizeof((ar)[0]))
 # define SOCKET int
 # define INVALID_SOCKET (-1)
+# define sprintf_s sprintf
 
-using nullptr_t= decltype(nullptr);
-
-# include "Fiber.h"
+using nullptr_t = decltype(nullptr);
 #endif
 
 template<typename T>

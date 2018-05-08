@@ -1,7 +1,6 @@
 #pragma once
 
 #include "HttpParser.h"
-#include "Http.h"
 #include "Request.h"
 #include "Uri.h"
 

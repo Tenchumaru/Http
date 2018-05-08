@@ -9,7 +9,7 @@ public:
 	public:
 		enum : unsigned short { Close = 0, BadRequest = 400, MethodNotAllowed = 405, PayloadTooLarge = 413 };
 
-		explicit Exception(unsigned short statusCode) : statusCode(statusCode), std::runtime_error("HttpParser") {}
+		explicit Exception(unsigned short statusCode) : std::runtime_error("HttpParser"), statusCode(statusCode) {}
 		~Exception() {}
 		unsigned short GetStatusCode() const { return statusCode; }
 		__declspec(property(get = GetStatusCode)) unsigned short const StatusCode;

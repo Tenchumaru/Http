@@ -3,7 +3,23 @@
 #include "FibrousTcpSocket.h"
 #include "Waiter.h"
 
-static size_t const stackSize= 8 * 1024;
+namespace {
+	size_t const stackSize = 0x10000;
+
+#ifndef _WIN32
+	void* ConvertThreadToFiber(void*) {
+		std::terminate();
+	}
+
+	void* CreateFiber(size_t, void(*)(void*), void*) {
+		std::terminate();
+	}
+
+	void* SwitchToFiber(void*) {
+		std::terminate();
+	}
+#endif
+}
 
 FibrousTcpSocketFactory::FibrousTcpSocketFactory() {}
 

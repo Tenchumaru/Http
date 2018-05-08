@@ -41,7 +41,6 @@ public:
 				"Upgrade-Insecure-Requests: 1\r\n"
 				"\r\n";
 			int const size = _countof(request) - 1;
-			char ch = request[size]; ch;
 			if(len < size) {
 				return -1;
 			}
@@ -104,7 +103,6 @@ public:
 				"Upgrade-Insecure-Requests: 1\r\n"
 				"\r\n";
 			int const size = _countof(request) - 1;
-			char ch = request[size]; ch;
 			if(len < size) {
 				return -1;
 			}
