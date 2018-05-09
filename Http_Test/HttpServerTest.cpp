@@ -56,6 +56,13 @@ public:
 			response.append(buf, len);
 			return len;
 		};
+		Sockets::OnPoll = [&](_Inout_ LPWSAPOLLFD fdArray, _In_ size_t fds, _In_ INT timeout) {
+			if(fds == 1) {
+				fdArray->revents = fdArray->events & (POLLIN | POLLOUT);
+				return 0;
+			}
+			return -1;
+		};
 		std::string path;
 		auto fn = [&path](Request const& request, Response& response) {
 			path = request.Uri.Path;
@@ -76,6 +83,13 @@ public:
 
 	TEST_METHOD(HttpServerListenWithoutHandler) {
 		// Arrange
+		Sockets::OnPoll = [&](_Inout_ LPWSAPOLLFD fdArray, _In_ size_t fds, _In_ INT timeout) {
+			if(fds == 1) {
+				fdArray->revents = fdArray->events & (POLLIN | POLLOUT);
+				return 0;
+			}
+			return -1;
+		};
 		SOCKET expectedSocket = INVALID_SOCKET;
 		Sockets::OnAccept = [&](SOCKET s, sockaddr* addr, int* addrlen) {
 			if(addr == nullptr || addrlen == nullptr) {
