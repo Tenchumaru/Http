@@ -1,6 +1,6 @@
 CXX  = clang++
 SRCS = $(wildcard *.cc)
-OBJS = $(SRCS:.cc=.o)
+OBJS = $(SRCS:.cc=.o) initialize_fiber.o switch_fiber.o
 DEPS = $(SRCS:.cc=.d)
 CXXFLAGS := -g -fdeclspec -fexceptions -pipe -std=c++14 -Wall -Werror $(CFLAGS)
 
