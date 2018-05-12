@@ -14,30 +14,15 @@ public:
 
 	TEST_METHOD(WaiterAdd) {
 		// Arrange
-		bool invoked= false;
-		SOCKET actualSocket;
-		long actualCmd;
-		u_long actualArg;
-		Sockets::OnIoctl= [&](SOCKET s, long cmd, u_long* argp) {
-			if(s == INVALID_SOCKET || argp == nullptr) {
-				return -1;
-			}
-			invoked= true;
-			actualSocket= s;
-			actualCmd= cmd;
-			actualArg= *argp;
-			return 0;
-		};
 		Waiter waiter;
 
 		// Act
 		waiter.Add(expectedSocket, POLLIN);
 
 		// Assert
-		Assert::IsTrue(invoked);
-		Assert::AreEqual(expectedSocket, actualSocket);
-		Assert::AreEqual(static_cast<decltype(actualCmd)>(FIONBIO), actualCmd);
-		Assert::AreEqual(1ul, actualArg);
+		auto* p = reinterpret_cast<std::vector<pollfd>*>(&waiter) + 2;
+		auto* next = reinterpret_cast<std::vector<pollfd>**>(p)[1];
+		Assert::AreEqual(1ull, next->size());
 	}
 
 	TEST_METHOD(WaiterWait) {

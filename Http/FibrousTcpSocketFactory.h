@@ -15,5 +15,5 @@ private:
 	std::function<void(SOCKET, short)> Await;
 
 	void Accept(SOCKET server, socklen_t sock_addr_size, fn_t onConnect) override;
-	void InvokeOnConnect();
+	static void InvokeOnConnect(void* parameter);
 };

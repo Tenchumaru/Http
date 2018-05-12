@@ -2,23 +2,35 @@
 #include "FibrousTcpSocketFactory.h"
 #include "FibrousTcpSocket.h"
 #include "Waiter.h"
+#ifdef _WIN32
+using FiberFn = LPFIBER_START_ROUTINE;
+#else
+# include "Fiber.h"
+#endif
 
 namespace {
 	size_t const stackSize = 0x10000;
 
-#ifndef _WIN32
-	void* ConvertThreadToFiber(void*) {
-		std::terminate();
-	}
-
-	void* CreateFiber(size_t, void(*)(void*), void*) {
-		std::terminate();
-	}
-
-	void* SwitchToFiber(void*) {
-		std::terminate();
-	}
+	void set_nonblocking(SOCKET s) {
+#ifdef _WIN32
+		u_long value = 1;
+		auto const result = ioctlsocket(s, FIONBIO, &value);
+		if(result != 0) {
+			std::cout << "set_nonblocking ioctlsocket failure: " << errno << std::endl;
+			throw std::runtime_error("set_nonblocking ioctlsocket failure");
+		}
+#else
+		auto result = fcntl(s, F_GETFL, 0);
+		if(result >= 0) {
+			result |= O_NONBLOCK;
+			result = fcntl(s, F_SETFL, result);
+		}
+		if(result != 0) {
+			perror("set_nonblocking fcntl failure");
+			throw std::runtime_error("set_nonblocking fcntl failure");
+		}
 #endif
+	}
 }
 
 FibrousTcpSocketFactory::FibrousTcpSocketFactory() {}
@@ -27,6 +39,7 @@ FibrousTcpSocketFactory::~FibrousTcpSocketFactory() {}
 
 void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn_t onConnect_) {
 	// Enable the server socket for asynchronous connections.
+	set_nonblocking(server);
 	onConnect = onConnect_;
 	Waiter waiter;
 	waiter.Add(server, POLLIN);
@@ -63,6 +76,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn
 					std::cout << "failed connection: " << errno << std::endl;
 					continue;
 				}
+				set_nonblocking(client);
 #ifdef _DEBUG
 				if(sock_addr_size == 16) {
 					std::cout << "new connection: " << client << '@' << std::hex << ntohl(u.ipv4.sin_addr.s_addr) << std::dec <<
@@ -75,12 +89,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn
 				// Create a fiber and invoke the hander on it.
 				void* fiber;
 				if(availableFibers.empty()) {
-					union {
-						decltype(&FibrousTcpSocketFactory::InvokeOnConnect) m;
-						LPFIBER_START_ROUTINE p;
-					} f{ &FibrousTcpSocketFactory::InvokeOnConnect };
-					static_assert(sizeof(f.m) == sizeof(f.p), "unexpected size");
-					fiber = CreateFiber(stackSize, f.p, this);
+					fiber = CreateFiber(stackSize, &FibrousTcpSocketFactory::InvokeOnConnect, this);
 				} else {
 					fiber = availableFibers.back();
 					availableFibers.pop_back();
@@ -110,10 +119,11 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn
 	}
 }
 
-void FibrousTcpSocketFactory::InvokeOnConnect() {
+void FibrousTcpSocketFactory::InvokeOnConnect(void* parameter) {
+	auto* p = reinterpret_cast<FibrousTcpSocketFactory*>(parameter);
 	for(;;) {
-		onConnect(FibrousTcpSocket(client, Await));
-		availableFibers.push_back(GetCurrentFiber());
-		SwitchToFiber(mainFiber);
+		p->onConnect(FibrousTcpSocket(p->client, p->Await));
+		p->availableFibers.push_back(GetCurrentFiber());
+		SwitchToFiber(p->mainFiber);
 	}
 }
