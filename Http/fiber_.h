@@ -23,8 +23,8 @@ struct fiber_t {
 	uint16_t _1;
 	FiberFn fn;
 	void* parameter;
-	char* stack;
 #ifdef _WIN32
+	void* _2;
 	SETJMP_FLOAT128 Xmm6;
 	SETJMP_FLOAT128 Xmm7;
 	SETJMP_FLOAT128 Xmm8;
@@ -39,8 +39,6 @@ struct fiber_t {
 };
 static_assert(sizeof(FiberFn) == sizeof(void*), "unexpected FiberFn size");
 static_assert(sizeof(StartFn) == sizeof(void*), "unexpected StartFn size");
-static_assert(sizeof(fiber_t) % (4 * sizeof(void*)) == 0, "unexpected fiber_t size");
-static_assert(sizeof(fiber_t) <= 256, "fiber_t too large");
 
 extern "C" {
 	int initialize_fiber(fiber_t*);

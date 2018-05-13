@@ -37,19 +37,18 @@ bool ConvertFiberToThread() {
 void* CreateFiber(size_t stackSize, FiberFn fn, void* parameter) {
 	stackSize = stackSize ? (stackSize + stackBlockSize - 1) & -stackBlockSize : stackBlockSize;
 	auto* stack = new char[stackSize];
-	auto* fiber = reinterpret_cast<fiber_t*>(stack + stackSize - 256);
+	auto* fiber = reinterpret_cast<fiber_t*>(stack);
 	initialize_fiber(fiber);
 	fiber->rip = StartFiber;
-	fiber->rsp = reinterpret_cast<char*>(fiber) - 72;
+	fiber->rsp = stack + stackSize - 72; // red zone (64), alignment (8)
 	fiber->fn = fn;
 	fiber->parameter = parameter;
-	fiber->stack = stack;
 	return fiber;
 }
 
 void DeleteFiber(void* fiber) {
-	auto* p = reinterpret_cast<fiber_t*>(fiber);
-	delete[] p->stack;
+	auto* p = reinterpret_cast<char*>(fiber);
+	delete[] p;
 }
 
 void* GetCurrentFiber() {
