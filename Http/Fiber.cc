@@ -35,7 +35,7 @@ bool ConvertFiberToThread() {
 }
 
 void* CreateFiber(size_t stackSize, FiberFn fn, void* parameter) {
-	stackSize = (stackSize + stackBlockSize - 1) & -stackBlockSize;
+	stackSize = stackSize ? (stackSize + stackBlockSize - 1) & -stackBlockSize : stackBlockSize;
 	auto* stack = new char[stackSize];
 	auto* fiber = reinterpret_cast<fiber_t*>(stack + stackSize - 256);
 	initialize_fiber(fiber);
