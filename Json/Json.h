@@ -4,16 +4,13 @@ class Value {
 public:
 	enum class Type { Null, Boolean, Number, Array, Object, String };
 
-	explicit Value(nullptr_t) noexcept : type(Type::Null) {}
-	explicit Value(bool b) noexcept : number(b), type(Type::Boolean) {}
-	explicit Value(double number) noexcept : number(number), type(Type::Number) {}
-	explicit Value(std::string&& string) : string(new std::string(string)), type(Type::String) {}
+	// Do not create your own Value instance by using std::forward or std::move
+	// to move a Value instance.  A RootValue instance must own all Value
+	// instances in order to ensure memory is properly reclaimed.
 	Value()= default;
-	Value(Value const&)= default;
 	Value(Value&&)= default;
-	~Value()= default;
-	Value& operator=(Value const&)= default;
 	Value& operator=(Value&&)= default;
+	~Value()= default;
 
 	bool ToBoolean() const noexcept { return static_cast<bool>(number); }
 	double ToNumber() const noexcept { return number; }
@@ -25,6 +22,15 @@ public:
 
 protected:
 	friend class Parser;
+
+	// These are protected to ensure the RootValue created by a Parser instance
+	// controls the lifetime of all Value instances in its object graph.
+	Value(Value const&)= default;
+	Value& operator=(Value const&)= default;
+	explicit Value(nullptr_t) noexcept : type(Type::Null) {}
+	explicit Value(bool b) noexcept : number(b), type(Type::Boolean) {}
+	explicit Value(double number) noexcept : number(number), type(Type::Number) {}
+	explicit Value(std::string&& string) : string(new std::string(string)), type(Type::String) {}
 
 	union {
 		double number;
@@ -86,6 +92,10 @@ private:
 void WriteJson(std::ostream& os, double d);
 void WriteJson(std::ostream& os, char const* s);
 void WriteJson(std::ostream& os, wchar_t const* s);
+
+inline void WriteJson(std::ostream& os, Value const& value) {
+	value.Write(os);
+}
 
 inline void WriteJson(std::ostream& os, nullptr_t) {
 	os << "null";
