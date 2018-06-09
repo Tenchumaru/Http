@@ -74,12 +74,13 @@ void Value::Write(std::ostream& os) const {
 	}
 }
 
-Value Parser::Parse(char const* s) {
-	return Parser{}.InternalParse(s);
+Value Parser::Parse(char const* text) {
+	return Parser(text).InternalParse();
 }
 
-Value Parser::InternalParse(char const* s_) {
-	next= text= s_;
+Parser::Parser(char const* text) : next(text), text(text) {}
+
+Value Parser::InternalParse() {
 	auto value = ParseValue();
 	SkipWhitespace();
 	if(*next) {

@@ -37,12 +37,7 @@ private:
 
 class Parser {
 public:
-	Parser(Parser const&)= default;
-	Parser(Parser&&)= default;
-	~Parser()= default;
-	Parser& operator=(Parser const&)= default;
-	Parser& operator=(Parser&&)= default;
-	static Value Parse(char const* s);
+	static Value Parse(char const* text);
 
 private:
 	using char_t= std::string::value_type;
@@ -50,8 +45,14 @@ private:
 	char const* text;
 	char const* next;
 
-	Parser() {}
-	Value InternalParse(char const* s);
+	Parser() = delete;
+	Parser(char const* text);
+	Parser(Parser const&)= delete;
+	Parser(Parser&&)= delete;
+	~Parser()= default;
+	Parser& operator=(Parser const&)= delete;
+	Parser& operator=(Parser&&)= delete;
+	Value InternalParse();
 	char_t Get(bool acceptWhitespace= false) noexcept;
 	char_t Next(bool acceptWhitespace= false) noexcept;
 	Value ParseArray();
