@@ -1,3 +1,6 @@
+# Ignore temporary files.
+*.sw[op]
+
 # Ignore INL files since all of my projects generate them as part of the build process.
 *.inl
 
