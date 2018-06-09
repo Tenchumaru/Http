@@ -1,6 +1,40 @@
 #include "stdafx.h"
 #include "Json.h"
 
+Value::Value() noexcept : type(Type::Null) {}
+
+Value::Value(Value&& that) noexcept {
+	number = that.number;
+	type = that.type;
+	that.type = Type::Null;
+}
+
+Value::~Value() {
+	switch(type) {
+	case Type::Array:
+		delete array;
+		break;
+	case Type::Object:
+		delete object;
+		break;
+	case Type::String:
+		delete string;
+		break;
+	case Type::Boolean:
+	case Type::Null:
+	case Type::Number:
+		break;
+	}
+}
+
+Value& Value::operator=(Value&& that) noexcept {
+	this->~Value();
+	number = that.number;
+	type = that.type;
+	that.type = Type::Null;
+	return *this;
+}
+
 void Value::Write(std::ostream& os) const {
 	switch(type) {
 	case Type::Null:
@@ -40,66 +74,18 @@ void Value::Write(std::ostream& os) const {
 	}
 }
 
-RootValue::RootValue(RootValue&& that) noexcept {
-	static_assert(sizeof(number) >= sizeof(array), "invalid size");
-	type= that.GetType();
-	number= that.ToNumber();
-	that.type= Type::Null;
-}
-
-RootValue::RootValue(Value const& value) noexcept {
-	type= value.GetType();
-	number= value.ToNumber();
-}
-
-RootValue& RootValue::operator=(RootValue&& that) noexcept {
-	Clear(*this);
-	type= that.GetType();
-	number= that.ToNumber();
-	that.type= Type::Null;
-	return *this;
-}
-
-RootValue::~RootValue() {
-	Clear(*this);
-}
-
-void Value::Clear(Value& value) noexcept {
-	switch(value.type) {
-	case Type::Array:
-		for(auto& child : *value.array) {
-			Clear(child);
-		}
-		delete value.array;
-		break;
-	case Type::Object:
-		for(auto& member : *value.object) {
-			Clear(member.second);
-		}
-		delete value.object;
-		break;
-	case Type::String:
-		delete value.string;
-		break;
-	case Type::Boolean:
-	case Type::Null:
-	case Type::Number:
-		break;
-	}
-}
-
-RootValue Parser::Parse(char const* s) {
+Value Parser::Parse(char const* s) {
 	return Parser{}.InternalParse(s);
 }
 
-RootValue Parser::InternalParse(char const* s_) {
+Value Parser::InternalParse(char const* s_) {
 	next= text= s_;
-	auto const value= ParseValue();
+	auto value = ParseValue();
 	SkipWhitespace();
 	if(*next) {
 		throw std::runtime_error("extra input");
 	}
-	return RootValue(value);
+	return value;
 }
 
 Parser::char_t Parser::Get(bool acceptWhitespace/*= false*/) noexcept {
