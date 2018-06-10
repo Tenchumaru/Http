@@ -11,6 +11,7 @@ public:
 	explicit Value(bool b) noexcept : number(b), type(Type::Boolean) {}
 	explicit Value(double number) noexcept : number(number), type(Type::Number) {}
 	explicit Value(std::string&& string) : string(new std::string(string)), type(Type::String) {}
+	explicit Value(char const* string) : Value(std::string(string)) {}
 	Value& operator=(Value&& that) noexcept;
 	Value& operator=(Value const&)= delete;
 	~Value();
@@ -46,7 +47,7 @@ private:
 	char const* next;
 
 	Parser() = delete;
-	Parser(char const* text);
+	Parser(char const* text) noexcept;
 	Parser(Parser const&)= delete;
 	Parser(Parser&&)= delete;
 	~Parser()= default;

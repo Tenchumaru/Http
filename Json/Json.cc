@@ -78,7 +78,7 @@ Value Parser::Parse(char const* text) {
 	return Parser(text).InternalParse();
 }
 
-Parser::Parser(char const* text) : next(text), text(text) {}
+Parser::Parser(char const* text) noexcept : next(text), text(text) {}
 
 Value Parser::InternalParse() {
 	auto value = ParseValue();
