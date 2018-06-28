@@ -27,6 +27,18 @@ Value::~Value() {
 	}
 }
 
+Value::Value(std::unordered_map<std::string, Value>&& values) {
+	object = new std::unordered_map<std::string, Value>;
+	object->swap(values);
+	type = Type::Object;
+}
+
+Value::Value(std::vector<Value>&& values) {
+	array = new std::vector<Value>;
+	array->swap(values);
+	type = Type::Array;
+}
+
 Value& Value::operator=(Value&& that) noexcept {
 	this->~Value();
 	number = that.number;
@@ -325,6 +337,38 @@ Value Parser::ParseValue() {
 void Parser::SkipWhitespace() noexcept {
 	while(*next && (*next == '\t' || *next == '\n' || *next == '\r' || *next == ' ')) {
 		++next;
+	}
+}
+
+void FromJson(Value const& json, bool& b) {
+	if(json.GetType() == Value::Type::Boolean) {
+		b = json.ToBoolean();
+	} else {
+		throw std::runtime_error("json not Boolean");
+	}
+}
+
+void FromJson(Value const& json, double& d) {
+	if(json.GetType() == Value::Type::Number) {
+		d = json.ToNumber();
+	} else {
+		throw std::runtime_error("json not number");
+	}
+}
+
+void FromJson(Value const& json, std::string& s) {
+	if(json.GetType() == Value::Type::String) {
+		s = json.ToString();
+	} else {
+		throw std::runtime_error("json not string");
+	}
+}
+
+void FromJson(Value const& json, void*& p) {
+	if(json.GetType() == Value::Type::Null) {
+		p = nullptr;
+	} else {
+		throw std::runtime_error("json not null");
 	}
 }
 
