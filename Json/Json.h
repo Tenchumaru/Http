@@ -173,9 +173,7 @@ template<typename T>
 std::enable_if_t<has_mapped_type<T>::value && is_string<typename T::key_type>::value> WriteJson(std::ostream& os, T const& m) {
 	os << '{';
 	for(typename T::const_iterator it = m.cbegin(), end = m.cend(); it != end; ) {
-		WriteJson(os, it->first);
-		os << ':';
-		WriteJson(os, it->second);
+		WriteJsonObjectMember(os, it->first, it->second);
 		if(++it != end) {
 			os << ',';
 		}
@@ -187,9 +185,7 @@ template<typename T>
 std::enable_if_t<has_mapped_type<T>::value && is_integer<typename T::key_type>::value> WriteJson(std::ostream& os, T const& m) {
 	os << '{';
 	for(typename T::const_iterator it = m.cbegin(), end = m.cend(); it != end; ) {
-		WriteJson(os, std::to_string(it->first));
-		os << ':';
-		WriteJson(os, it->second);
+		WriteJsonObjectMember(os, std::to_string(it->first), it->second);
 		if(++it != end) {
 			os << ',';
 		}
@@ -207,4 +203,18 @@ std::enable_if_t<is_iterable<T>::value> WriteJson(std::ostream& os, T const& m) 
 		}
 	}
 	os << ']';
+}
+
+template<typename T, typename... Types>
+void WriteJsonObjectMember(std::ostream& os, std::string const& name, T const& value, Types... rest) {
+	WriteJsonObjectMember(os, name, value);
+	os << ',';
+	WriteJsonObjectMember(os, rest...);
+}
+
+template<typename T>
+void WriteJsonObjectMember(std::ostream& os, std::string const& name, T const& value) {
+	WriteJson(os, name);
+	os << ':';
+	WriteJson(os, value);
 }
