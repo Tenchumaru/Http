@@ -218,3 +218,10 @@ void WriteJsonObjectMember(std::ostream& os, std::string const& name, T const& v
 	os << ':';
 	WriteJson(os, value);
 }
+
+template<typename... Types>
+void WriteJsonObject(std::ostream& os, Types... rest) {
+	os << '{';
+	WriteJsonObjectMember(os, rest...);
+	os << '}';
+}
