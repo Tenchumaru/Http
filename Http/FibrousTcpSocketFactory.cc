@@ -86,7 +86,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn
 				}
 #endif
 
-				// Create a fiber and invoke the hander on it.
+				// Create a fiber and invoke the handler on it.
 				void* fiber;
 				if(availableFibers.empty()) {
 					fiber = CreateFiber(stackSize, &FibrousTcpSocketFactory::InvokeOnConnect, this);

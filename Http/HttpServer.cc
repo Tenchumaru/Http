@@ -9,7 +9,9 @@
 // continue, possibly parsing and producing the next request if the first
 // becomes blocked.  However, since it's all the same socket, the client will
 // expect the responses in the same order as the requests.  Buffer out-of-order
-// responses until the preceding responses are sent.
+// responses until the preceding responses are sent.  Additionally, if a later
+// request depends on the outcome of an earlier request, this will necessitate
+// synchronization to ensure effects occur in the expected order.
 
 HttpServer::HttpServer() {}
 
