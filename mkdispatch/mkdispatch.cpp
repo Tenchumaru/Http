@@ -194,9 +194,9 @@ namespace {
 		}
 	}
 
-	void Print(Node const& node, int level = 1);
+	void Print(Node const& node, int level = 1, int parameterIndex = 0);
 
-	void PrintCompare(map::value_type const& pair, int level) {
+	void PrintCompare(map::value_type const& pair, int level, int parameterIndex) {
 		auto tabs = std::string(level, '\t');
 		if(!pair.second.prefix.empty()) {
 			std::cout << tabs;
@@ -206,32 +206,32 @@ namespace {
 				std::cout << "if(memcmp(p + " << pair.second.index << ", \"";
 				std::cout << pair.second.prefix << "\", " << pair.second.prefix.size() << ") == 0) {" << std::endl;
 			}
-			Print(pair.second, level + 1);
+			Print(pair.second, level + 1, parameterIndex);
 			std::cout << tabs << '}' << std::endl;
 		} else {
-			Print(pair.second, level);
+			Print(pair.second, level, parameterIndex);
 		}
 	}
 
-	void Print(Node const& node, int level /*= 1*/) {
+	void Print(Node const& node, int level /*= 1*/, int parameterIndex /*= 0*/) {
 		auto tabs = std::string(level, '\t');
 		if(!node.nodes.empty()) {
 			if(node.nodes.size() >= 2 || node.nodes.cbegin()->first != flag) {
 				std::cout << tabs << "switch(p[" << (node.index + node.prefix.size()) << "]) {" << std::endl;
-				std::for_each(node.nodes.crbegin(), node.nodes.crend(), [level, &tabs](map::value_type const& pair) {
+				std::for_each(node.nodes.crbegin(), node.nodes.crend(), [level, parameterIndex, &tabs](map::value_type const& pair) {
 					if(pair.first == flag) {
 						return;
 					}
 					std::cout << tabs << "case '" << pair.first << "':" << std::endl;
-					PrintCompare(pair, level + 1);
+					PrintCompare(pair, level + 1, parameterIndex);
 					std::cout << tabs << "\tbreak;" << std::endl;
 				});
 				std::cout << tabs << '}' << std::endl;
 			}
 			auto const& pair = *node.nodes.cbegin();
 			if(pair.first == flag) {
-				std::cout << tabs << "p = collect_parameter(p, " << (pair.second.index) << ");" << std::endl;
-				PrintCompare(pair, level);
+				std::cout << tabs << "char const* p" << parameterIndex << " = collect_parameter(p, " << (pair.second.index) << ");" << std::endl;
+				PrintCompare(pair, level, parameterIndex + 1);
 			}
 		}
 		if(!node.fn.empty()) {
