@@ -14,6 +14,8 @@ struct Node {
 using map = decltype(Node::nodes);
 
 namespace {
+	char constexpr flag = '\x1e';
+
 	Node root;
 
 	void InternalParse(std::string const& line, size_t index, Node& node) {
@@ -93,7 +95,20 @@ namespace {
 	}
 
 	void Parse(vector const& lines) {
-		std::for_each(lines.cbegin(), lines.cend(), [](std::string const& line) { InternalParse(line, 0, root); });
+		std::for_each(lines.cbegin(), lines.cend(), [](std::string const& line) {
+			std::string processedLine;
+			std::string::size_type i = 0, j;
+			while(j = line.find(':', i), j != std::string::npos) {
+				processedLine.append(line.cbegin() + i, line.cbegin() + j);
+				processedLine += flag;
+				i = line.find('/', j);
+				if(i == std::string::npos) {
+					i = line.size();
+				}
+			}
+			processedLine.append(line.substr(i));
+			InternalParse(processedLine, 0, root);
+		});
 	}
 
 	void Dump(Node const& node, int level = 0) {
@@ -124,21 +139,25 @@ namespace {
 		}
 	}
 
-	void Print(Node const& node) {
+	void Print(Node const& node, int level = 1) {
+		auto tabs = std::string(level, '\t');
 		if(!node.nodes.empty()) {
-			std::vector<std::pair<map::key_type, map::mapped_type>> v(node.nodes.cbegin(), node.nodes.cend());
-			std::sort(v.begin(), v.end(), [](auto const& left, auto const& right) {
-				return left.first < right.first;
+			std::cout << tabs << "switch(p[" << (node.index + node.prefix.size()) << "]) {" << std::endl;
+			std::for_each(node.nodes.cbegin(), node.nodes.cend(), [level, &tabs](map::value_type const& pair) {
+				std::cout << tabs << "case '" << pair.first << "':";
+				if(!pair.second.prefix.empty()) {
+					std::cout << " if(memcmp(p + " << (pair.second.index) << ", \"";
+					std::cout << pair.second.prefix << "\", " << pair.second.prefix.size() << ") == 0)";
+				}
+				std::cout << " {" << std::endl;
+				Print(pair.second, level + 1);
+				std::cout << tabs << "\t} break;" << std::endl;
 			});
-			std::for_each(v.crbegin(), v.crend(), [](auto const& pair) {
-				std::cout << "\tif(p[" << pair.second.index << ']';
-				std::cout << " == '" << pair.first << "') {" << std::endl;
-				Print(pair.second);
-				std::cout << "\t}" << std::endl;
-			});
+			std::cout << tabs << "}" << std::endl;
 		}
 		if(!node.line.empty()) {
-			std::cout << "\t// This is a terminating state for \"" << node.line << '"' << std::endl;
+			std::cout << tabs << "if(p[" << (node.index + node.prefix.size());
+			std::cout << "] == '\\r') return doit(\"" << node.line << "\");" << std::endl;
 		}
 	}
 }
@@ -188,5 +207,5 @@ int main() {
 
 	// TODO:  print the Dispatcher class.
 	Dump(root);
-	//Print(root);
+	Print(root);
 }
