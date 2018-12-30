@@ -1,10 +1,15 @@
 #include "pch.h"
 
-using vector = std::vector<std::string>;
+struct Request {
+	std::string line;
+	std::string fn;
+};
+
+using vector = std::vector<Request>;
 
 struct Node {
 	std::map<char, Node> nodes;
-	std::string line;
+	std::string fn;
 	std::string prefix;
 	size_t index;
 };
@@ -16,13 +21,13 @@ namespace {
 
 	Node root;
 
-	void InternalParse(std::string const& line, size_t index, Node& node) {
+	void InternalParse(std::string const& line, std::string const& fn, size_t index, Node& node) {
 		// If the node is empty (i.e., has neither nodes nor a prefix), set its
 		// line and prefix.
 		auto& prefix = node.prefix;
 		auto suffix = line.substr(index);
 		if(node.nodes.empty() && prefix.empty()) {
-			node.line = line;
+			node.fn = fn;
 			std::swap(prefix, suffix);
 			node.index = index;
 		} else {
@@ -65,8 +70,8 @@ namespace {
 					index: S.size(),
 				}
 				*/
-				node.nodes = { { *pair.first, { node.nodes, node.line, prefix.substr(divergenceIndex + 1), node.index + divergenceIndex + 1 } } };
-				node.line.clear();
+				node.nodes = { { *pair.first, { node.nodes, node.fn, prefix.substr(divergenceIndex + 1), node.index + divergenceIndex + 1 } } };
+				node.fn.clear();
 				prefix.erase(divergenceIndex);
 				index += divergenceIndex;
 				suffix.erase(0, divergenceIndex);
@@ -79,15 +84,15 @@ namespace {
 
 			// If the suffix is empty, replace this node's line.
 			if(suffix.empty()) {
-				if(!node.line.empty()) {
+				if(!node.fn.empty()) {
 					// Warn about replacement.
-					std::cout << "warning: replacing \"" << node.line << "\" with \"" << line << '"' << std::endl;
+					std::cout << "warning: replacing \"" << node.fn << "\" with \"" << fn << '"' << std::endl;
 				}
-				node.line = line;
+				node.fn = fn;
 			} else {
 				// Otherwise, recurse into the child node.
 				auto& child = node.nodes[suffix[0]];
-				InternalParse(line, index + 1, child);
+				InternalParse(line, fn, index + 1, child);
 			}
 		}
 	}
@@ -119,28 +124,28 @@ namespace {
 		*/
 		auto i = node.prefix.find(flag);
 		if(i != std::string::npos) {
-			node.nodes = { { flag, { node.nodes, node.line, node.prefix.substr(i + 1), node.index + i + 1 } } };
-			node.line.clear();
+			node.nodes = { { flag, { node.nodes, node.fn, node.prefix.substr(i + 1), node.index + i + 1 } } };
+			node.fn.clear();
 			node.prefix.erase(i);
 		}
 		std::for_each(node.nodes.begin(), node.nodes.end(), [](map::value_type& pair) { ReplaceParameter(pair.second); });
 	}
 
-	void Parse(vector const& lines) {
+	void Parse(vector const& requests) {
 		// Add each line, with parameter names removed, to the node structure.
-		std::for_each(lines.cbegin(), lines.cend(), [](std::string const& line) {
+		std::for_each(requests.cbegin(), requests.cend(), [](Request const& request) {
 			std::string processedLine;
 			std::string::size_type i = 0, j;
-			while(j = line.find(':', i), j != std::string::npos) {
-				processedLine.append(line.cbegin() + i, line.cbegin() + j);
+			while(j = request.line.find(':', i), j != std::string::npos) {
+				processedLine.append(request.line.cbegin() + i, request.line.cbegin() + j);
 				processedLine += flag;
-				i = line.find('/', j);
+				i = request.line.find('/', j);
 				if(i == std::string::npos) {
-					i = line.size();
+					i = request.line.size();
 				}
 			}
-			processedLine.append(line.substr(i));
-			InternalParse(processedLine, 0, root);
+			processedLine.append(request.line.substr(i));
+			InternalParse(processedLine, request.fn, 0, root);
 		});
 
 		// Replace any parameters in prefixes with an additional node.  This
@@ -154,8 +159,8 @@ namespace {
 			std::cout << '"' << prefix << "\" ";
 		}
 		std::cout << '(' << node.index << "): ";
-		if(!node.line.empty()) {
-			std::cout << '"' << node.line;
+		if(!node.fn.empty()) {
+			std::cout << '"' << node.fn;
 			if(node.nodes.empty()) {
 				std::cout << '"' << std::endl;
 			} else {
@@ -216,51 +221,51 @@ namespace {
 				PrintCompare(pair, level);
 			}
 		}
-		if(!node.line.empty()) {
+		if(!node.fn.empty()) {
 			std::cout << tabs << "if(p[" << (node.index + node.prefix.size());
-			std::cout << "] == '\\r') return doit(\"" << node.line << "\");" << std::endl;
+			std::cout << "] == '\\r') return " << node.fn << "();" << std::endl;
 		}
 	}
 }
 
 int main() {
 	// TODO:  read the requests.
-	std::vector<std::string> requests = {
-		"POST /extensions/:clientId/auth/secret",
-		"GET /extensions/:clientId/auth/secret",
-		"DELETE /extensions/:clientId/auth/secret",
-		"GET /extensions/:clientId/live_activated_channels",
-		"PUT /extensions/:clientId/:version/required_configuration",
-		"PUT /extensions/:clientId/configurations",
-		"GET /extensions/:clientId/configurations/channels/:channelId",
-		"GET /extensions/:clientId/configurations/segments/broadcaster",
-		"GET /extensions/:clientId/configurations/segments/developer",
-		"GET /extensions/:clientId/configurations/segments/global",
-		"POST /extensions/message/:channelId",
-		"POST /extensions/message/all",
-		"POST /extensions/:clientId/:version/channels/:channelId/chat",
-		"GET /helix/analytics/extensions",
-		"GET /helix/analytics/games",
-		"GET /helix/bits/leaderboard",
-		"POST /helix/clips",
-		"GET /helix/clips",
-		"POST /helix/entitlements/upload",
-		"GET /helix/entitlements/codes",
-		"POST /helix/entitlements/codes",
-		"GET /helix/games/top",
-		"GET /helix/games",
-		"GET /helix/streams",
-		"GET /helix/streams/metadata",
-		"POST /helix/streams/markers",
-		"GET /helix/streams/markers",
-		"GET /helix/users",
-		"GET /helix/users/follows",
-		"PUT /helix/users",
-		"GET /helix/users/extensions/list",
-		"GET /helix/users/extensions",
-		"PUT /helix/users/extensions",
-		"GET /helix/videos",
-		"GET /helix/webhooks/subscriptions",
+	vector requests = {
+		{ "POST /extensions/:clientId/auth/secret", "POST_extensions__clientId_auth_secret" },
+		{ "GET /extensions/:clientId/auth/secret", "GET_extensions__clientId_auth_secret" },
+		{ "DELETE /extensions/:clientId/auth/secret", "DELETE_extensions__clientId_auth_secret" },
+		{ "GET /extensions/:clientId/live_activated_channels", "GET_extensions__clientId_live_activated_channels" },
+		{ "PUT /extensions/:clientId/:version/required_configuration", "PUT_extensions__clientId__version_required_configuration" },
+		{ "PUT /extensions/:clientId/configurations", "PUT_extensions__clientId_configurations" },
+		{ "GET /extensions/:clientId/configurations/channels/:channelId", "GET_extensions__clientId_configurations_channels__channelId" },
+		{ "GET /extensions/:clientId/configurations/segments/broadcaster", "GET_extensions__clientId_configurations_segments_broadcaster" },
+		{ "GET /extensions/:clientId/configurations/segments/developer", "GET_extensions__clientId_configurations_segments_developer" },
+		{ "GET /extensions/:clientId/configurations/segments/global", "GET_extensions__clientId_configurations_segments_global" },
+		{ "POST /extensions/message/:channelId", "POST_extensions_message__channelId" },
+		{ "POST /extensions/message/all", "POST_extensions_message_all" },
+		{ "POST /extensions/:clientId/:version/channels/:channelId/chat", "POST_extensions__clientId__version_channels__channelId_chat" },
+		{ "GET /helix/analytics/extensions", "GET_helix_analytics_extensions" },
+		{ "GET /helix/analytics/games", "GET_helix_analytics_games" },
+		{ "GET /helix/bits/leaderboard", "GET_helix_bits_leaderboard" },
+		{ "POST /helix/clips", "POST_helix_clips" },
+		{ "GET /helix/clips", "GET_helix_clips" },
+		{ "POST /helix/entitlements/upload", "POST_helix_entitlements_upload" },
+		{ "GET /helix/entitlements/codes", "GET_helix_entitlements_codes" },
+		{ "POST /helix/entitlements/codes", "POST_helix_entitlements_codes" },
+		{ "GET /helix/games/top", "GET_helix_games_top" },
+		{ "GET /helix/games", "GET_helix_games" },
+		{ "GET /helix/streams", "GET_helix_streams" },
+		{ "GET /helix/streams/metadata", "GET_helix_streams_metadata" },
+		{ "POST /helix/streams/markers", "POST_helix_streams_markers" },
+		{ "GET /helix/streams/markers", "GET_helix_streams_markers" },
+		{ "GET /helix/users", "GET_helix_users" },
+		{ "GET /helix/users/follows", "GET_helix_users_follows" },
+		{ "PUT /helix/users", "PUT_helix_users" },
+		{ "GET /helix/users/extensions/list", "GET_helix_users_extensions_list" },
+		{ "GET /helix/users/extensions", "GET_helix_users_extensions" },
+		{ "PUT /helix/users/extensions", "PUT_helix_users_extensions" },
+		{ "GET /helix/videos", "GET_helix_videos" },
+		{ "GET /helix/webhooks/subscriptions", "GET_helix_webhooks_subscriptions" },
 	};
 
 	// Parse the requests into nodes.
