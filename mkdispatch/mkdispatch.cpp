@@ -1,7 +1,5 @@
 #include "pch.h"
 
-// This implementation does not completely handle variables in the path (e.g. :clientId).
-
 using vector = std::vector<std::string>;
 
 struct Node {
@@ -94,7 +92,42 @@ namespace {
 		}
 	}
 
+	void ReplaceParameter(Node& node) {
+		/*
+		before:
+		node {
+			nodes: {N},
+			line: S + A + flag + B,
+			prefix: A + flag + B,
+			index: S.size(),
+		}
+
+		after:
+		node {
+			nodes: {
+				flag: {
+					nodes: {N},
+					line: S + A + flag + B,
+					prefix: B,
+					index: S.size() + A.size() + 1,
+				},
+			},
+			line: "",
+			prefix: A,
+			index: S.size(),
+		}
+		*/
+		auto i = node.prefix.find(flag);
+		if(i != std::string::npos) {
+			node.nodes = { { flag, { node.nodes, node.line, node.prefix.substr(i + 1), node.index + i + 1 } } };
+			node.line.clear();
+			node.prefix.erase(i);
+		}
+		std::for_each(node.nodes.begin(), node.nodes.end(), [](map::value_type& pair) { ReplaceParameter(pair.second); });
+	}
+
 	void Parse(vector const& lines) {
+		// Add each line, with parameter names removed, to the node structure.
 		std::for_each(lines.cbegin(), lines.cend(), [](std::string const& line) {
 			std::string processedLine;
 			std::string::size_type i = 0, j;
@@ -109,6 +142,10 @@ namespace {
 			processedLine.append(line.substr(i));
 			InternalParse(processedLine, 0, root);
 		});
+
+		// Replace any parameters in prefixes with an additional node.  This
+		// will allow the printing logic to represent them properly.
+		ReplaceParameter(root);
 	}
 
 	void Dump(Node const& node, int level = 0) {
@@ -139,35 +176,44 @@ namespace {
 		}
 	}
 
-	void Print(Node const& node, int level = 1) {
+	void Print(Node const& node, int level = 1);
+
+	void PrintCompare(map::value_type const& pair, int level) {
+		auto tabs = std::string(level, '\t');
+		if(!pair.second.prefix.empty()) {
+			std::cout << tabs;
+			if(pair.second.prefix.size() == 1) {
+				std::cout << "if(p[" << pair.second.index << "] == '" << pair.second.prefix << "') {" << std::endl;
+			} else {
+				std::cout << "if(memcmp(p + " << pair.second.index << ", \"";
+				std::cout << pair.second.prefix << "\", " << pair.second.prefix.size() << ") == 0) {" << std::endl;
+			}
+			Print(pair.second, level + 1);
+			std::cout << tabs << '}' << std::endl;
+		} else {
+			Print(pair.second, level);
+		}
+	}
+
+	void Print(Node const& node, int level /*= 1*/) {
 		auto tabs = std::string(level, '\t');
 		if(!node.nodes.empty()) {
-			std::cout << tabs << "switch(p[" << (node.index + node.prefix.size()) << "]) {" << std::endl;
-			std::for_each(node.nodes.crbegin(), node.nodes.crend(), [level, &tabs](map::value_type const& pair) {
-				if(pair.first == flag) {
-					return;
-				}
-				std::cout << tabs << "case '" << pair.first << "':" << std::endl;
-				if(!pair.second.prefix.empty()) {
-					std::cout << tabs << "\tif(memcmp(p + " << (pair.second.index) << ", \"";
-					std::cout << pair.second.prefix << "\", " << pair.second.prefix.size() << ") == 0) {" << std::endl;
-					Print(pair.second, level + 2);
-					std::cout << tabs << "\t}" << std::endl;
-				} else {
-					Print(pair.second, level + 1);
-				}
-				std::cout << tabs << "\tbreak;" << std::endl;
-			});
-			std::cout << tabs << '}' << std::endl;
+			if(node.nodes.size() >= 2 || node.nodes.cbegin()->first != flag) {
+				std::cout << tabs << "switch(p[" << (node.index + node.prefix.size()) << "]) {" << std::endl;
+				std::for_each(node.nodes.crbegin(), node.nodes.crend(), [level, &tabs](map::value_type const& pair) {
+					if(pair.first == flag) {
+						return;
+					}
+					std::cout << tabs << "case '" << pair.first << "':" << std::endl;
+					PrintCompare(pair, level + 1);
+					std::cout << tabs << "\tbreak;" << std::endl;
+				});
+				std::cout << tabs << '}' << std::endl;
+			}
 			auto const& pair = *node.nodes.cbegin();
 			if(pair.first == flag) {
 				std::cout << tabs << "p = collect_parameter(p, " << (pair.second.index) << ");" << std::endl;
-				if(!pair.second.prefix.empty()) {
-					std::cout << tabs << "if(memcmp(p + " << (pair.second.index) << ", \"";
-					std::cout << pair.second.prefix << "\", " << pair.second.prefix.size() << ") == 0) {" << std::endl;
-				}
-				Print(pair.second, level + 1);
-				std::cout << tabs << '}' << std::endl;
+				PrintCompare(pair, level);
 			}
 		}
 		if(!node.line.empty()) {
