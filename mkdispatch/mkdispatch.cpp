@@ -1,11 +1,11 @@
 #include "pch.h"
 
-// This implementation does not handle variables in the path (e.g. :clientId).
+// This implementation does not completely handle variables in the path (e.g. :clientId).
 
 using vector = std::vector<std::string>;
 
 struct Node {
-	std::unordered_map<char, Node> nodes;
+	std::map<char, Node> nodes;
 	std::string line;
 	std::string prefix;
 	size_t index;
@@ -143,17 +143,32 @@ namespace {
 		auto tabs = std::string(level, '\t');
 		if(!node.nodes.empty()) {
 			std::cout << tabs << "switch(p[" << (node.index + node.prefix.size()) << "]) {" << std::endl;
-			std::for_each(node.nodes.cbegin(), node.nodes.cend(), [level, &tabs](map::value_type const& pair) {
-				std::cout << tabs << "case '" << pair.first << "':";
-				if(!pair.second.prefix.empty()) {
-					std::cout << " if(memcmp(p + " << (pair.second.index) << ", \"";
-					std::cout << pair.second.prefix << "\", " << pair.second.prefix.size() << ") == 0)";
+			std::for_each(node.nodes.crbegin(), node.nodes.crend(), [level, &tabs](map::value_type const& pair) {
+				if(pair.first == flag) {
+					return;
 				}
-				std::cout << " {" << std::endl;
-				Print(pair.second, level + 1);
-				std::cout << tabs << "\t} break;" << std::endl;
+				std::cout << tabs << "case '" << pair.first << "':" << std::endl;
+				if(!pair.second.prefix.empty()) {
+					std::cout << tabs << "\tif(memcmp(p + " << (pair.second.index) << ", \"";
+					std::cout << pair.second.prefix << "\", " << pair.second.prefix.size() << ") == 0) {" << std::endl;
+					Print(pair.second, level + 2);
+					std::cout << tabs << "\t}" << std::endl;
+				} else {
+					Print(pair.second, level + 1);
+				}
+				std::cout << tabs << "\tbreak;" << std::endl;
 			});
-			std::cout << tabs << "}" << std::endl;
+			std::cout << tabs << '}' << std::endl;
+			auto const& pair = *node.nodes.cbegin();
+			if(pair.first == flag) {
+				std::cout << tabs << "p = collect_parameter(p, " << (pair.second.index) << ");" << std::endl;
+				if(!pair.second.prefix.empty()) {
+					std::cout << tabs << "if(memcmp(p + " << (pair.second.index) << ", \"";
+					std::cout << pair.second.prefix << "\", " << pair.second.prefix.size() << ") == 0) {" << std::endl;
+				}
+				Print(pair.second, level + 1);
+				std::cout << tabs << '}' << std::endl;
+			}
 		}
 		if(!node.line.empty()) {
 			std::cout << tabs << "if(p[" << (node.index + node.prefix.size());
