@@ -194,7 +194,7 @@ namespace {
 		}
 	}
 
-	void Print(Node const& node, int level = 1, int parameterIndex = 0);
+	void Print(Node const& node, int level, int parameterIndex);
 
 	void PrintCompare(map::value_type const& pair, int level, int parameterIndex) {
 		auto tabs = std::string(level, '\t');
@@ -213,7 +213,7 @@ namespace {
 		}
 	}
 
-	void Print(Node const& node, int level /*= 1*/, int parameterIndex /*= 0*/) {
+	void Print(Node const& node, int level, int parameterIndex) {
 		auto tabs = std::string(level, '\t');
 		if(!node.nodes.empty()) {
 			if(node.nodes.size() >= 2 || node.nodes.cbegin()->first != flag) {
@@ -238,6 +238,13 @@ namespace {
 			std::cout << tabs << "if(p[" << (node.index + node.prefix.size());
 			std::cout << "] == '\\r') return " << node.fn << ';' << std::endl;
 		}
+	}
+
+	void Print(Node const& node) {
+		std::cout << "void Dispatch(char const* p) {" << std::endl;
+		Print(node, 1, 0);
+		std::cout << "\treturn FourZeroFour();" << std::endl;
+		std::cout << '}' << std::endl;
 	}
 }
 
