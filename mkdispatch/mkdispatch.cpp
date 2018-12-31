@@ -136,9 +136,7 @@ namespace {
 		std::for_each(requests.cbegin(), requests.cend(), [](Request const& request) {
 			std::string processedLine;
 			std::string::size_type i = 0, j;
-			size_t nparameters = 0;
 			while(j = request.line.find(':', i), j != std::string::npos) {
-				++nparameters;
 				processedLine.append(request.line.cbegin() + i, request.line.cbegin() + j);
 				processedLine += flag;
 				i = request.line.find('/', j);
@@ -147,18 +145,7 @@ namespace {
 				}
 			}
 			processedLine.append(request.line.substr(i));
-			std::ostringstream fn;
-			fn << request.fn << '(';
-#pragma warning(disable: 4456)
-			for(size_t i = 0; i < nparameters; ++i) {
-				fn << 'p' << i;
-				if(i + 1 < nparameters) {
-					fn << ", ";
-				}
-			}
-#pragma warning(default: 4456)
-			fn << ')';
-			InternalParse(processedLine, fn.str(), 0, root);
+			InternalParse(processedLine, request.fn, 0, root);
 		});
 
 		// Replace any parameters in prefixes with an additional node.  This
@@ -235,8 +222,16 @@ namespace {
 			}
 		}
 		if(!node.fn.empty()) {
-			std::cout << tabs << "if(p[" << (node.index + node.prefix.size());
-			std::cout << "] == '\\r') return " << node.fn << ';' << std::endl;
+			std::cout << tabs << "if(IsEndOfPath(p[" << (node.index + node.prefix.size()) << "])) {" << std::endl;
+			std::ostringstream parameters;
+			for(size_t i = 0; i < parameterIndex; ++i) {
+				parameters << 'p' << i;
+				if(i + 1 < parameterIndex) {
+					parameters << ", ";
+				}
+			}
+			std::cout << tabs << "\treturn " << node.fn << '(' << parameters.str() << ");" << std::endl;
+			std::cout << tabs << '}' << std::endl;
 		}
 	}
 
