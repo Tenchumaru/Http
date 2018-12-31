@@ -20,6 +20,7 @@ namespace {
 	char constexpr flag = '\x1e';
 
 	Node root;
+	bool wantsStrings;
 
 	void InternalParse(std::string const& line, std::string const& fn, size_t index, Node& node) {
 		// If the node is empty (i.e., has neither nodes nor a prefix), set its
@@ -217,7 +218,10 @@ namespace {
 			}
 			auto const& pair = *node.nodes.cbegin();
 			if(pair.first == flag) {
-				std::cout << tabs << "char const* p" << parameterIndex << " = collect_parameter(p, " << (pair.second.index) << ");" << std::endl;
+				std::cout << tabs << "char const* p" << parameterIndex << ';' << std::endl;
+				std::cout << tabs << "char* q" << parameterIndex << ';' << std::endl;
+				std::cout << tabs << "std::tie(p" << parameterIndex << ", q" << parameterIndex << ") = CollectParameter(p, ";
+				std::cout << pair.second.index << ");" << std::endl;
 				PrintCompare(pair, level, parameterIndex + 1);
 			}
 		}
@@ -225,9 +229,17 @@ namespace {
 			std::cout << tabs << "if(IsEndOfPath(p[" << (node.index + node.prefix.size()) << "])) {" << std::endl;
 			std::ostringstream parameters;
 			for(size_t i = 0; i < parameterIndex; ++i) {
-				parameters << 'p' << i;
-				if(i + 1 < parameterIndex) {
-					parameters << ", ";
+				if(wantsStrings) {
+					parameters << "xstring(p" << i << ", q" << i << ')';
+					if(i + 1 < parameterIndex) {
+						parameters << ", ";
+					}
+				} else {
+					std::cout << tabs << "\t*q" << i << " = '\\0';" << std::endl;
+					parameters << 'p' << i;
+					if(i + 1 < parameterIndex) {
+						parameters << ", ";
+					}
 				}
 			}
 			std::cout << tabs << "\treturn " << node.fn << '(' << parameters.str() << ");" << std::endl;
@@ -243,7 +255,9 @@ namespace {
 	}
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+	wantsStrings = argc > 1 && argv[1] == std::string("-s");
+
 	// TODO:  read the requests.
 	vector requests = {
 		{ "POST /extensions/:clientId/auth/secret", "POST_extensions__clientId_auth_secret" },
