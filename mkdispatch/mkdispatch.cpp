@@ -166,7 +166,7 @@ namespace {
 		ReplaceParameter(root);
 	}
 
-	void Dump(Node const& node, int level = 0) {
+	void Dump(Node const& node, size_t level = 0) {
 		auto const& prefix = node.prefix;
 		if(!prefix.empty()) {
 			std::cout << '"' << prefix << "\" ";
@@ -194,9 +194,9 @@ namespace {
 		}
 	}
 
-	void Print(Node const& node, int level, int parameterIndex);
+	void Print(Node const& node, size_t level, size_t parameterIndex);
 
-	void PrintCompare(map::value_type const& pair, int level, int parameterIndex) {
+	void PrintCompare(map::value_type const& pair, size_t level, size_t parameterIndex) {
 		auto tabs = std::string(level, '\t');
 		if(!pair.second.prefix.empty()) {
 			std::cout << tabs;
@@ -213,7 +213,7 @@ namespace {
 		}
 	}
 
-	void Print(Node const& node, int level, int parameterIndex) {
+	void Print(Node const& node, size_t level, size_t parameterIndex) {
 		auto tabs = std::string(level, '\t');
 		if(!node.nodes.empty()) {
 			if(node.nodes.size() >= 2 || node.nodes.cbegin()->first != flag) {
