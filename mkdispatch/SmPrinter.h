@@ -1,0 +1,12 @@
+#pragma once
+
+#include "Printer.h"
+
+class SmPrinter : public Printer {
+public:
+	SmPrinter();
+	~SmPrinter();
+
+private:
+	void InternalPrint(vector const& requests, Options const& options) override;
+};

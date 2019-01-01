@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "MyPrinter.h"
+#include "SmPrinter.h"
 
 int main(int argc, char* argv[]) {
 	bool wantsStrings = argc > 1 && argv[1] == std::string("-s");
@@ -45,6 +45,6 @@ int main(int argc, char* argv[]) {
 
 	// Print the Dispatcher class.
 	Options options = { wantsStrings };
-	MyPrinter printer;
+	SmPrinter printer;
 	(static_cast<Printer&>(printer)).Print(requests, options);
 }
