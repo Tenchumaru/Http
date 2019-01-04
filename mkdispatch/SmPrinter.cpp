@@ -115,7 +115,14 @@ SmPrinter::SmPrinter() {}
 SmPrinter::~SmPrinter() {}
 
 void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
-	requests, options;
+	options;
+	
+	// Determine the maximum number of parameters in a request.
+	ptrdiff_t nparameters = 0;
+	for(Printer::Request const& request : requests) {
+		nparameters = std::max(nparameters, std::count(request.line.cbegin(), request.line.cend(), ':'));
+	}
+
 	// Create a NFA of the requests.
 	NfaState::ptr nfaStartState = NfaState::Create(requests);
 
