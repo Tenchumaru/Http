@@ -155,8 +155,8 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 				// Find the index of the function of the NFA state.
 				states[0] = fnIndices[nfaStates[pair.second].fn];
 			} else if(pair.first == '\n') {
-				states['\n'] = specialStateFlag | finalStateFlag | stateNumber;
-			} else if(pair.first == ':') {
+				states['\n'] = states['\r'] = states['?'] = specialStateFlag | finalStateFlag | stateNumber;
+			} else if(IsParameter(pair.first)) {
 				for(char ch : chars) {
 					states[ch] = stateNumber;
 				}
