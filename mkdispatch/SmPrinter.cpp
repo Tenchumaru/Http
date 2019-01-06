@@ -6,6 +6,10 @@
 namespace {
 	std::string const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-";
 
+	bool IsParameter(char ch) {
+		return ch < 0;
+	}
+
 	struct NfaState {
 		using vector = std::vector<NfaState>;
 
@@ -18,11 +22,15 @@ namespace {
 			size_t next = 0;
 			for(Printer::Request const& request : requests) {
 				size_t currentStateIndex = 0;
+				char currentParameterNumber = 0x7f;
 				for(char ch : request.line) {
+					if(ch == ':') {
+						ch = ++currentParameterNumber;
+					}
 					rv.emplace_back(NfaState{});
 					rv[currentStateIndex].transitions.push_back({ ch, ++next });
 					currentStateIndex = next;
-					if(ch == ':') {
+					if(ch == currentParameterNumber) {
 						rv[currentStateIndex].transitions.push_back({ ch, currentStateIndex });
 					}
 				}
@@ -77,9 +85,10 @@ namespace {
 		map::const_iterator begin() const { return machine.cbegin(); }
 		map::const_iterator end() const { return machine.cend(); }
 
-		bool StartsParameter(size_t stateNumber) const {
-			auto it = machine.find(stateNumber);
-			return it->second.find(':') != it->second.cend();
+		size_t GetParameterNumber(size_t stateNumber) const {
+			auto state = machine.find(stateNumber);
+			auto parameter = std::find_if(state->second.cbegin(), state->second.cend(), [](auto const& pair) { return IsParameter(pair.first); });
+			return parameter == state->second.cend() ? 0 : parameter->first + 0x81;
 		}
 
 	private:
@@ -123,6 +132,11 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	for(Printer::Request const& request : requests) {
 		nparameters = std::max(nparameters, std::count(request.line.cbegin(), request.line.cend(), ':'));
 	}
+	size_t parameterShift = 6, parameterMask = 0x40;
+	for(auto n = nparameters; n >>= 1, n;) {
+		parameterMask = (parameterMask >> 1) | 0x40;
+		--parameterShift;
+	}
 
 	// Create a NFA of the requests.
 	auto nfaStates = NfaState::Create(requests);
@@ -140,17 +154,20 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	std::cout << "\t};" << std::endl;
 
 	// Print the state machine.
-	size_t flagMask = machine.size() < 128 ? 0xc0 : machine.size() < 32768 ? 0xc000 : 0xc0000000;
-	size_t specialStateFlag = machine.size() < 128 ? 0x80 : machine.size() < 32768 ? 0x8000 : 0x80000000;
-	size_t finalStateFlag = machine.size() < 128 ? 0x80 : machine.size() < 32768 ? 0x8000 : 0x80000000;
-	size_t parameterFlag = machine.size() < 128 ? 0x40 : machine.size() < 32768 ? 0x4000 : 0x40000000;
-	auto const* type = machine.size() < 128 ? "char" : machine.size() < 32768 ? "short" : "int";
+	size_t maxCharStates = nparameters == 0 ? 128 : 1 << parameterShift;
+	size_t maxShortStates = maxCharStates << 8;
+	size_t shift = machine.size() < maxCharStates ? 0 : machine.size() < maxShortStates ? 8 : 24;
+	size_t specialStateFlag = 0x80 << shift;
+	size_t flagMask = (specialStateFlag | (nparameters == 0 ? 0 : parameterMask)) << shift;
+	size_t finalStateFlag = 0x80 << shift;
+	auto const* type = machine.size() < maxCharStates ? "char" : machine.size() < maxShortStates ? "short" : "int";
 	std::cout << "\tstatic " << type << " states[" << machine.size() << "][256] = {" << std::endl;
 	for(auto const& dfaState : machine) {
 		std::cout << "\t\t{";
 		std::vector<size_t> states(256, 0);
 		for(auto const& pair : dfaState.second) {
 			auto stateNumber = pair.second;
+			size_t parameterNumber;
 			if(pair.first == '\0') {
 				// Find the index of the function of the NFA state.
 				states[0] = fnIndices[nfaStates[pair.second].fn];
@@ -160,8 +177,8 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 				for(char ch : chars) {
 					states[ch] = stateNumber;
 				}
-			} else if(pair.first == '/' && machine.StartsParameter(pair.second)) {
-				states['/'] = specialStateFlag | parameterFlag | stateNumber;
+			} else if(pair.first == '/' && (parameterNumber = machine.GetParameterNumber(pair.second), parameterNumber)) {
+				states['/'] = specialStateFlag | (parameterNumber << parameterShift) | stateNumber;
 			} else {
 				states[pair.first] = stateNumber;
 			}
