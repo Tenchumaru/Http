@@ -7,10 +7,9 @@ namespace {
 	std::string const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-";
 
 	struct NfaState {
-		using pair = std::pair<char, size_t>;
 		using vector = std::vector<NfaState>;
 
-		std::vector<pair> transitions;
+		std::vector<std::pair<char, size_t>> transitions;
 		std::string fn;
 
 		static std::vector<NfaState> Create(Printer::vector const& requests) {
@@ -35,26 +34,13 @@ namespace {
 		}
 	};
 
-	struct DfaState {
+	class StateMachine {
+	public:
 		using map = std::map<size_t, std::map<char, size_t>>;
 
-		static std::set<size_t> Move(NfaState::vector const& nfaStates, std::set<size_t> const& indices, char ch) {
-			std::set<size_t> rv;
-			for(size_t index : indices) {
-				auto const& nfaState = nfaStates[index];
-				for(NfaState::pair const& pair : nfaState.transitions) {
-					if(pair.first == ch || (pair.first == ':' && chars.find(ch) != std::string::npos)) {
-						rv.insert(pair.second);
-					}
-				}
-			}
-			return rv;
-		}
-
-		static map From(NfaState::vector const& nfaStates) {
+		StateMachine(NfaState::vector const& nfaStates) : nfaStates(nfaStates) {
 			// p. 118
 			std::map<std::set<size_t>, std::pair<bool, size_t>> states({ { { 0 }, { false, 0 } } });
-			std::map<std::pair<size_t, char>, size_t> transitions;
 			for(;;) {
 				auto it = std::find_if(states.begin(), states.end(), [](auto const& pair) { return !pair.second.first; });
 				if(it == states.end()) {
@@ -63,28 +49,18 @@ namespace {
 				auto& pair = *it;
 				auto const& t = pair.first;
 				pair.second.first = true;
-				auto symbols = CollectSymbols(t, nfaStates);
+				auto symbols = CollectSymbols(t);
 				for(char a : symbols) {
-					auto u = Move(nfaStates, t, a);
+					auto u = Move(t, a);
 					auto state = states.find(u);
 					if(state == states.cend()) {
 						state = states.insert({ u, { false, states.size() } }).first;
 					}
-					transitions.insert({ std::make_pair(pair.second.second, a), state->second.second });
+					machine[pair.second.second][a] = state->second.second;
 				}
 			}
 
-			// Construct and return the state machine.
-			//std::map<size_t, std::string> finalStates;
-			//for(size_t i = 0, n = nfaStates.size(); i < n; ++i) {
-			//	if(!nfaStates[i].fn.empty()) {
-			//		finalStates.insert({ i, nfaStates[i].fn });
-			//	}
-			//}
-			map machine;
-			for(auto const& transition : transitions) {
-				machine[transition.first.first][transition.first.second] = transition.second;
-			}
+			// Set the final states.
 			for(size_t i = 0, n = nfaStates.size(); i < n; ++i) {
 				auto const& nfaState = nfaStates[i];
 				if(!nfaState.fn.empty()) {
@@ -95,11 +71,30 @@ namespace {
 					machine[it->second.second]['\0'] = i;
 				}
 			}
-
-			return machine;
 		}
 
-		static std::set<char> CollectSymbols(std::set<size_t> const& nfaStateIndices, NfaState::vector const& nfaStates) {
+		size_t size() const { return machine.size(); }
+		map::const_iterator begin() const { return machine.cbegin(); }
+		map::const_iterator end() const { return machine.cend(); }
+
+	private:
+		NfaState::vector const& nfaStates;
+		map machine;
+
+		std::set<size_t> Move(std::set<size_t> const& indices, char ch) {
+			std::set<size_t> rv;
+			for(size_t index : indices) {
+				auto const& nfaState = nfaStates[index];
+				for(auto const& pair : nfaState.transitions) {
+					if(pair.first == ch || (pair.first == ':' && chars.find(ch) != std::string::npos)) {
+						rv.insert(pair.second);
+					}
+				}
+			}
+			return rv;
+		}
+
+		std::set<char> CollectSymbols(std::set<size_t> const& nfaStateIndices) {
 			std::set<char> rv;
 			for(size_t index : nfaStateIndices) {
 				for(auto const& transition : nfaStates[index].transitions) {
@@ -128,7 +123,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	auto nfaStates = NfaState::Create(requests);
 
 	// Convert the NFA into a DFA.
-	auto machine = DfaState::From(nfaStates);
+	StateMachine machine(nfaStates);
 
 	// Print the function array.
 	std::map<std::string, size_t> fnIndices;
@@ -137,7 +132,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 		std::cout << "\t\t&" << request.fn << ", // " << fnIndices.size() << std::endl;
 		fnIndices.insert({ request.fn, fnIndices.size() });
 	}
-	std::cout << "};" << std::endl;
+	std::cout << "\t};" << std::endl;
 
 	// Print the state machine.
 	size_t finalStateFlag = machine.size() < 128 ? 0x80 : machine.size() < 32768 ? 0x8000 : 0x80000000;
