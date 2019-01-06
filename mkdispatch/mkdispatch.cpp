@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
 		//{ "GET /helix/videos", "GET_helix_videos" },
 		//{ "GET /helix/webhooks/subscriptions", "GET_helix_webhooks_subscriptions" },
 		{ "/a/b", "a_b" },
+		{ "/a/bc", "a_bc" },
 		{ "/x/y", "x_y" },
 		{ "/xy/z", "xy_z" },
 		{ "/:/p", "__p" },

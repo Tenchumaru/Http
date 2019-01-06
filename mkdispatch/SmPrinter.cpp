@@ -7,108 +7,106 @@ namespace {
 	std::string const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-";
 
 	struct NfaState {
-		using ptr = std::shared_ptr<NfaState>;
-		using pair = std::pair<char, ptr>;
-		using vector = std::vector<pair>;
+		using pair = std::pair<char, size_t>;
+		using vector = std::vector<NfaState>;
 
-		vector transitions;
+		std::vector<pair> transitions;
 		std::string fn;
-		size_t number;
-		static size_t next;
 
-		NfaState(size_t number) : number(number) {}
-
-		static ptr Create(Printer::vector const& requests) {
-			ptr startState = std::make_shared<NfaState>(0);
+		static std::vector<NfaState> Create(Printer::vector const& requests) {
+			std::vector<NfaState> rv;
+			rv.emplace_back(NfaState{});
+			size_t next = 0;
 			for(Printer::Request const& request : requests) {
-				ptr currentState = startState;
+				size_t currentStateIndex = 0;
 				for(char ch : request.line) {
-					currentState = currentState->PushState(ch);
+					rv.emplace_back(NfaState{});
+					rv[currentStateIndex].transitions.push_back({ ch, ++next });
+					currentStateIndex = next;
 					if(ch == ':') {
-						currentState->transitions.push_back({ ch, currentState });
+						rv[currentStateIndex].transitions.push_back({ ch, currentStateIndex });
 					}
 				}
-				currentState = currentState->PushState('\n');
-				currentState->fn = request.fn;
+				rv.emplace_back(NfaState{});
+				rv[currentStateIndex].transitions.push_back({ '\n', ++next });
+				rv[next].fn = request.fn;
 			}
-			return startState;
-		}
-
-		ptr PushState(char ch) {
-			transitions.push_back({ ch, std::make_shared<NfaState>(++next) });
-			auto nextState = transitions.back().second;
-			return nextState;
+			return rv;
 		}
 	};
 
-	size_t NfaState::next;
-
 	struct DfaState {
-		using map = std::map<char, DfaState>;
-		using vector = std::vector<NfaState::ptr>;
+		using map = std::map<size_t, std::map<char, size_t>>;
 
-		vector nfaStates;
-		map transitions;
-		bool isMarked;
-		__declspec(property(get = get_Name)) std::string Name;
-		__declspec(property(get = get_Symbols)) std::set<char> Symbols;
-
-		std::string get_Name() const {
-			std::set<size_t> numbers;
-			for(NfaState::ptr state : nfaStates) {
-				numbers.insert(state->number);
-			}
-			std::ostringstream ss;
-			for(size_t number : numbers) {
-				ss << ',' << number;
-			}
-			return ss.str().substr(1);
-		}
-
-		std::set<char> get_Symbols() const {
-			std::set<char> rv;
-			for(NfaState::ptr state : nfaStates) {
-				for(NfaState::pair const& pair : state->transitions) {
-					rv.insert(pair.first);
-				}
-			}
-			return rv;
-		}
-
-		DfaState Move(char ch) {
-			DfaState rv{};
-			for(NfaState::ptr state : nfaStates) {
-				for(NfaState::pair const& pair : state->transitions) {
-					if(pair.first == ch || (pair.first == ':' && ch != '\n')) {
-						rv.nfaStates.push_back(pair.second);
+		static std::set<size_t> Move(NfaState::vector const& nfaStates, std::set<size_t> const& indices, char ch) {
+			std::set<size_t> rv;
+			for(size_t index : indices) {
+				auto const& nfaState = nfaStates[index];
+				for(NfaState::pair const& pair : nfaState.transitions) {
+					if(pair.first == ch || (pair.first == ':' && chars.find(ch) != std::string::npos)) {
+						rv.insert(pair.second);
 					}
 				}
 			}
 			return rv;
 		}
 
-		static std::map<std::string, DfaState> From(NfaState::ptr nfaStartState) {
+		static map From(NfaState::vector const& nfaStates) {
 			// p. 118
-			std::map<std::string, DfaState> states({ { "0", DfaState{ { nfaStartState } } } });
+			std::map<std::set<size_t>, std::pair<bool, size_t>> states({ { { 0 }, { false, 0 } } });
+			std::map<std::pair<size_t, char>, size_t> transitions;
 			for(;;) {
-				auto it = std::find_if(states.begin(), states.end(), [](decltype(states)::value_type& pair) { return !pair.second.isMarked; });
-				if(it == states.cend()) {
+				auto it = std::find_if(states.begin(), states.end(), [](auto const& pair) { return !pair.second.first; });
+				if(it == states.end()) {
 					break;
 				}
-				auto& t = it->second;
-				t.isMarked = true;
-				for(char a : t.Symbols) {
-					auto u = t.Move(a);
-					auto state = states.find(u.Name);
+				auto& pair = *it;
+				auto const& t = pair.first;
+				pair.second.first = true;
+				auto symbols = CollectSymbols(t, nfaStates);
+				for(char a : symbols) {
+					auto u = Move(nfaStates, t, a);
+					auto state = states.find(u);
 					if(state == states.cend()) {
-						states.insert({ u.Name, u });
-						t.transitions.insert({ a, u });
-					} else {
-						t.transitions.insert({ a, state->second });
+						state = states.insert({ u, { false, states.size() } }).first;
 					}
+					transitions.insert({ std::make_pair(pair.second.second, a), state->second.second });
 				}
 			}
-			return states;
+
+			// Construct and return the state machine.
+			//std::map<size_t, std::string> finalStates;
+			//for(size_t i = 0, n = nfaStates.size(); i < n; ++i) {
+			//	if(!nfaStates[i].fn.empty()) {
+			//		finalStates.insert({ i, nfaStates[i].fn });
+			//	}
+			//}
+			map machine;
+			for(auto const& transition : transitions) {
+				machine[transition.first.first][transition.first.second] = transition.second;
+			}
+			for(size_t i = 0, n = nfaStates.size(); i < n; ++i) {
+				auto const& nfaState = nfaStates[i];
+				if(!nfaState.fn.empty()) {
+					// Find the corresponding DFA state number for this NFA state.
+					auto it = std::find_if(states.cbegin(), states.cend(), [i](auto const& pair) {
+						return pair.first.size() == 1 && pair.first.find(i) != pair.first.cend();
+					});
+					machine[it->second.second]['\0'] = i;
+				}
+			}
+
+			return machine;
+		}
+
+		static std::set<char> CollectSymbols(std::set<size_t> const& nfaStateIndices, NfaState::vector const& nfaStates) {
+			std::set<char> rv;
+			for(size_t index : nfaStateIndices) {
+				for(auto const& transition : nfaStates[index].transitions) {
+					rv.insert(transition.first);
+				}
+			}
+			return rv;
 		}
 	};
 }
@@ -127,21 +125,10 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	}
 
 	// Create a NFA of the requests.
-	NfaState::ptr nfaStartState = NfaState::Create(requests);
+	auto nfaStates = NfaState::Create(requests);
 
 	// Convert the NFA into a DFA.
-	auto dfaStates = DfaState::From(nfaStartState);
-
-	// Map DFA state names to sequential numbers and vice versa.
-	std::map<std::string, int> stateNumbers{ { "0", 0 } };
-	std::vector<std::string> stateNames{ "0" };
-	int next = 0;
-	for(auto& pair : dfaStates) {
-		if(stateNumbers.find(pair.first) == stateNumbers.cend()) {
-			stateNumbers.insert({ pair.first, ++next });
-			stateNames.push_back(pair.first);
-		}
-	}
+	auto machine = DfaState::From(nfaStates);
 
 	// Print the function array.
 	std::map<std::string, size_t> fnIndices;
@@ -153,34 +140,36 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	std::cout << "};" << std::endl;
 
 	// Print the state machine.
-	auto const* type = stateNumbers.size() < 128 ? "char" : stateNumbers.size() < 32768 ? "short" : "int";
-	std::cout << "\tstatic " << type << " states[" << stateNumbers.size() << "][256] = {" << std::endl;
-	for(size_t i = 0, n = stateNumbers.size(); i < n; ++i) {
+	size_t finalStateFlag = machine.size() < 128 ? 0x80 : machine.size() < 32768 ? 0x8000 : 0x80000000;
+	auto const* type = machine.size() < 128 ? "char" : machine.size() < 32768 ? "short" : "int";
+	std::cout << "\tstatic " << type << " states[" << machine.size() << "][256] = {" << std::endl;
+	for(auto const& dfaState : machine) {
 		std::cout << "\t\t{";
-		auto const& dfaState = dfaStates[stateNames[i]];
-		if(dfaState.transitions.empty()) {
-			auto const& state = *dfaState.nfaStates.cbegin();
-			std::cout << fnIndices[state->fn];
-		} else {
-			std::vector<int> states(256, 0);
-			for(std::pair<char, DfaState> const& pair : dfaState.transitions) {
-				int stateNumber = stateNumbers[pair.second.Name];
-				if(pair.first == '\n') {
-					states['\n'] = -stateNumber;
-				} else if(pair.first == ':') {
-					for(char ch : chars) {
-						states[ch] = stateNumber;
-					}
-				} else {
-					states[pair.first] = stateNumber;
+		std::vector<size_t> states(256, 0);
+		for(auto const& pair : dfaState.second) {
+			auto stateNumber = pair.second;
+			if(pair.first == '\0') {
+				// Find the index of the function of the NFA state.
+				auto fnIndex = fnIndices[nfaStates[pair.second].fn];
+				states[0] = fnIndex;
+			} else if(pair.first == '\n') {
+				states['\n'] = finalStateFlag | stateNumber;
+			} else if(pair.first == ':') {
+				for(char ch : chars) {
+					states[ch] = stateNumber;
 				}
-			}
-			states.erase(std::find_if(states.crbegin(), states.crend(), [](int state) { return state != 0; }).base(), states.cend());
-			for(int state : states) {
-				std::cout << state << ',';
+			} else {
+				states[pair.first] = stateNumber;
 			}
 		}
-		std::cout << "}, // " << i << std::endl;
+		states.erase(std::find_if(states.crbegin(), states.crend(), [](auto state) { return state != 0; }).base(), states.cend());
+		for(auto state : states) {
+			if(state & finalStateFlag) {
+				std::cout << "0x" << std::hex << finalStateFlag << std::dec << '|';
+			}
+			std::cout << (state & ~finalStateFlag) << ',';
+		}
+		std::cout << "}, // " << dfaState.first << std::endl;
 	}
 	std::cout << "\t};" << std::endl;
 }
