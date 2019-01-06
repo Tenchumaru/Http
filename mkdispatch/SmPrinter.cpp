@@ -77,6 +77,11 @@ namespace {
 		map::const_iterator begin() const { return machine.cbegin(); }
 		map::const_iterator end() const { return machine.cend(); }
 
+		bool StartsParameter(size_t stateNumber) const {
+			auto it = machine.find(stateNumber);
+			return it->second.find(':') != it->second.cend();
+		}
+
 	private:
 		NfaState::vector const& nfaStates;
 		map machine;
@@ -135,7 +140,10 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	std::cout << "\t};" << std::endl;
 
 	// Print the state machine.
+	size_t flagMask = machine.size() < 128 ? 0xc0 : machine.size() < 32768 ? 0xc000 : 0xc0000000;
+	size_t specialStateFlag = machine.size() < 128 ? 0x80 : machine.size() < 32768 ? 0x8000 : 0x80000000;
 	size_t finalStateFlag = machine.size() < 128 ? 0x80 : machine.size() < 32768 ? 0x8000 : 0x80000000;
+	size_t parameterFlag = machine.size() < 128 ? 0x40 : machine.size() < 32768 ? 0x4000 : 0x40000000;
 	auto const* type = machine.size() < 128 ? "char" : machine.size() < 32768 ? "short" : "int";
 	std::cout << "\tstatic " << type << " states[" << machine.size() << "][256] = {" << std::endl;
 	for(auto const& dfaState : machine) {
@@ -145,24 +153,25 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 			auto stateNumber = pair.second;
 			if(pair.first == '\0') {
 				// Find the index of the function of the NFA state.
-				auto fnIndex = fnIndices[nfaStates[pair.second].fn];
-				states[0] = fnIndex;
+				states[0] = fnIndices[nfaStates[pair.second].fn];
 			} else if(pair.first == '\n') {
-				states['\n'] = finalStateFlag | stateNumber;
+				states['\n'] = specialStateFlag | finalStateFlag | stateNumber;
 			} else if(pair.first == ':') {
 				for(char ch : chars) {
 					states[ch] = stateNumber;
 				}
+			} else if(pair.first == '/' && machine.StartsParameter(pair.second)) {
+				states['/'] = specialStateFlag | parameterFlag | stateNumber;
 			} else {
 				states[pair.first] = stateNumber;
 			}
 		}
 		states.erase(std::find_if(states.crbegin(), states.crend(), [](auto state) { return state != 0; }).base(), states.cend());
 		for(auto state : states) {
-			if(state & finalStateFlag) {
-				std::cout << "0x" << std::hex << finalStateFlag << std::dec << '|';
+			if(state & flagMask) {
+				std::cout << "0x" << std::hex << (state & flagMask) << std::dec << '|';
 			}
-			std::cout << (state & ~finalStateFlag) << ',';
+			std::cout << (state & ~flagMask) << ',';
 		}
 		std::cout << "}, // " << dfaState.first << std::endl;
 	}
