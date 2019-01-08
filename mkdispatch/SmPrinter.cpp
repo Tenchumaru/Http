@@ -118,6 +118,16 @@ namespace {
 			return rv;
 		}
 	};
+
+	void PrintSpecialStateAction_(char const* type, std::vector<size_t> const& specialStateActions, char const* name) {
+		std::cout << "\tstatic " << type << ' ' << name << '[' << specialStateActions.size() << "] = {" << std::endl << "\t\t";
+		for(size_t specialStateAction : specialStateActions) {
+			std::cout << specialStateAction << ',';
+		}
+		std::cout << std::endl << "\t};" << std::endl;
+	};
+
+#define PrintSpecialStateAction(actions) PrintSpecialStateAction_(type, actions, #actions)
 }
 
 SmPrinter::SmPrinter() {}
@@ -131,11 +141,6 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	ptrdiff_t nparameters = 0;
 	for(Printer::Request const& request : requests) {
 		nparameters = std::max(nparameters, std::count(request.line.cbegin(), request.line.cend(), ':'));
-	}
-	size_t parameterShift = 6, parameterMask = 0x40;
-	for(auto n = nparameters; n >>= 1, n;) {
-		parameterMask = (parameterMask >> 1) | 0x40;
-		--parameterShift;
 	}
 
 	// Create a NFA of the requests.
@@ -154,13 +159,15 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	std::cout << "\t};" << std::endl;
 
 	// Print the state machine.
-	size_t maxCharStates = nparameters == 0 ? 128 : 1 << parameterShift;
-	size_t maxShortStates = maxCharStates << 8;
-	size_t shift = machine.size() < maxCharStates ? 0 : machine.size() < maxShortStates ? 8 : 24;
+	std::vector<size_t> finishingInnerParameterActions;
+	std::vector<size_t> finishingFinalParameterActions;
+	std::vector<size_t> finalStateActions;
+	std::vector<size_t> startingParameterActions;
+	std::vector<size_t> consumingParameterActions;
+	std::vector<size_t> nextStateActions;
+	size_t shift = machine.size() < 128 ? 0 : machine.size() < 32768 ? 8 : 24;
 	size_t specialStateFlag = 0x80 << shift;
-	size_t flagMask = (specialStateFlag | (nparameters == 0 ? 0 : parameterMask)) << shift;
-	size_t finalStateFlag = 0x80 << shift;
-	auto const* type = machine.size() < maxCharStates ? "char" : machine.size() < maxShortStates ? "short" : "int";
+	auto const* type = machine.size() < 128 ? "char" : machine.size() < 32768 ? "short" : "int";
 	std::cout << "\tstatic " << type << " states[" << machine.size() << "][256] = {" << std::endl;
 	for(auto const& dfaState : machine) {
 		std::cout << "\t\t{";
@@ -172,25 +179,45 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 				// Find the index of the function of the NFA state.
 				states[0] = fnIndices[nfaStates[pair.second].fn];
 			} else if(pair.first == '\n') {
-				states['\n'] = states['\r'] = states['?'] = specialStateFlag | finalStateFlag | stateNumber;
+				states['\n'] = states['\r'] = states['?'] = specialStateFlag | finalStateActions.size();
+				finishingInnerParameterActions.push_back(0);
+				finishingFinalParameterActions.push_back(0); // TODO:  if this is finishing a parameter, set the correct value.
+				finalStateActions.push_back(stateNumber);
+				startingParameterActions.push_back(0);
+				consumingParameterActions.push_back(0);
+				nextStateActions.push_back(0);
 			} else if(IsParameter(pair.first)) {
 				for(char ch : chars) {
 					states[ch] = stateNumber;
 				}
 			} else if(pair.first == '/' && (parameterNumber = machine.GetParameterNumber(pair.second), parameterNumber)) {
-				states['/'] = specialStateFlag | (parameterNumber << parameterShift) | stateNumber;
+				states['/'] = specialStateFlag | finalStateActions.size();
+				finishingInnerParameterActions.push_back(0); // TODO:  if this is finishing a parameter, set the correct value.
+				finishingFinalParameterActions.push_back(0); // TODO:  if this is finishing a parameter, set the correct value.
+				finalStateActions.push_back(0);
+				startingParameterActions.push_back(parameterNumber);
+				consumingParameterActions.push_back(0); // TODO
+				nextStateActions.push_back(stateNumber);
 			} else {
 				states[pair.first] = stateNumber;
 			}
 		}
 		states.erase(std::find_if(states.crbegin(), states.crend(), [](auto state) { return state != 0; }).base(), states.cend());
 		for(auto state : states) {
-			if(state & flagMask) {
-				std::cout << "0x" << std::hex << (state & flagMask) << std::dec << '|';
+			if(state & specialStateFlag) {
+				std::cout << "0x" << std::hex << specialStateFlag << std::dec << '|';
 			}
-			std::cout << (state & ~flagMask) << ',';
+			std::cout << (state & ~specialStateFlag) << ',';
 		}
 		std::cout << "}, // " << dfaState.first << std::endl;
 	}
 	std::cout << "\t};" << std::endl;
+
+	// Print the special state actions.
+	PrintSpecialStateAction(finishingInnerParameterActions);
+	PrintSpecialStateAction(finishingFinalParameterActions);
+	PrintSpecialStateAction(finalStateActions);
+	PrintSpecialStateAction(startingParameterActions);
+	PrintSpecialStateAction(consumingParameterActions);
+	PrintSpecialStateAction(nextStateActions);
 }
