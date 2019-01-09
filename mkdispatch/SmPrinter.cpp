@@ -91,16 +91,16 @@ namespace {
 			return parameter == state->second.cend() ? 0 : parameter->first + 0x81;
 		}
 
-		std::vector<size_t> CollectStarting(bool wantsConsuming) {
-			auto fn = [this, wantsConsuming](std::vector<size_t>& rv, size_t state, map::mapped_type::value_type const& transition) {
-				CheckStarting(rv, wantsConsuming, state, transition);
+		std::map<size_t, size_t> CollectStarting(bool wantsConsuming) {
+			auto fn = [this, wantsConsuming](std::map<size_t, size_t>& rv, size_t state, map::mapped_type::value_type const& transition) {
+				CollectStarting(rv, wantsConsuming, state, transition);
 			};
 			return Collect(fn);
 		}
 
-		std::vector<size_t> CollectFinishing(bool wantsFinal) {
-			auto fn = [this, wantsFinal](std::vector<size_t>& rv, size_t state, map::mapped_type::value_type const& transition) {
-				CheckFinishing(rv, wantsFinal, state, transition);
+		std::map<size_t, size_t> CollectFinishing(bool wantsFinal) {
+			auto fn = [this, wantsFinal](std::map<size_t, size_t>& rv, size_t state, map::mapped_type::value_type const& transition) {
+				CollectFinishing(rv, wantsFinal, state, transition);
 			};
 			return Collect(fn);
 		}
@@ -109,7 +109,7 @@ namespace {
 		NfaState::vector const& nfaStates;
 		map machine;
 
-		void CheckStarting(std::vector<size_t>& rv, bool wantsConsuming, size_t state, map::mapped_type::value_type const& transition) {
+		void CollectStarting(std::map<size_t, size_t>& rv, bool wantsConsuming, size_t state, map::mapped_type::value_type const& transition) {
 			if(transition.first == '/') {
 				auto const& nexts = machine.find(transition.second);
 				for(auto const& next : nexts->second) {
@@ -118,16 +118,16 @@ namespace {
 							(next.first + 0x81) << " -> " << next.second << " (" << nexts->second.size() <<
 							" transitions)" << std::endl;
 						if(wantsConsuming && nexts->second.size() == 1) {
-							rv.push_back(transition.second);
+							rv.insert({ transition.second, next.first + 0x81 });
 						} else if(!wantsConsuming && nexts->second.size() > 1) {
-							rv.push_back(transition.second);
+							rv.insert({ transition.second, next.first + 0x81 });
 						}
 					}
 				}
 			}
 		}
 
-		void CheckFinishing(std::vector<size_t>& rv, bool wantsFinal, size_t state, map::mapped_type::value_type const& transition) {
+		void CollectFinishing(std::map<size_t, size_t>& rv, bool wantsFinal, size_t state, map::mapped_type::value_type const& transition) {
 			if(state == transition.second) {
 				if(!IsParameter(transition.first)) {
 					std::cerr << "warning: unexpected cirular state on '" << transition.first << '\'' << std::endl;
@@ -138,15 +138,16 @@ namespace {
 						std::cout << "// " << state << " -> p" << (transition.first + 0x81) << " -> " <<
 							transition.second << " -> " << (wantsFinal ? '$' : '/') << " -> " <<
 							next.second << " (" << nexts->second.size() << " transitions)" << std::endl;
-						rv.push_back(next.second);
+						rv.insert({ next.second, transition.first + 0x81 });
 					}
 				}
 			}
 		}
 
-		std::vector<size_t> Collect(std::function<void(std::vector<size_t>&, size_t, map::mapped_type::value_type const&)> fn) {
+		std::map<size_t, size_t> Collect(std::function<void(std::map<size_t, size_t>&, size_t, map::mapped_type::value_type const&)> fn) {
+			std::map<size_t, size_t> rv;
 			std::set<size_t> visited;
-			std::vector<size_t> toVisit, rv;
+			std::vector<size_t> toVisit;
 			toVisit.push_back(0);
 			while(!toVisit.empty()) {
 				size_t state = toVisit[0];
@@ -232,11 +233,11 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	std::cout << "\t};" << std::endl;
 
 	// Print the state machine.
-	std::vector<size_t> finishingInnerParameterActions;
-	std::vector<size_t> finishingFinalParameterActions;
+	std::vector<size_t> innerParameterFinishingActions;
+	std::vector<size_t> finalParameterFinishingActions;
 	std::vector<size_t> finalStateActions;
-	std::vector<size_t> startingParameterActions;
-	std::vector<size_t> consumingParameterActions;
+	std::vector<size_t> parameterStartingActions;
+	std::vector<size_t> parameterConsumingActions;
 	std::vector<size_t> nextStateActions;
 	size_t shift = machine.size() < 128 ? 0 : machine.size() < 32768 ? 8 : 24;
 	size_t specialStateFlag = 0x80 << shift;
@@ -248,30 +249,46 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 		for(auto const& pair : dfaState.second) {
 			char ch = pair.first;
 			auto stateNumber = pair.second;
-			size_t parameterNumber;
 			if(ch == '\0') {
 				// Find the index of the function of the NFA state.
-				states[0] = fnIndices[nfaStates[pair.second].fn];
+				states[0] = fnIndices[nfaStates[stateNumber].fn];
 			} else if(ch == '\n') {
 				states['\n'] = states['\r'] = states['?'] = specialStateFlag | finalStateActions.size();
-				finishingInnerParameterActions.push_back(0);
-				finishingFinalParameterActions.push_back(0); // TODO:  if this is finishing a parameter, set the correct value.
+				innerParameterFinishingActions.push_back(0);
+				auto const& parameterFinalFinishingState = parameterFinalFinishingStates.find(stateNumber);
+				auto finalParameterFinishingAction = parameterFinalFinishingState == parameterFinalFinishingStates.cend() ?
+					0 : parameterFinalFinishingState->second;
+				finalParameterFinishingActions.push_back(finalParameterFinishingAction);
 				finalStateActions.push_back(stateNumber);
-				startingParameterActions.push_back(0);
-				consumingParameterActions.push_back(0);
+				parameterStartingActions.push_back(0);
+				parameterConsumingActions.push_back(0);
 				nextStateActions.push_back(0);
 			} else if(IsParameter(ch)) {
 				for(char any : chars) {
 					states[any] = stateNumber;
 				}
-			} else if(ch == '/' && (parameterNumber = machine.GetParameterNumber(pair.second), parameterNumber)) {
+			} else if(ch == '/') {
 				states['/'] = specialStateFlag | finalStateActions.size();
-				finishingInnerParameterActions.push_back(0); // TODO:  if this is finishing a parameter, set the correct value.
-				finishingFinalParameterActions.push_back(0); // TODO:  if this is finishing a parameter, set the correct value.
-				finalStateActions.push_back(0);
-				startingParameterActions.push_back(parameterNumber);
-				consumingParameterActions.push_back(0); // TODO
-				nextStateActions.push_back(stateNumber);
+				auto parameterInnerFinishingState = parameterInnerFinishingStates.find(stateNumber);
+				auto parameterConsumingState = parameterConsumingStates.find(stateNumber);
+				auto parameterStartingState = parameterStartingStates.find(stateNumber);
+				bool isNormal = parameterInnerFinishingState == parameterInnerFinishingStates.cend() &&
+					parameterConsumingState == parameterConsumingStates.cend() &&
+					parameterStartingState == parameterStartingStates.cend();
+				if(isNormal) {
+					states[ch] = stateNumber;
+				} else {
+					auto innerParameterFinishingAction = parameterInnerFinishingState == parameterInnerFinishingStates.cend() ?
+						0 : parameterInnerFinishingState->second;
+					innerParameterFinishingActions.push_back(innerParameterFinishingAction);
+					finalParameterFinishingActions.push_back(0);
+					finalStateActions.push_back(0);
+					auto parameterStartingAction = parameterStartingState == parameterStartingStates.cend() ? 0 : parameterStartingState->second;
+					parameterStartingActions.push_back(parameterStartingAction);
+					auto parameterConsumingAction = parameterConsumingState == parameterConsumingStates.cend() ? 0 : parameterConsumingState->second;
+					parameterConsumingActions.push_back(parameterConsumingAction);
+					nextStateActions.push_back(stateNumber);
+				}
 			} else {
 				states[ch] = stateNumber;
 			}
@@ -288,10 +305,10 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	std::cout << "\t};" << std::endl;
 
 	// Print the special state actions.
-	PrintSpecialStateAction(finishingInnerParameterActions);
-	PrintSpecialStateAction(finishingFinalParameterActions);
+	PrintSpecialStateAction(innerParameterFinishingActions);
+	PrintSpecialStateAction(finalParameterFinishingActions);
 	PrintSpecialStateAction(finalStateActions);
-	PrintSpecialStateAction(startingParameterActions);
-	PrintSpecialStateAction(consumingParameterActions);
+	PrintSpecialStateAction(parameterStartingActions);
+	PrintSpecialStateAction(parameterConsumingActions);
 	PrintSpecialStateAction(nextStateActions);
 }
