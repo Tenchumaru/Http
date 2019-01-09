@@ -91,9 +91,77 @@ namespace {
 			return parameter == state->second.cend() ? 0 : parameter->first + 0x81;
 		}
 
+		std::vector<size_t> CollectStarting(bool wantsConsuming) {
+			auto fn = [this, wantsConsuming](std::vector<size_t>& rv, size_t state, map::mapped_type::value_type const& transition) {
+				CheckStarting(rv, wantsConsuming, state, transition);
+			};
+			return Collect(fn);
+		}
+
+		std::vector<size_t> CollectFinishing(bool wantsFinal) {
+			auto fn = [this, wantsFinal](std::vector<size_t>& rv, size_t state, map::mapped_type::value_type const& transition) {
+				CheckFinishing(rv, wantsFinal, state, transition);
+			};
+			return Collect(fn);
+		}
+
 	private:
 		NfaState::vector const& nfaStates;
 		map machine;
+
+		void CheckStarting(std::vector<size_t>& rv, bool wantsConsuming, size_t state, map::mapped_type::value_type const& transition) {
+			if(transition.first == '/') {
+				auto const& nexts = machine.find(transition.second);
+				for(auto const& next : nexts->second) {
+					if(IsParameter(next.first)) {
+						std::cout << "// " << state << " -> / -> " << transition.second << " -> p" <<
+							(next.first + 0x81) << " -> " << next.second << " (" << nexts->second.size() <<
+							" transitions)" << std::endl;
+						if(wantsConsuming && nexts->second.size() == 1) {
+							rv.push_back(transition.second);
+						} else if(!wantsConsuming && nexts->second.size() > 1) {
+							rv.push_back(transition.second);
+						}
+					}
+				}
+			}
+		}
+
+		void CheckFinishing(std::vector<size_t>& rv, bool wantsFinal, size_t state, map::mapped_type::value_type const& transition) {
+			if(state == transition.second) {
+				if(!IsParameter(transition.first)) {
+					std::cerr << "warning: unexpected cirular state on '" << transition.first << '\'' << std::endl;
+				}
+				auto const& nexts = machine.find(transition.second);
+				for(auto const& next : nexts->second) {
+					if(next.first == (wantsFinal ? '\n' : '/')) {
+						std::cout << "// " << state << " -> p" << (transition.first + 0x81) << " -> " <<
+							transition.second << " -> " << (wantsFinal ? '$' : '/') << " -> " <<
+							next.second << " (" << nexts->second.size() << " transitions)" << std::endl;
+						rv.push_back(next.second);
+					}
+				}
+			}
+		}
+
+		std::vector<size_t> Collect(std::function<void(std::vector<size_t>&, size_t, map::mapped_type::value_type const&)> fn) {
+			std::set<size_t> visited;
+			std::vector<size_t> toVisit, rv;
+			toVisit.push_back(0);
+			while(!toVisit.empty()) {
+				size_t state = toVisit[0];
+				toVisit.erase(toVisit.cbegin());
+				visited.insert(state);
+				auto const& transitions = machine.find(state);
+				for(auto const& transition : transitions->second) {
+					fn(rv, state, transition);
+					if(transition.first && visited.find(transition.second) == visited.cend()) {
+						toVisit.push_back(transition.second);
+					}
+				}
+			}
+			return rv;
+		}
 
 		std::set<size_t> Move(std::set<size_t> const& indices, char ch) {
 			std::set<size_t> rv;
@@ -125,8 +193,7 @@ namespace {
 			std::cout << specialStateAction << ',';
 		}
 		std::cout << std::endl << "\t};" << std::endl;
-	};
-
+	}
 #define PrintSpecialStateAction(actions) PrintSpecialStateAction_(type, actions, #actions)
 }
 
@@ -148,6 +215,12 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 
 	// Convert the NFA into a DFA.
 	StateMachine machine(nfaStates);
+
+	// Collect the parameter tracking states.
+	auto parameterStartingStates = machine.CollectStarting(false);
+	auto parameterConsumingStates = machine.CollectStarting(true);
+	auto parameterInnerFinishingStates = machine.CollectFinishing(false);
+	auto parameterFinalFinishingStates = machine.CollectFinishing(true);
 
 	// Print the function array.
 	std::map<std::string, size_t> fnIndices;
@@ -173,12 +246,13 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 		std::cout << "\t\t{";
 		std::vector<size_t> states(256, 0);
 		for(auto const& pair : dfaState.second) {
+			char ch = pair.first;
 			auto stateNumber = pair.second;
 			size_t parameterNumber;
-			if(pair.first == '\0') {
+			if(ch == '\0') {
 				// Find the index of the function of the NFA state.
 				states[0] = fnIndices[nfaStates[pair.second].fn];
-			} else if(pair.first == '\n') {
+			} else if(ch == '\n') {
 				states['\n'] = states['\r'] = states['?'] = specialStateFlag | finalStateActions.size();
 				finishingInnerParameterActions.push_back(0);
 				finishingFinalParameterActions.push_back(0); // TODO:  if this is finishing a parameter, set the correct value.
@@ -186,11 +260,11 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 				startingParameterActions.push_back(0);
 				consumingParameterActions.push_back(0);
 				nextStateActions.push_back(0);
-			} else if(IsParameter(pair.first)) {
-				for(char ch : chars) {
-					states[ch] = stateNumber;
+			} else if(IsParameter(ch)) {
+				for(char any : chars) {
+					states[any] = stateNumber;
 				}
-			} else if(pair.first == '/' && (parameterNumber = machine.GetParameterNumber(pair.second), parameterNumber)) {
+			} else if(ch == '/' && (parameterNumber = machine.GetParameterNumber(pair.second), parameterNumber)) {
 				states['/'] = specialStateFlag | finalStateActions.size();
 				finishingInnerParameterActions.push_back(0); // TODO:  if this is finishing a parameter, set the correct value.
 				finishingFinalParameterActions.push_back(0); // TODO:  if this is finishing a parameter, set the correct value.
@@ -199,7 +273,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 				consumingParameterActions.push_back(0); // TODO
 				nextStateActions.push_back(stateNumber);
 			} else {
-				states[pair.first] = stateNumber;
+				states[ch] = stateNumber;
 			}
 		}
 		states.erase(std::find_if(states.crbegin(), states.crend(), [](auto state) { return state != 0; }).base(), states.cend());
