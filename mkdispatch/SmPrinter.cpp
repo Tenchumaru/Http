@@ -82,6 +82,7 @@ namespace {
 		}
 
 		size_t size() const { return machine.size(); }
+		map::mapped_type const& operator[](size_t index) const { return machine.find(index)->second; }
 		map::const_iterator begin() const { return machine.cbegin(); }
 		map::const_iterator end() const { return machine.cend(); }
 
@@ -182,14 +183,14 @@ namespace {
 		}
 	};
 
-	void PrintSpecialStateAction_(char const* type, std::vector<size_t> const& specialStateActions, char const* name) {
-		std::cout << "\tstatic " << type << ' ' << name << '[' << specialStateActions.size() << "] = {" << std::endl << "\t\t";
+	void PrintSpecialStateAction_(std::vector<size_t> const& specialStateActions, char const* name) {
+		std::cout << "\tstatic state_t " << name << '[' << specialStateActions.size() << "] = {" << std::endl << "\t\t";
 		for(size_t specialStateAction : specialStateActions) {
 			std::cout << specialStateAction << ',';
 		}
 		std::cout << std::endl << "\t};" << std::endl;
 	}
-#define PrintSpecialStateAction(actions) PrintSpecialStateAction_(type, actions, #actions)
+#define PrintSpecialStateAction(actions) PrintSpecialStateAction_(actions, #actions)
 }
 
 SmPrinter::SmPrinter() {}
@@ -219,12 +220,23 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 
 	// Print the function array.
 	std::map<std::string, size_t> fnIndices;
-	std::cout << "\tstatic void* fns[]= {" << std::endl;
+	std::cout << "\tstatic std::function<void()> fns[] = {" << std::endl;
 	for(Request const& request : requests) {
-		std::cout << "\t\t&" << request.fn << ", // " << fnIndices.size() << std::endl;
+		std::cout << "\t\t[] { " << request.fn << '(';
+		for(size_t i = 0, n = std::count(request.line.cbegin(), request.line.cend(), ':'); i < n; ++i) {
+			std::cout << "begin[" << i << "], end[" << i << ']';
+			if(i + 1 < n) {
+				std::cout << ", ";
+			}
+		}
+		std::cout << "); }, // " << fnIndices.size() << std::endl;
 		fnIndices.insert({ request.fn, fnIndices.size() });
 	}
 	std::cout << "\t};" << std::endl;
+
+	// Print the parameters.
+	std::cout << "\tchar const* begin[" << (nparameters + 1) << "];" << std::endl;
+	std::cout << "\tchar const* end[" << (nparameters + 1) << "];" << std::endl;
 
 	// Print the state machine.
 	std::vector<size_t> innerParameterFinishingActions;
@@ -236,7 +248,8 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	size_t shift = machine.size() < 128 ? 0 : machine.size() < 32768 ? 8 : 24;
 	size_t specialStateFlag = 0x80 << shift;
 	auto const* type = machine.size() < 128 ? "char" : machine.size() < 32768 ? "short" : "int";
-	std::cout << "\tstatic " << type << " states[" << machine.size() << "][256] = {" << std::endl;
+	std::cout << "\tusing state_t = " << type << ';' << std::endl;
+	std::cout << "\tstatic state_t states[" << machine.size() << "][256] = {" << std::endl;
 	for(auto const& dfaState : machine) {
 		std::cout << "\t\t{";
 		std::vector<size_t> states(256, 0);
@@ -245,7 +258,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 			auto stateNumber = pair.second;
 			if(ch == '\0') {
 				// Find the index of the function of the NFA state.
-				states[0] = fnIndices[nfaStates[stateNumber].fn];
+				states[0] = fnIndices[nfaStates[stateNumber].fn]; // TODO:  remove this.  See next TODO comment.
 			} else if(ch == '\n') {
 				states['\n'] = states['\r'] = states['?'] = specialStateFlag | finalStateActions.size();
 				innerParameterFinishingActions.push_back(0);
@@ -253,7 +266,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 				auto finalParameterFinishingAction = finalParameterFinishingState == finalParameterFinishingStates.cend() ?
 					0 : finalParameterFinishingState->second;
 				finalParameterFinishingActions.push_back(finalParameterFinishingAction);
-				finalStateActions.push_back(stateNumber);
+				finalStateActions.push_back(stateNumber); // TODO:  look up the function index instead of the state containing the function index.
 				parameterStartingActions.push_back(0);
 				parameterConsumingActions.push_back(0);
 				nextStateActions.push_back(0);
@@ -277,11 +290,18 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 					innerParameterFinishingActions.push_back(innerParameterFinishingAction);
 					finalParameterFinishingActions.push_back(0);
 					finalStateActions.push_back(0);
-					auto parameterStartingAction = parameterStartingState == parameterStartingStates.cend() ? 0 : parameterStartingState->second;
-					parameterStartingActions.push_back(parameterStartingAction);
 					auto parameterConsumingAction = parameterConsumingState == parameterConsumingStates.cend() ? 0 : parameterConsumingState->second;
-					parameterConsumingActions.push_back(parameterConsumingAction);
-					nextStateActions.push_back(stateNumber);
+					if(parameterConsumingAction) {
+						parameterConsumingActions.push_back(parameterConsumingAction);
+						stateNumber = machine[stateNumber].cbegin()->second;
+						parameterStartingActions.push_back(0);
+						nextStateActions.push_back(stateNumber);
+					} else {
+						auto parameterStartingAction = parameterStartingState == parameterStartingStates.cend() ? 0 : parameterStartingState->second;
+						parameterStartingActions.push_back(parameterStartingAction);
+						parameterConsumingActions.push_back(0);
+						nextStateActions.push_back(stateNumber);
+					}
 				}
 			} else {
 				states[ch] = stateNumber;
@@ -305,4 +325,70 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	PrintSpecialStateAction(parameterStartingActions);
 	PrintSpecialStateAction(parameterConsumingActions);
 	PrintSpecialStateAction(nextStateActions);
+
+	// Print the main state machine loop.
+	std::ifstream file(__FILE__);
+	std::stringstream ss;
+	ss << file.rdbuf();
+	std::string content = ss.str();
+	content.erase(0, content.find("// <<<\n") + 7);
+	content.erase(content.find("\t// >>>"));
+	std::cout << content;
+}
+
+void MainLoop() {
+	static std::function<void()> fns[] = {
+		[] { fns[0](); },
+	};
+	char const* begin[1];
+	char const* end[1];
+	using state_t = short;
+	std::vector<state_t> innerParameterFinishingActions;
+	std::vector<state_t> finalParameterFinishingActions;
+	std::vector<state_t> finalStateActions;
+	std::vector<state_t> parameterStartingActions;
+	std::vector<state_t> parameterConsumingActions;
+	std::vector<state_t> nextStateActions;
+	state_t states[1][256] = {};
+	char const* p = nullptr;
+	// <<<
+	for(state_t state = 0;;) {
+		do {
+			char ch = *p++;
+			state = states[state][ch];
+		} while(state > 0);
+		if(state == 0) {
+			break;
+		}
+		int index = state & ~0x80;
+		auto innerParameterFinishingAction = innerParameterFinishingActions[index];
+		if(innerParameterFinishingAction > 0) {
+			end[innerParameterFinishingAction] = p - 1;
+		}
+		auto finalParameterFinishingAction = finalParameterFinishingActions[index];
+		if(finalParameterFinishingAction > 0) {
+			end[finalParameterFinishingAction] = p - 1;
+		}
+		auto finalStateAction = finalStateActions[index];
+		if(finalStateAction > 0) {
+			auto fn = fns[states[finalStateAction][0]];
+			fn();
+		}
+		auto parameterStartingAction = parameterStartingActions[index];
+		if(parameterStartingAction > 0) {
+			begin[parameterStartingAction] = p;
+		}
+		auto parameterConsumingAction = parameterConsumingActions[index];
+		if(parameterConsumingAction > 0) {
+			begin[parameterStartingAction] = p;
+			while(++p, *p != '/' && *p != '\n' && *p != '\r' && *p != '?') { // TODO:  separate this into inner and final.
+				continue;
+			}
+			// TODO:  consider collapsing the corresponding finishing action into this one.  Then, have it go to the state after
+			// reading the delimiter.  In the case of an inner parameter, it's a regular state.  In the case of a final parameter,
+			// it's a final state.
+		}
+		state = nextStateActions[index];
+	}
+	// >>>
 }
