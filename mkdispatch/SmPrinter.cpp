@@ -85,12 +85,6 @@ namespace {
 		map::const_iterator begin() const { return machine.cbegin(); }
 		map::const_iterator end() const { return machine.cend(); }
 
-		size_t GetParameterNumber(size_t stateNumber) const {
-			auto state = machine.find(stateNumber);
-			auto parameter = std::find_if(state->second.cbegin(), state->second.cend(), [](auto const& pair) { return IsParameter(pair.first); });
-			return parameter == state->second.cend() ? 0 : parameter->first + 0x81;
-		}
-
 		std::map<size_t, size_t> CollectStarting(bool wantsConsuming) {
 			auto fn = [this, wantsConsuming](std::map<size_t, size_t>& rv, size_t state, map::mapped_type::value_type const& transition) {
 				CollectStarting(rv, wantsConsuming, state, transition);
@@ -114,7 +108,7 @@ namespace {
 				auto const& nexts = machine.find(transition.second);
 				for(auto const& next : nexts->second) {
 					if(IsParameter(next.first)) {
-						std::cout << "// " << state << " -> / -> " << transition.second << " -> p" <<
+						std::cout << "\t// " << state << " -> / -> " << transition.second << " -> p" <<
 							(next.first + 0x81) << " -> " << next.second << " (" << nexts->second.size() <<
 							" transitions)" << std::endl;
 						if(wantsConsuming && nexts->second.size() == 1) {
@@ -135,7 +129,7 @@ namespace {
 				auto const& nexts = machine.find(transition.second);
 				for(auto const& next : nexts->second) {
 					if(next.first == (wantsFinal ? '\n' : '/')) {
-						std::cout << "// " << state << " -> p" << (transition.first + 0x81) << " -> " <<
+						std::cout << "\t// " << state << " -> p" << (transition.first + 0x81) << " -> " <<
 							transition.second << " -> " << (wantsFinal ? '$' : '/') << " -> " <<
 							next.second << " (" << nexts->second.size() << " transitions)" << std::endl;
 						rv.insert({ next.second, transition.first + 0x81 });
@@ -220,8 +214,8 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	// Collect the parameter tracking states.
 	auto parameterStartingStates = machine.CollectStarting(false);
 	auto parameterConsumingStates = machine.CollectStarting(true);
-	auto parameterInnerFinishingStates = machine.CollectFinishing(false);
-	auto parameterFinalFinishingStates = machine.CollectFinishing(true);
+	auto innerParameterFinishingStates = machine.CollectFinishing(false);
+	auto finalParameterFinishingStates = machine.CollectFinishing(true);
 
 	// Print the function array.
 	std::map<std::string, size_t> fnIndices;
@@ -255,9 +249,9 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 			} else if(ch == '\n') {
 				states['\n'] = states['\r'] = states['?'] = specialStateFlag | finalStateActions.size();
 				innerParameterFinishingActions.push_back(0);
-				auto const& parameterFinalFinishingState = parameterFinalFinishingStates.find(stateNumber);
-				auto finalParameterFinishingAction = parameterFinalFinishingState == parameterFinalFinishingStates.cend() ?
-					0 : parameterFinalFinishingState->second;
+				auto const& finalParameterFinishingState = finalParameterFinishingStates.find(stateNumber);
+				auto finalParameterFinishingAction = finalParameterFinishingState == finalParameterFinishingStates.cend() ?
+					0 : finalParameterFinishingState->second;
 				finalParameterFinishingActions.push_back(finalParameterFinishingAction);
 				finalStateActions.push_back(stateNumber);
 				parameterStartingActions.push_back(0);
@@ -268,18 +262,18 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 					states[any] = stateNumber;
 				}
 			} else if(ch == '/') {
-				states['/'] = specialStateFlag | finalStateActions.size();
-				auto parameterInnerFinishingState = parameterInnerFinishingStates.find(stateNumber);
+				auto innerParameterFinishingState = innerParameterFinishingStates.find(stateNumber);
 				auto parameterConsumingState = parameterConsumingStates.find(stateNumber);
 				auto parameterStartingState = parameterStartingStates.find(stateNumber);
-				bool isNormal = parameterInnerFinishingState == parameterInnerFinishingStates.cend() &&
+				bool isNormal = innerParameterFinishingState == innerParameterFinishingStates.cend() &&
 					parameterConsumingState == parameterConsumingStates.cend() &&
 					parameterStartingState == parameterStartingStates.cend();
 				if(isNormal) {
-					states[ch] = stateNumber;
+					states['/'] = stateNumber;
 				} else {
-					auto innerParameterFinishingAction = parameterInnerFinishingState == parameterInnerFinishingStates.cend() ?
-						0 : parameterInnerFinishingState->second;
+					states['/'] = specialStateFlag | finalStateActions.size();
+					auto innerParameterFinishingAction = innerParameterFinishingState == innerParameterFinishingStates.cend() ?
+						0 : innerParameterFinishingState->second;
 					innerParameterFinishingActions.push_back(innerParameterFinishingAction);
 					finalParameterFinishingActions.push_back(0);
 					finalStateActions.push_back(0);
