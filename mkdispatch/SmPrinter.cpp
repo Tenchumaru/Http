@@ -81,6 +81,18 @@ namespace {
 					machine[it->second.second]['\0'] = i;
 				}
 			}
+
+			// Check for an ambiguous grammar.
+			if(states.size() != machine.size()) {
+				std::cerr << "error:  ambiguous grammar: ";
+				auto it = std::find_if(states.cbegin(), states.cend(), [this](auto const& pair) { return machine.find(pair.second.second) == machine.cend(); });
+				for(auto nfaStateNumber : it->first) {
+					auto const& nfaState = nfaStates[nfaStateNumber];
+					std::cerr << ' ' << nfaState.fn;
+				}
+				std::cerr << std::endl;
+				exit(1);
+			}
 		}
 
 		size_t size() const { return machine.size(); }
