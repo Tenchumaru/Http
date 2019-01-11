@@ -60,7 +60,11 @@ namespace {
 					auto u = Move(t, a);
 					auto state = states.find(u);
 					if(state == states.cend()) {
-						state = states.insert({ u, { false, states.size() } }).first;
+						auto p = states.insert({ u, { false, states.size() } });
+						if(!p.second) {
+							throw std::logic_error("failed state insertion");
+						}
+						state = p.first;
 					}
 					machine[pair.second.second][a] = state->second.second;
 				}
@@ -156,7 +160,7 @@ namespace {
 			for(size_t index : indices) {
 				auto const& nfaState = nfaStates[index];
 				for(auto const& pair : nfaState.transitions) {
-					if(pair.first == ch || (pair.first == ':' && chars.find(ch) != std::string::npos)) {
+					if(pair.first == ch || (IsParameter(pair.first) && chars.find(ch) != std::string::npos)) {
 						rv.insert(pair.second);
 					}
 				}
