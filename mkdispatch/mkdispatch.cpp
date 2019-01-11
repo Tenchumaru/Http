@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
 		{ "/xy/z", "xy_z" },
 		{ "/:/p", "__p" },
 		{ "/q/:/:", "q____" },
+		{ "/q/:", "q__" },
 	};
 
 	// Print the Dispatcher class.

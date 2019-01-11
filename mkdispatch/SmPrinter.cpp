@@ -85,8 +85,8 @@ namespace {
 		map::const_iterator end() const { return machine.cend(); }
 
 		std::map<size_t, size_t> CollectStarting(bool wantsConsuming) {
-			auto fn = [this, wantsConsuming](std::map<size_t, size_t>& rv, size_t state, map::mapped_type::value_type const& transition) {
-				CollectStarting(rv, wantsConsuming, state, transition);
+			auto fn = [this, wantsConsuming](std::map<size_t, size_t>& rv, size_t /*state*/, map::mapped_type::value_type const& transition) {
+				CollectStarting(rv, wantsConsuming, transition);
 			};
 			return Collect(fn);
 		}
@@ -102,14 +102,11 @@ namespace {
 		NfaState::vector const& nfaStates;
 		map machine;
 
-		void CollectStarting(std::map<size_t, size_t>& rv, bool wantsConsuming, size_t state, map::mapped_type::value_type const& transition) {
+		void CollectStarting(std::map<size_t, size_t>& rv, bool wantsConsuming, map::mapped_type::value_type const& transition) {
 			if(transition.first == '/') {
 				auto const& nexts = machine.find(transition.second);
 				for(auto const& next : nexts->second) {
 					if(IsParameter(next.first)) {
-						std::cout << "\t// " << state << " -> / -> " << transition.second << " -> p" <<
-							(next.first + 0x81) << " -> " << next.second << " (" << nexts->second.size() <<
-							" transitions)" << std::endl;
 						if(wantsConsuming && nexts->second.size() == 1) {
 							rv.insert({ transition.second, next.first + 0x81 });
 						} else if(!wantsConsuming && nexts->second.size() > 1) {
@@ -128,9 +125,6 @@ namespace {
 				auto const& nexts = machine.find(transition.second);
 				for(auto const& next : nexts->second) {
 					if(next.first == (wantsFinal ? '\n' : '/')) {
-						std::cout << "\t// " << state << " -> p" << (transition.first + 0x81) << " -> " <<
-							transition.second << " -> " << (wantsFinal ? '$' : '/') << " -> " <<
-							next.second << " (" << nexts->second.size() << " transitions)" << std::endl;
 						rv.insert({ next.second, transition.first + 0x81 });
 					}
 				}
@@ -298,7 +292,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 		states.erase(std::find_if(states.crbegin(), states.crend(), [](auto state) { return state != 0; }).base(), states.cend());
 		for(auto state : states) {
 			if(state & specialStateFlag) {
-				std::cout << "-0x" << std::hex << specialStateFlag << std::dec << '|';
+				std::cout << "specialStateFlag|";
 			}
 			std::cout << (state & ~specialStateFlag) << ',';
 		}
