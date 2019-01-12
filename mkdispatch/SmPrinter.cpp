@@ -78,6 +78,13 @@ namespace {
 					auto it = std::find_if(states.cbegin(), states.cend(), [i](auto const& pair) {
 						return pair.first.size() == 1 && pair.first.find(i) != pair.first.cend();
 					});
+					if(it == states.cend()) {
+						// It's possible the grammar is ambiguous but can be
+						// resolved by giving non-any priority over any.
+						it = std::find_if(states.cbegin(), states.cend(), [i](auto const& pair) {
+							return pair.first.find(i) != pair.first.cend();
+						});
+					}
 					machine[it->second.second]['\0'] = i;
 				}
 			}
