@@ -1,7 +1,53 @@
 #include "pch.h"
+#include "Options.h"
+#include "MyPrinter.h"
 #include "SmPrinter.h"
 
 namespace {
+	bool wantsStrings;
+	std::shared_ptr<Printer> printer;
+
+	bool SetPrinter(std::string const& name) {
+		if(name == "my") {
+			printer = std::make_shared<MyPrinter>();
+		} else if(name == "sm" || name == "state") {
+			printer = std::make_shared<SmPrinter>();
+		} else {
+			return false;
+		}
+		return true;
+	}
+
+	bool GetOptions(int& argc, char**& argv) {
+		printer = std::make_shared<SmPrinter>();
+		while(argc > 1 && argv[1][0] == '-') {
+			switch(argv[1][1]) {
+			case 'p':
+				switch(argv[1][2]) {
+				case ':':
+				case '=':
+					if(!SetPrinter(argv[1] + 3)) {
+						return false;
+					}
+					break;
+				default:
+					--argc;
+					++argv;
+					if(argc < 2 || !SetPrinter(argv[1])) {
+						return false;
+					}
+				}
+				break;
+			case 's':
+				wantsStrings = true;
+				break;
+			}
+			--argc;
+			++argv;
+		}
+		return true;
+	}
+
 	std::string RemoveParameterNames(std::string const& line) {
 		std::string processedLine;
 		std::string::size_type i = 0, j;
@@ -20,7 +66,10 @@ namespace {
 int main(int argc, char* argv[]) {
 	char const* prog = strrchr(argv[0], '\\');
 	prog = prog ? ++prog : argv[0];
-	bool wantsStrings = argc > 1 && (argv[1] == std::string("-s") && (--argc, ++argv));
+
+	if(!GetOptions(argc, argv)) {
+		return 2;
+	}
 
 	// Read the requests.
 	std::ifstream fin;
@@ -51,6 +100,5 @@ int main(int argc, char* argv[]) {
 
 	// Print the Dispatcher class.
 	Options options = { wantsStrings };
-	SmPrinter printer;
-	(static_cast<Printer&>(printer)).Print(requests, options);
+	printer->Print(requests, options);
 }
