@@ -1,6 +1,22 @@
 #include "pch.h"
 #include "SmPrinter.h"
 
+namespace {
+	std::string RemoveParameterNames(std::string const& line) {
+		std::string processedLine;
+		std::string::size_type i = 0, j;
+		while(j = line.find(':', i), j != std::string::npos) {
+			processedLine.append(line.cbegin() + i, line.cbegin() + j + 1);
+			i = line.find('/', j);
+			if(i == std::string::npos) {
+				i = line.size();
+			}
+		}
+		processedLine.append(line.substr(i));
+		return processedLine;
+	}
+}
+
 int main(int argc, char* argv[]) {
 	char const* prog = strrchr(argv[0], '\\');
 	prog = prog ? ++prog : argv[0];
@@ -24,7 +40,7 @@ int main(int argc, char* argv[]) {
 			std::cerr << prog << ": malformed input file" << std::endl;
 			return 1;
 		}
-		requests.push_back({ s.substr(0, it), s.substr(it + 1) });
+		requests.push_back({ RemoveParameterNames(s.substr(0, it)), s.substr(it + 1) });
 	}
 
 	// Print the Dispatcher class.

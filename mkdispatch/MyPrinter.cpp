@@ -124,21 +124,10 @@ void MyPrinter::ReplaceParameter(Node& node) {
 }
 
 MyPrinter::Node MyPrinter::Parse(vector const& requests) {
-	// Add each line, with parameter names removed, to the node structure.
+	// Add each line to the node structure.
 	Node root;
 	std::for_each(requests.cbegin(), requests.cend(), [this, &root](Request const& request) {
-		std::string processedLine;
-		std::string::size_type i = 0, j;
-		while(j = request.line.find(':', i), j != std::string::npos) {
-			processedLine.append(request.line.cbegin() + i, request.line.cbegin() + j);
-			processedLine += flag;
-			i = request.line.find('/', j);
-			if(i == std::string::npos) {
-				i = request.line.size();
-			}
-		}
-		processedLine.append(request.line.substr(i));
-		InternalParse(processedLine, request.fn, 0, root);
+		InternalParse(request.line, request.fn, 0, root);
 	});
 
 	// Replace any parameters in prefixes with an additional node.  This
