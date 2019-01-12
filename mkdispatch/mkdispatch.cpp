@@ -18,7 +18,7 @@ namespace {
 		return true;
 	}
 
-	bool GetOptions(int& argc, char**& argv) {
+	bool GetOptions(char const* prog, int& argc, char**& argv) {
 		printer = std::make_shared<SmPrinter>();
 		while(argc > 1 && argv[1][0] == '-') {
 			switch(argv[1][1]) {
@@ -41,6 +41,9 @@ namespace {
 			case 's':
 				wantsStrings = true;
 				break;
+			default:
+				std::cerr << prog << ": unknown option '" << argv[1][1] << '\'' << std::endl;
+				return false;
 			}
 			--argc;
 			++argv;
@@ -67,7 +70,8 @@ int main(int argc, char* argv[]) {
 	char const* prog = strrchr(argv[0], '\\');
 	prog = prog ? ++prog : argv[0];
 
-	if(!GetOptions(argc, argv)) {
+	if(!GetOptions(prog, argc, argv)) {
+		std::cerr << "usage: " << prog << " [-p printer] [-s]" << std::endl;
 		return 2;
 	}
 
