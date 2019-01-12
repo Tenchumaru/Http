@@ -213,8 +213,6 @@ SmPrinter::SmPrinter() {}
 SmPrinter::~SmPrinter() {}
 
 void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
-	options;
-
 	// Determine the maximum number of parameters in a request.
 	ptrdiff_t nparameters = 0;
 	for(Printer::Request const& request : requests) {
@@ -338,7 +336,11 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 		functionInvocations << "\t\t\tcase " << (i + 1) << ':' << std::endl;
 		functionInvocations << "\t\t\t\treturn " << request.fn << '(';
 		for(size_t j = 1, m = std::count(request.line.cbegin(), request.line.cend(), ':'); j <= m; ++j) {
-			functionInvocations << "begin[" << j << "], end[" << j << ']';
+			if(options.wantsStrings) {
+				functionInvocations << "xstring(begin[" << j << "], end[" << j << "])";
+			} else {
+				functionInvocations << "begin[" << j << "], end[" << j << ']';
+			}
 			if(j < m) {
 				functionInvocations << ", ";
 			}
