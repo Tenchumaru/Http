@@ -1,0 +1,7 @@
+G /a/b	a_b
+G /a/bc	a_bc
+G /x/y	x_y
+G /xy/z	xy_z
+G /r/:/p	r___p
+G /q/:/:	q____
+G /q/:	q__

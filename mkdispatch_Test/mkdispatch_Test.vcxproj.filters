@@ -36,4 +36,8 @@
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="simple.txt" />
+    <Text Include="twitch.txt" />
+  </ItemGroup>
 </Project>

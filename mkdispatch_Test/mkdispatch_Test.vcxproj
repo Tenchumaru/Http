@@ -180,6 +180,10 @@
     <None Include="Dispatch.inl" />
     <None Include="Pre-build.cmd" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="simple.txt" />
+    <Text Include="twitch.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
