@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Options.h"
 #include "MyPrinter.h"
+#include "SegPrinter.h"
 #include "SmPrinter.h"
 
 namespace {
@@ -10,6 +11,8 @@ namespace {
 	bool SetPrinter(std::string const& name) {
 		if(name == "my") {
 			printer = std::make_shared<MyPrinter>();
+		} else if(name == "seg" || name == "segment") {
+			printer = std::make_shared<SegPrinter>();
 		} else if(name == "sm" || name == "state") {
 			printer = std::make_shared<SmPrinter>();
 		} else {
