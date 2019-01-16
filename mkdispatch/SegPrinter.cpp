@@ -104,15 +104,10 @@ SegPrinter::SegPrinter() {}
 SegPrinter::~SegPrinter() {}
 
 void SegPrinter::InternalPrint(vector const& requests, Options const& options) {
-	// Go through the requests in reverse.  This implementation favors requests
-	// processed earlier over those processed later.  TODO:  perhaps iteration
-	// order here doesn't matter.  Perhaps the iteratior order of the maps in
-	// the Node matters.
 	Segment::vector segments;
-	std::transform(requests.crbegin(), requests.crend(), std::back_inserter(segments), [](Request const& request) {
-		return std::make_shared<Segment>(request, 0, 0);
-	});
-
+	for(Request const& request : requests) {
+		segments.push_back(std::make_shared<Segment>(request, 0, 0));
+	}
 	Node root(segments, std::string(), 0, 0);
 	root.Print(options, 1);
 }
