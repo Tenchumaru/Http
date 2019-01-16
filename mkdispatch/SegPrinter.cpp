@@ -53,9 +53,9 @@ namespace {
 			}
 		}
 
-		void Print(size_t indentLevel) const {
+		void Print(Options const& options, size_t indentLevel) const {
 			std::string indent(indentLevel, '\t');
-			std::for_each(children.crbegin(), children.crend(), [this, indent, indentLevel](map::value_type const& pair) {
+			std::for_each(children.crbegin(), children.crend(), [this, indent, indentLevel, options](map::value_type const& pair) {
 				auto const& name = pair.first;
 				auto const& child = pair.second;
 				if(name == ":") {
@@ -71,13 +71,17 @@ namespace {
 						std::cout << indent << "if(memcmp(p + " << index << ", \"" << name << "\", " << name.size() << ") {" << std::endl;
 					}
 				}
-				child.Print(indentLevel + 1);
+				child.Print(options, indentLevel + 1);
 				std::cout << indent << '}' << std::endl;
 			});
 			if(!fn.empty()) {
 				std::cout << indent << "return " << fn << '(';
 				for(size_t i = 0; i < parameter; ++i) {
-					std::cout << 'p' << i << ", " << 'q' << i;
+					if(options.wantsStrings) {
+						std::cout << "xstring(p" << i << ", " << 'q' << i << ')';
+					} else {
+						std::cout << 'p' << i << ", " << 'q' << i;
+					}
 					if(i + 1 < parameter) {
 						std::cout << ", ";
 					}
@@ -100,8 +104,6 @@ SegPrinter::SegPrinter() {}
 SegPrinter::~SegPrinter() {}
 
 void SegPrinter::InternalPrint(vector const& requests, Options const& options) {
-	options;
-
 	// Go through the requests in reverse.  This implementation favors requests
 	// processed earlier over those processed later.  TODO:  perhaps iteration
 	// order here doesn't matter.  Perhaps the iteratior order of the maps in
@@ -112,5 +114,5 @@ void SegPrinter::InternalPrint(vector const& requests, Options const& options) {
 	});
 
 	Node root(segments, std::string(), 0, 0);
-	root.Print(1);
+	root.Print(options, 1);
 }
