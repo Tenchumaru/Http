@@ -2,100 +2,149 @@
 #include "SegPrinter.h"
 
 namespace {
-	struct Segment {
-		using ptr = std::shared_ptr<Segment>;
-		using vector = std::vector<Segment::ptr>;
-
-		std::string value, fn;
-		ptr next;
-		size_t index, parameter;
-
-		Segment(Printer::Request const& request, size_t index, size_t parameter) : index(index), parameter(parameter) {
-			auto i = request.line.find('/', index);
-			if(i == request.line.npos) {
-				value = request.line.substr(index);
-				fn = request.fn;
-			} else {
-				value = request.line.substr(index, i - index);
-				if(value == ":") {
-					++parameter;
-				}
-				next = std::make_shared<Segment>(request, i + 1, parameter);
-			}
-		}
-	};
-
 	class Node {
 	public:
-		Node(Segment::vector const& segments, std::string const& fn, size_t index, size_t parameter) : fn(fn), index(index), parameter(parameter) {
-			std::map<std::string, Segment::vector> partitions;
-			std::map<std::string, std::string> functions;
-			for(auto const& segment : segments) {
-				auto next = segment->next;
-				auto& v = partitions[segment->value];
-				if(next) {
-					v.push_back(next);
-				}
-				if(!segment->fn.empty()) {
-					if(!functions.insert({ segment->value, segment->fn }).second) {
-						std::cerr << "warning: duplicate function \"" << segment->fn << '"' << std::endl;
-					}
-				}
-			}
-			for(auto const& partition : partitions) {
-				auto it = functions.find(partition.first);
-				if(partition.first == ":") {
-					++parameter;
-				}
-				auto childFn = it == functions.cend() ? std::string() : it->second;
-				size_t childIndex = index + partition.first.size() + 1;
-				children.insert({ partition.first, Node(partition.second, childFn, childIndex, parameter) });
-			}
-		}
+		Node() : index(0) {}
 
-		void Print(Options const& options, size_t indentLevel) const {
-			std::string indent(indentLevel, '\t');
-			std::for_each(children.crbegin(), children.crend(), [this, indent, indentLevel, options](map::value_type const& pair) {
-				auto const& name = pair.first;
-				auto const& child = pair.second;
-				if(name == ":") {
-					std::cout << indent << "char const* p" << parameter << " = CollectParameter(p, " << index << ");" << std::endl;
-					std::cout << indent << "char const* q" << parameter << " = p + " << (index + 1) << ';' << std::endl;
-					std::cout << indent << "if(p[" << (index + 1) << "] == '/') {" << std::endl;
-				} else {
-					if(!child.children.empty()) {
-						std::cout << indent << "if(memcmp(p + " << index << ", \"" << name << "/\", " << (name.size() + 1) << ") {" << std::endl;
-					} else if(name.size() == 1) {
-						std::cout << indent << "if(p[" << index << "] == '" << name << "') {" << std::endl;
-					} else {
-						std::cout << indent << "if(memcmp(p + " << index << ", \"" << name << "\", " << name.size() << ") {" << std::endl;
-					}
-				}
-				child.Print(options, indentLevel + 1);
-				std::cout << indent << '}' << std::endl;
-			});
-			if(!fn.empty()) {
-				std::cout << indent << "return " << fn << '(';
-				for(size_t i = 0; i < parameter; ++i) {
-					if(options.wantsStrings) {
-						std::cout << "xstring(p" << i << ", " << 'q' << i << ')';
-					} else {
-						std::cout << 'p' << i << ", " << 'q' << i;
-					}
-					if(i + 1 < parameter) {
-						std::cout << ", ";
-					}
-				}
-				std::cout << "); " << std::endl;
+#pragma warning(disable: 4458) // declaration of 'segment' hides class member
+		void Add(Printer::Request const& request) {
+			auto i = request.line.find('/');
+			if(i == std::string::npos) {
+				throw std::runtime_error("invalid request");
 			}
+			auto segment = request.line.substr(0, i);
+			auto it = children.find(segment);
+			if(it == children.cend()) {
+				it = children.insert({ segment, Node(segment, 0) }).first;
+			}
+			it->second.Add(request, i + 1);
+		}
+#pragma warning(default: 4458)
+
+		void Print(Options const& options) const {
+			for(auto const& pair : children) {
+				pair.second.Print(options, 1, 0);
+				std::cout << "\telse" << std::endl;
+			}
+			std::cout << "\t\t;" << std::endl;
 		}
 
 	private:
-		using map = std::map<std::string, Node>;
+		std::map<std::string, Node> children;
+		std::string segment, fn;
+		size_t index;
 
-		map children;
-		std::string fn;
-		size_t index, parameter;
+		Node(std::string const& segment, size_t index) : segment(segment), index(index) {}
+
+#pragma warning(disable: 4458) // declaration of '*' hides class member
+		void Add(Printer::Request const& request, size_t index) {
+			auto i = request.line.find('/', index);
+			auto segment = request.line.substr(index, i == std::string::npos ? i : i - index);
+			auto it = children.find(segment);
+			if(it == children.cend()) {
+				it = children.insert({ segment, Node(segment, index) }).first;
+			}
+			if(i == std::string::npos) {
+				if(!it->second.fn.empty()) {
+					throw std::runtime_error("duplicate function");
+				}
+				it->second.fn = request.fn;
+			} else if(segment == ":") {
+				it->second.Add(Printer::Request{ request.line.substr(0, index) + request.line.substr(i),request.fn }, i);
+			} else {
+				it->second.Add(request, i + 1);
+			}
+		}
+#pragma warning(default: 4458)
+
+		void Print(Options const& options, size_t indentLevel, size_t parameterCount) const {
+			std::string indent(indentLevel, '\t');
+			if(children.empty()) {
+				if(segment == ":") {
+					PrintParameter(indent, parameterCount);
+					std::cout << indent << "if(";
+				} else {
+					std::cout << indent << "if(";
+					if(!segment.empty()) {
+						PrintCompare();
+						std::cout << " && ";
+					}
+				}
+				std::cout << "CollectQuery(p + " << (index + (segment == ":" ? 0 : segment.size())) << ")) {" << std::endl;
+				PrintFunctionReturn(indent, parameterCount, options);
+				std::cout << indent << '}' << std::endl;
+			} else if(fn.empty()) {
+				if(segment == ":") {
+					PrintParameter(indent, parameterCount);
+					std::cout << indent << "if(p[" << index << "] == '/') {" << std::endl;
+				} else {
+					std::cout << indent << "if(memcmp(p + " << index << ", \"" <<
+						segment << "/\", " << (segment.size() + 1) << ") == 0) {" << std::endl;
+				}
+				for(auto const& pair : children) {
+					pair.second.Print(options, indentLevel + 1, parameterCount);
+					std::cout << indent << "\telse" << std::endl;
+				}
+				std::cout << indent << "\t\t;" << std::endl;
+				std::cout << indent << '}' << std::endl;
+			} else {
+				if(segment == ":") {
+					PrintParameter(indent, parameterCount);
+					std::cout << indent << "if(p[" << index << "] == '/') {" << std::endl;
+					for(auto const& pair : children) {
+						pair.second.Print(options, indentLevel + 1, parameterCount);
+					}
+					std::cout << indent << "} else if(CollectQuery(p + " << index << ")) {" << std::endl;
+					PrintFunctionReturn(indent, parameterCount, options);
+					std::cout << indent << '}' << std::endl;
+				} else {
+					if(!segment.empty()) {
+						std::cout << indent << "if(";
+						PrintCompare();
+						std::cout << ") {" << std::endl;
+					} else {
+						std::cout << indent << '{' << std::endl;
+					}
+					std::cout << indent << "\tif(p[" << (index + segment.size()) << "] == '/') {" << std::endl;
+					for(auto const& pair : children) {
+						pair.second.Print(options, indentLevel + 2, parameterCount);
+					}
+					std::cout << indent << "\t} else if(CollectQuery(p + " << (index + segment.size()) << ")) {" << std::endl;
+					PrintFunctionReturn(indent + '\t', parameterCount, options);
+					std::cout << indent << "\t}" << std::endl;
+					std::cout << indent << '}' << std::endl;
+				}
+			}
+		}
+
+		void PrintCompare() const {
+			if(segment.size() == 1) {
+				std::cout << "p[" << index << "] == '" << segment << "'";
+			} else {
+				std::cout << "memcmp(p + " << index << ", \"" << segment << "\", " << segment.size() << ") == 0";
+			}
+		}
+
+		void PrintFunctionReturn(std::string const& indent, size_t parameterCount, Options const& options) const {
+			std::cout << indent << "\treturn " << fn << '(';
+			for(decltype(parameterCount) i = 0; i < parameterCount; ++i) {
+				if(options.wantsStrings) {
+					std::cout << "xstring(p" << i << ", " << 'q' << i << ')';
+				} else {
+					std::cout << 'p' << i << ", " << 'q' << i;
+				}
+				if(i + 1 < parameterCount) {
+					std::cout << ", ";
+				}
+			}
+			std::cout << ");" << std::endl;
+		}
+
+		void PrintParameter(std::string const& indent, size_t& parameterCount) const {
+			std::cout << indent << "char const* p" << parameterCount << " = p + " << index << ';' << std::endl;
+			std::cout << indent << "char const* q" << parameterCount << " = CollectParameter(p, " << index << ");" << std::endl;
+			++parameterCount;
+		}
 	};
 }
 
@@ -104,10 +153,9 @@ SegPrinter::SegPrinter() {}
 SegPrinter::~SegPrinter() {}
 
 void SegPrinter::InternalPrint(vector const& requests, Options const& options) {
-	Segment::vector segments;
-	for(Request const& request : requests) {
-		segments.push_back(std::make_shared<Segment>(request, 0, 0));
+	Node root;
+	for(auto const& request : requests) {
+		root.Add(request);
 	}
-	Node root(segments, std::string(), 0, 0);
-	root.Print(options, 1);
+	root.Print(options);
 }
