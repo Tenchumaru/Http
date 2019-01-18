@@ -2,7 +2,7 @@
 SETLOCAL
 
 SET T=%TEMP%\%RANDOM%.inl
-"%~1mkdispatch" > %T%
+"%~1mkdispatch" "%~dp0simple.txt" > %T%
 IF EXIST "%~dp0Dispatch.inl" (
 	FC %T% "%~dp0Dispatch.inl" > nul
 	IF NOT ERRORLEVEL 1 EXIT /B 0
