@@ -374,6 +374,7 @@ void MainLoop() {
 	std::vector<state_t> nextStateIndices;
 	state_t states[1][256] = {};
 	char const* p = nullptr;
+	auto CollectQuery = [](char const*) { return false; };
 	// <<<
 	for(state_t state = 0;;) {
 		do {
@@ -401,6 +402,9 @@ void MainLoop() {
 		}
 		auto functionIndex = functionIndices[index];
 		if(functionIndex > 0) {
+			if(!CollectQuery(p - 1)) {
+				break;
+			}
 			switch(functionIndex) {
 			case 0: break; // |||
 			}
