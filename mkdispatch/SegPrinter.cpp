@@ -21,6 +21,19 @@ namespace {
 		}
 #pragma warning(default: 4458)
 
+		void Collapse() {
+			while(fn.empty() && segment != ":" && children.size() == 1 && children.cbegin()->second.segment != ":") {
+				segment += '/' + children.cbegin()->second.segment;
+				fn = children.cbegin()->second.fn;
+				decltype(children) swap;
+				std::swap(swap, children.begin()->second.children);
+				std::swap(children, swap);
+			}
+			for(auto& pair : children) {
+				pair.second.Collapse();
+			}
+		}
+
 		void Print(Options const& options) const {
 			for(auto const& pair : children) {
 				pair.second.Print(options, 1, 0);
@@ -157,5 +170,6 @@ void SegPrinter::InternalPrint(vector const& requests, Options const& options) {
 	for(auto const& request : requests) {
 		root.Add(request);
 	}
+	root.Collapse();
 	root.Print(options);
 }
