@@ -1,12 +1,20 @@
 @ECHO OFF
 SETLOCAL
 
+SET D=%~dp0
+SET MKDISPATCH="%~1mkdispatch"
 SET T=%TEMP%\%RANDOM%.inl
-"%~1mkdispatch" "%~dp0simple.txt" > %T%
-IF EXIST "%~dp0Dispatch.inl" (
-	FC %T% "%~dp0Dispatch.inl" > nul
+CALL :one my
+CALL :one seg
+CALL :one sm
+EXIT /B 0
+
+:one
+%MKDISPATCH% -p %1 "%D%simple.txt" > %T%
+IF EXIST "%D%%1Dispatch.inl" (
+	FC %T% "%D%%1Dispatch.inl" > nul
 	IF NOT ERRORLEVEL 1 EXIT /B 0
 )
-ECHO Creating "%~dp0Dispatch.inl"
-MOVE /Y %T% "%~dp0Dispatch.inl"
+ECHO Creating "%D%%1Dispatch.inl"
+MOVE /Y %T% "%D%%1Dispatch.inl"
 EXIT /B 0

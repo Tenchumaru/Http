@@ -168,17 +168,23 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MyDispatchTest.cpp" />
+    <ClCompile Include="SegDispatchTest.cpp" />
+    <ClCompile Include="SmDispatchTest.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="DispatchTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Dispatch.inl" />
+    <None Include="DispatchTest.inl" />
+    <None Include="myDispatch.inl" />
     <None Include="Pre-build.cmd" />
+    <None Include="segDispatch.inl" />
+    <None Include="smDispatch.inl" />
+    <None Include="Utils.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="simple.txt" />

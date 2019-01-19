@@ -26,13 +26,31 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DispatchTest.cpp">
+    <ClCompile Include="MyDispatchTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SegDispatchTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SmDispatchTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Pre-build.cmd" />
-    <None Include="Dispatch.inl">
+    <None Include="DispatchTest.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="myDispatch.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Utils.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="segDispatch.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="smDispatch.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
