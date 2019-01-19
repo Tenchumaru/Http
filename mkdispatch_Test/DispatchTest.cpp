@@ -18,6 +18,10 @@ namespace {
 	char const* q_____q1;
 	char const* q___p0;
 	char const* q___q0;
+	char const* z____y_p0;
+	char const* z____y_q0;
+	char const* z____y_p1;
+	char const* z____y_q1;
 
 	bool CollectQuery(char const*) { return CollectQuery_invoked = true; }
 	void FourZeroFour() { FourZeroFour_invoked = true; }
@@ -30,6 +34,7 @@ namespace {
 	void r___p(char const* p0, char const* q0) { r___p_p0 = p0; r___p_q0 = q0; }
 	void q__(char const* p0, char const* q0) { q___p0 = p0; q___q0 = q0; }
 	void q____(char const* p0, char const* q0, char const* p1, char const* q1) { q_____p0 = p0; q_____q0 = q0; q_____p1 = p1; q_____q1 = q1; }
+	void z____y(char const* p0, char const* q0, char const* p1, char const* q1) { z____y_p0 = p0; z____y_q0 = q0; z____y_p1 = p1; z____y_q1 = q1; }
 }
 
 #include "Dispatch.inl"
@@ -55,6 +60,10 @@ namespace mkdispatch_Test {
 			q_____q1 = nullptr;
 			q___p0 = nullptr;
 			q___q0 = nullptr;
+			z____y_p0 = nullptr;
+			z____y_q0 = nullptr;
+			z____y_p1 = nullptr;
+			z____y_q1 = nullptr;
 		}
 
 public:
@@ -114,6 +123,15 @@ public:
 		std::string s(q_____p0, q_____q0);
 		Assert::AreEqual(std::string("abc"), s);
 		std::string t(q_____p1, q_____q1);
+		Assert::AreEqual(std::string("xyz"), t);
+	}
+
+	TEST_METHOD(z____y) {
+		Dispatch("G /z/abc/xyz/y\r");
+		Assert::IsTrue(CollectQuery_invoked);
+		std::string s(z____y_p0, z____y_q0);
+		Assert::AreEqual(std::string("abc"), s);
+		std::string t(z____y_p1, z____y_q1);
 		Assert::AreEqual(std::string("xyz"), t);
 	}
 	};
