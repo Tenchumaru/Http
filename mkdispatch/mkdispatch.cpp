@@ -22,7 +22,7 @@ namespace {
 	}
 
 	bool GetOptions(char const* prog, int& argc, char**& argv) {
-		printer = std::make_shared<SmPrinter>();
+		printer = std::make_shared<MyPrinter>();
 		while(argc > 1 && argv[1][0] == '-') {
 			switch(argv[1][1]) {
 			case 'p':
