@@ -69,6 +69,7 @@ namespace mkdispatch_Test {
 			Pa_b_invoked = false;
 			a_b_invoked = false;
 			a_bc_invoked = false;
+			root_invoked = false;
 			x_y_invoked = false;
 			xy_z_invoked = false;
 			r___p_p0 = nullptr;
@@ -124,6 +125,14 @@ public:
 		Assert::IsTrue(CollectQuery_succeeded);
 		Assert::IsFalse(CollectQuery_failed);
 		Assert::IsTrue(a_bc_invoked);
+	}
+
+	TEST_METHOD(root) {
+		Dispatch("G /\r");
+		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		Assert::IsTrue(root_invoked);
 	}
 
 	TEST_METHOD(x_y) {
