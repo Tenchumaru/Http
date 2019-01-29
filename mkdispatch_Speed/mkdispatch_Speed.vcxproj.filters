@@ -15,36 +15,48 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
+    <ClInclude Include="Utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dispatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MyDispatchTest.cpp">
+    <ClCompile Include="mkdispatch_Speed.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SegDispatchTest.cpp">
+    <ClCompile Include="MyDispatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SmDispatchTest.cpp">
+    <ClCompile Include="Utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SegDispatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SmDispatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="twitch.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Pre-build.cmd" />
-    <None Include="DispatchTest.inl">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="myDispatch.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="Utils.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="segDispatch.inl">
@@ -53,8 +65,8 @@
     <None Include="smDispatch.inl">
       <Filter>Header Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="simple.txt" />
+    <None Include="Dispatch.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

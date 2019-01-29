@@ -1,8 +1,11 @@
 # Ignore temporary files.
 *.sw[op]
 
-# Ignore INL files since all of my projects generate them as part of the build process.
+# Ignore most INL files since some of my projects generate them as part of the
+# build process.
 *.inl
+!Http/ResultCodes.inl
+!mkdispatch_Speed/Dispatch.inl
 !mkdispatch_Test/DispatchTest.inl
 !mkdispatch_Test/Utils.inl
 
