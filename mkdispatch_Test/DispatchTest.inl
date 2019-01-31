@@ -26,6 +26,10 @@ namespace mkdispatch_Test {
 			z____y_p1 = nullptr;
 			z____y_q1 = nullptr;
 			Pa_b_invoked = false;
+			Px___y_p0 = nullptr;
+			Px___y_q0 = nullptr;
+			Px_y___z_p0 = nullptr;
+			Px_y___z_q0 = nullptr;
 		}
 
 public:
@@ -159,6 +163,28 @@ public:
 		Assert::IsTrue(CollectQuery_succeeded);
 		Assert::IsFalse(CollectQuery_failed);
 		Assert::IsTrue(Pa_b_invoked);
+	}
+
+	TEST_METHOD(Px___y) {
+		Dispatch("P /x/y/y\r");
+		if(callsCollectParameter) {
+			Assert::AreEqual(CollectParameter_invocationCount, 2ull);
+		}
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		std::string s(Px___y_p0, Px___y_q0);
+		Assert::AreEqual(std::string("y"), s);
+	}
+
+	TEST_METHOD(Px_y___z) {
+		Dispatch("P /x/y/y/z\r");
+		if(callsCollectParameter) {
+			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
+		}
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		std::string s(Px_y___z_p0, Px_y___z_q0);
+		Assert::AreEqual(std::string("y"), s);
 	}
 	};
 }

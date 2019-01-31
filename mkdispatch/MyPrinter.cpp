@@ -31,10 +31,15 @@ namespace {
 
 		void Print(Options const& options, size_t indentLevel, size_t index, size_t parameterCount) const {
 			std::string indent(indentLevel, '\t');
+			size_t printedParameterNumber;
 			if(index == prefix.size()) {
+				printedParameterNumber = 0;
 				std::cout << indent << '{' << std::endl;
 			} else {
-				PrintCompare(indent, index, parameterCount);
+				printedParameterNumber = parameterCount + 1;
+				if(!PrintCompare(indent, index, parameterCount)) {
+					printedParameterNumber = 0;
+				}
 			}
 			if(!children.empty()) {
 				std::cout << indent << "\tswitch(p[" << prefix.size() << "]) {" << std::endl;
@@ -49,10 +54,12 @@ namespace {
 				std::cout << indent << "\t}" << std::endl;
 				auto it = children.find(':');
 				if(it != children.cend()) {
+					std::cout << indent << "\tchar const* r" << parameterCount << " = p;" << std::endl;
 					std::cout << indent << "\tif(CollectParameter(p, " << prefix.size() <<
 						", p" << parameterCount << ", q" << parameterCount << ")) {" << std::endl;
 					it->second.Print(options, indentLevel + 2, prefix.size() + 1, parameterCount + 1);
 					std::cout << indent << "\t}" << std::endl;
+					std::cout << indent << "\tp = r" << parameterCount << ';' << std::endl;
 				}
 			}
 			if(!fn.empty()) {
@@ -72,16 +79,21 @@ namespace {
 				std::cout << indent << "\t}" << std::endl;
 			}
 			std::cout << indent << '}' << std::endl;
+			if(printedParameterNumber) {
+				std::cout << indent << "p = r" << (printedParameterNumber - 1) << "; }" << std::endl;
+			}
 		}
 
-		void PrintCompare(std::string const& indent, size_t const& index, size_t& parameterCount) const {
+		bool PrintCompare(std::string const& indent, size_t const& index, size_t& parameterCount) const {
 			auto substr = prefix.substr(index);
 			auto i = substr.find(':');
 			if(i == std::string::npos) {
 				std::cout << indent << "if(";
 				PrintCompare(index, substr, substr.size());
 				std::cout << ") {" << std::endl;
+				return false;
 			} else {
+				std::cout << indent << "{ char const* r" << parameterCount << " = p;" << std::endl;
 				std::cout << indent << "if(";
 				PrintCompare(index, substr.substr(0, i), i);
 				decltype(i) j = 0;
@@ -97,6 +109,7 @@ namespace {
 					i = j;
 				} while(j < substr.size());
 				std::cout << ") {" << std::endl;
+				return true;
 			}
 		}
 

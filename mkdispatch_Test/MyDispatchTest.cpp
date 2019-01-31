@@ -4,6 +4,7 @@
 namespace {
 #include "myDispatch.inl"
 	bool callsCollectParameter = true;
+	std::string name = "my";
 }
 #define TestClassName MyDispatchTest
 #include "DispatchTest.inl"

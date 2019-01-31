@@ -35,15 +35,24 @@ namespace {
 		}
 
 		void Print(Options const& options) const {
-			for(auto const& pair : children) {
-				pair.second.Print(options, 1, 0);
-				std::cout << "\telse" << std::endl;
-			}
-			std::cout << "\t\t;" << std::endl;
+			PrintChildren(options, 0, 0, "");
 		}
 
 	private:
-		std::map<std::string, Node> children;
+		struct NodeLess {
+			bool operator()(std::string const& left, std::string const& right) const {
+				if(left == "") {
+					return false;
+				} else if(left == ":") {
+					return right == "";
+				} else if(right == "" || right == ":") {
+					return true;
+				}
+				return left < right;
+			}
+		};
+
+		std::map<std::string, Node, NodeLess> children;
 		std::string segment, fn;
 		size_t index;
 
@@ -73,10 +82,12 @@ namespace {
 		void Print(Options const& options, size_t indentLevel, size_t parameterCount) const {
 			std::string indent(indentLevel, '\t');
 			if(children.empty()) {
+				size_t printedParameterNumber;
 				if(segment == ":") {
-					PrintParameter(indent, parameterCount);
+					printedParameterNumber = PrintParameter(indent, parameterCount);
 					std::cout << indent << "if(";
 				} else {
+					printedParameterNumber = 0;
 					std::cout << indent << "if(";
 					if(!segment.empty()) {
 						PrintCompare();
@@ -86,22 +97,26 @@ namespace {
 				std::cout << "CollectQuery(p + " << (index + (segment == ":" ? 0 : segment.size())) << ")) {" << std::endl;
 				PrintFunctionReturn(indent, parameterCount, options);
 				std::cout << indent << '}' << std::endl;
+				if(printedParameterNumber) {
+					std::cout << indent << "p = r" << (printedParameterNumber - 1) << ';' << std::endl;
+				}
 			} else if(fn.empty()) {
+				size_t printedParameterNumber;
 				if(segment == ":") {
-					PrintParameter(indent, parameterCount);
+					printedParameterNumber = PrintParameter(indent, parameterCount);
 					std::cout << indent << "if(p[" << index << "] == '/') {" << std::endl;
 				} else {
+					printedParameterNumber = 0;
 					std::cout << indent << "if(memcmp(p + " << index << ", \"" <<
 						segment << "/\", " << (segment.size() + 1) << ") == 0) {" << std::endl;
 				}
-				for(auto const& pair : children) {
-					pair.second.Print(options, indentLevel + 1, parameterCount);
-					std::cout << indent << "\telse" << std::endl;
-				}
-				std::cout << indent << "\t\t;" << std::endl;
+				PrintChildren(options, indentLevel, parameterCount, indent);
 				std::cout << indent << '}' << std::endl;
+				if(printedParameterNumber) {
+					std::cout << indent << "p = r" << (printedParameterNumber - 1) << ';' << std::endl;
+				}
 			} else if(segment == ":") {
-				PrintParameter(indent, parameterCount);
+				PrintParameter(indent, parameterCount, false);
 				std::cout << indent << "if(p[" << index << "] == '/') {" << std::endl;
 				for(auto const& pair : children) {
 					pair.second.Print(options, indentLevel + 1, parameterCount);
@@ -128,6 +143,18 @@ namespace {
 			}
 		}
 
+		void PrintChildren(Options const& options, size_t indentLevel, size_t parameterCount, std::string const& indent) const {
+			bool isNext = false;
+			for(auto const& pair : children) {
+				if(isNext) {
+					std::cout << indent << "\telse" << std::endl;
+				} else {
+					isNext = true;
+				}
+				pair.second.Print(options, indentLevel + 1, parameterCount);
+			}
+		}
+
 		void PrintCompare() const {
 			if(segment.size() == 1) {
 				std::cout << "p[" << index << "] == '" << segment << "'";
@@ -151,10 +178,14 @@ namespace {
 			std::cout << ");" << std::endl;
 		}
 
-		void PrintParameter(std::string const& indent, size_t& parameterCount) const {
+		size_t PrintParameter(std::string const& indent, size_t& parameterCount, bool wantsSave = true) const {
+			std::cout << indent << ';' << std::endl;
+			if(wantsSave) {
+				std::cout << indent << "char const* r" << parameterCount << " = p;" << std::endl;
+			}
 			std::cout << indent << "char const* p" << parameterCount << " = p + " << index << ';' << std::endl;
 			std::cout << indent << "char const* q" << parameterCount << " = CollectParameter(p, " << index << ");" << std::endl;
-			++parameterCount;
+			return ++parameterCount;
 		}
 	};
 }

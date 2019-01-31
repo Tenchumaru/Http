@@ -4,6 +4,7 @@
 namespace {
 #include "segDispatch.inl"
 	bool callsCollectParameter = true;
+	std::string name = "seg";
 }
 #define TestClassName SegDispatchTest
 #include "DispatchTest.inl"

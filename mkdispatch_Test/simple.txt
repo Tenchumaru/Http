@@ -8,3 +8,5 @@ G /q/:/:	q____
 G /q/:	q__
 G /z/:/:/y	z____y
 P /a/b	Pa_b
+P /x/:/y	Px___y
+P /x/y/:/z	Px_y___z

@@ -21,6 +21,10 @@ namespace {
 	char const* z____y_p1;
 	char const* z____y_q1;
 	bool Pa_b_invoked;
+	char const* Px___y_p0;
+	char const* Px___y_q0;
+	char const* Px_y___z_p0;
+	char const* Px_y___z_q0;
 
 	bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*& qn) {
 		++CollectParameter_invocationCount;
@@ -59,4 +63,6 @@ namespace {
 	void q__(char const* p0, char const* q0) { q___p0 = p0; q___q0 = q0; }
 	void z____y(char const* p0, char const* q0, char const* p1, char const* q1) { z____y_p0 = p0; z____y_q0 = q0; z____y_p1 = p1; z____y_q1 = q1; }
 	void Pa_b() { Pa_b_invoked = true; }
+	void Px___y(char const* p0, char const* q0) { Px___y_p0 = p0; Px___y_q0 = q0; }
+	void Px_y___z(char const* p0, char const* q0) { Px_y___z_p0 = p0; Px_y___z_q0 = q0; }
 }
