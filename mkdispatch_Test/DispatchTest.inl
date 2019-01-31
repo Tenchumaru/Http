@@ -8,10 +8,9 @@ namespace mkdispatch_Test {
 			CollectQuery_succeeded = false;
 			CollectQuery_failed = false;
 			FourZeroFour_invoked = false;
-			Pa_b_invoked = false;
+			root_invoked = false;
 			a_b_invoked = false;
 			a_bc_invoked = false;
-			root_invoked = false;
 			x_y_invoked = false;
 			xy_z_invoked = false;
 			r___p_p0 = nullptr;
@@ -26,6 +25,7 @@ namespace mkdispatch_Test {
 			z____y_q0 = nullptr;
 			z____y_p1 = nullptr;
 			z____y_q1 = nullptr;
+			Pa_b_invoked = false;
 		}
 
 public:
@@ -53,14 +53,14 @@ public:
 		Assert::IsTrue(FourZeroFour_invoked);
 	}
 
-	TEST_METHOD(Pa_b) {
-		Dispatch("P /a/b\r");
+	TEST_METHOD(root) {
+		Dispatch("G /\r");
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
 		Assert::IsTrue(CollectQuery_succeeded);
 		Assert::IsFalse(CollectQuery_failed);
-		Assert::IsTrue(Pa_b_invoked);
+		Assert::IsTrue(root_invoked);
 	}
 
 	TEST_METHOD(a_b) {
@@ -81,16 +81,6 @@ public:
 		Assert::IsTrue(CollectQuery_succeeded);
 		Assert::IsFalse(CollectQuery_failed);
 		Assert::IsTrue(a_bc_invoked);
-	}
-
-	TEST_METHOD(root) {
-		Dispatch("G /\r");
-		if(callsCollectParameter) {
-			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
-		}
-		Assert::IsTrue(CollectQuery_succeeded);
-		Assert::IsFalse(CollectQuery_failed);
-		Assert::IsTrue(root_invoked);
 	}
 
 	TEST_METHOD(x_y) {
@@ -124,17 +114,6 @@ public:
 		Assert::AreEqual(std::string("abc"), s);
 	}
 
-	TEST_METHOD(q__) {
-		Dispatch("G /q/abc\r");
-		if(callsCollectParameter) {
-			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
-		}
-		Assert::IsTrue(CollectQuery_succeeded);
-		Assert::IsFalse(CollectQuery_failed);
-		std::string s(q___p0, q___q0);
-		Assert::AreEqual(std::string("abc"), s);
-	}
-
 	TEST_METHOD(q____) {
 		Dispatch("G /q/abc/xyz\r");
 		if(callsCollectParameter) {
@@ -148,6 +127,17 @@ public:
 		Assert::AreEqual(std::string("xyz"), t);
 	}
 
+	TEST_METHOD(q__) {
+		Dispatch("G /q/abc\r");
+		if(callsCollectParameter) {
+			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
+		}
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		std::string s(q___p0, q___q0);
+		Assert::AreEqual(std::string("abc"), s);
+	}
+
 	TEST_METHOD(z____y) {
 		Dispatch("G /z/abc/xyz/y\r");
 		if(callsCollectParameter) {
@@ -159,6 +149,16 @@ public:
 		Assert::AreEqual(std::string("abc"), s);
 		std::string t(z____y_p1, z____y_q1);
 		Assert::AreEqual(std::string("xyz"), t);
+	}
+
+	TEST_METHOD(Pa_b) {
+		Dispatch("P /a/b\r");
+		if(callsCollectParameter) {
+			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
+		}
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		Assert::IsTrue(Pa_b_invoked);
 	}
 	};
 }
