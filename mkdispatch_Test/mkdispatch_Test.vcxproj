@@ -102,7 +102,7 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
+      <Command>"$(SolutionDir)Pre-build.cmd" "$(OutDir)" "$(ProjectDir)simple.txt"</Command>
       <Message>Creating dispatch tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -121,7 +121,7 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
+      <Command>"$(SolutionDir)Pre-build.cmd" "$(OutDir)" "$(ProjectDir)simple.txt"</Command>
       <Message>Creating dispatch tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -144,7 +144,7 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
+      <Command>"$(SolutionDir)Pre-build.cmd" "$(OutDir)" "$(ProjectDir)simple.txt"</Command>
       <Message>Creating dispatch tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -167,7 +167,7 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
+      <Command>"$(SolutionDir)Pre-build.cmd" "$(OutDir)" "$(ProjectDir)simple.txt"</Command>
       <Message>Creating dispatch tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -189,7 +189,6 @@
   <ItemGroup>
     <None Include="DispatchTest.inl" />
     <None Include="myDispatch.inl" />
-    <None Include="Pre-build.cmd" />
     <None Include="segDispatch.inl" />
     <None Include="smDispatch.inl" />
     <None Include="Utils.inl" />

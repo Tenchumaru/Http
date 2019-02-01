@@ -37,7 +37,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Pre-build.cmd" />
     <None Include="DispatchTest.inl">
       <Filter>Header Files</Filter>
     </None>

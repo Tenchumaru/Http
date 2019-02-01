@@ -96,7 +96,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
+      <Command>"$(SolutionDir)Pre-build.cmd" "$(OutDir)" "$(ProjectDir)twitch.txt"</Command>
       <Message>Creating dispatch tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -114,7 +114,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
+      <Command>"$(SolutionDir)Pre-build.cmd" "$(OutDir)" "$(ProjectDir)twitch.txt"</Command>
       <Message>Creating dispatch tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -136,7 +136,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
+      <Command>"$(SolutionDir)Pre-build.cmd" "$(OutDir)" "$(ProjectDir)twitch.txt"</Command>
       <Message>Creating dispatch tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -158,7 +158,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
+      <Command>"$(SolutionDir)Pre-build.cmd" "$(OutDir)" "$(ProjectDir)twitch.txt"</Command>
       <Message>Creating dispatch tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -188,7 +188,6 @@
   <ItemGroup>
     <None Include="Dispatch.inl" />
     <None Include="myDispatch.inl" />
-    <None Include="Pre-build.cmd" />
     <None Include="segDispatch.inl" />
     <None Include="smDispatch.inl" />
   </ItemGroup>

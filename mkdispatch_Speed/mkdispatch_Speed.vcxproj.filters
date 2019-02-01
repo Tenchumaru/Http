@@ -55,7 +55,6 @@
     <Text Include="twitch.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Pre-build.cmd" />
     <None Include="myDispatch.inl">
       <Filter>Header Files</Filter>
     </None>
