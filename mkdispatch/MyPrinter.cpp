@@ -39,11 +39,21 @@ namespace {
 			if(!children.empty()) {
 				std::cout << indent << "\tswitch(p[" << prefix.size() << "]) {" << std::endl;
 				for(auto const& pair : children) {
+					if(pair.first == ':') {
+						continue;
+					}
 					std::cout << indent << "\tcase '" << pair.first << "':" << std::endl;
 					pair.second.Print(options, indentLevel + 2, prefix.size() + 1, parameterCount);
 					std::cout << indent << "\t\tbreak;" << std::endl;
 				}
 				std::cout << indent << "\t}" << std::endl;
+				auto it = children.find(':');
+				if(it != children.cend()) {
+					std::cout << indent << "\tif(CollectParameter(p, " << prefix.size() <<
+						", p" << parameterCount << ", q" << parameterCount << ")) {" << std::endl;
+					it->second.Print(options, indentLevel + 2, prefix.size() + 1, parameterCount + 1);
+					std::cout << indent << "\t}" << std::endl;
+				}
 			}
 			if(!fn.empty()) {
 				std::cout << indent << "\tif(CollectQuery(p + " << prefix.size() << ")) {" << std::endl;
@@ -72,8 +82,6 @@ namespace {
 				PrintCompare(index, substr, substr.size());
 				std::cout << ") {" << std::endl;
 			} else {
-				auto count = std::count(substr.cbegin(), substr.cend(), ':');
-				std::cout << indent << "// " << parameterCount << " - " << (parameterCount + count) << std::endl;
 				std::cout << indent << "if(";
 				PrintCompare(index, substr.substr(0, i), i);
 				decltype(i) j = 0;
