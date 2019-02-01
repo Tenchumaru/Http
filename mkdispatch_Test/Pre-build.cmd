@@ -3,10 +3,11 @@ SETLOCAL
 
 SET D=%~dp0
 SET MKDISPATCH="%~1mkdispatch"
-SET T=%TEMP%\%RANDOM%.inl
+SET T=%TEMP%\Test.%RANDOM%.inl
 CALL :one my
 CALL :one seg
 CALL :one sm
+IF EXIST %T% DEL %T%
 EXIT /B 0
 
 :one
