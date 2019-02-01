@@ -100,33 +100,31 @@ namespace {
 				}
 				std::cout << indent << "\t\t;" << std::endl;
 				std::cout << indent << '}' << std::endl;
-			} else {
-				if(segment == ":") {
-					PrintParameter(indent, parameterCount);
-					std::cout << indent << "if(p[" << index << "] == '/') {" << std::endl;
-					for(auto const& pair : children) {
-						pair.second.Print(options, indentLevel + 1, parameterCount);
-					}
-					std::cout << indent << "} else if(CollectQuery(p + " << index << ")) {" << std::endl;
-					PrintFunctionReturn(indent, parameterCount, options);
-					std::cout << indent << '}' << std::endl;
-				} else {
-					if(!segment.empty()) {
-						std::cout << indent << "if(";
-						PrintCompare();
-						std::cout << ") {" << std::endl;
-					} else {
-						std::cout << indent << '{' << std::endl;
-					}
-					std::cout << indent << "\tif(p[" << (index + segment.size()) << "] == '/') {" << std::endl;
-					for(auto const& pair : children) {
-						pair.second.Print(options, indentLevel + 2, parameterCount);
-					}
-					std::cout << indent << "\t} else if(CollectQuery(p + " << (index + segment.size()) << ")) {" << std::endl;
-					PrintFunctionReturn(indent + '\t', parameterCount, options);
-					std::cout << indent << "\t}" << std::endl;
-					std::cout << indent << '}' << std::endl;
+			} else if(segment == ":") {
+				PrintParameter(indent, parameterCount);
+				std::cout << indent << "if(p[" << index << "] == '/') {" << std::endl;
+				for(auto const& pair : children) {
+					pair.second.Print(options, indentLevel + 1, parameterCount);
 				}
+				std::cout << indent << "} else if(CollectQuery(p + " << index << ")) {" << std::endl;
+				PrintFunctionReturn(indent, parameterCount, options);
+				std::cout << indent << '}' << std::endl;
+			} else {
+				if(!segment.empty()) {
+					std::cout << indent << "if(";
+					PrintCompare();
+					std::cout << ") {" << std::endl;
+				} else {
+					std::cout << indent << '{' << std::endl;
+				}
+				std::cout << indent << "\tif(p[" << (index + segment.size()) << "] == '/') {" << std::endl;
+				for(auto const& pair : children) {
+					pair.second.Print(options, indentLevel + 2, parameterCount);
+				}
+				std::cout << indent << "\t} else if(CollectQuery(p + " << (index + segment.size()) << ")) {" << std::endl;
+				PrintFunctionReturn(indent + '\t', parameterCount, options);
+				std::cout << indent << "\t}" << std::endl;
+				std::cout << indent << '}' << std::endl;
 			}
 		}
 
