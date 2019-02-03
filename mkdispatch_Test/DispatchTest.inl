@@ -25,7 +25,15 @@ namespace mkdispatch_Test {
 			z____y_q0 = nullptr;
 			z____y_p1 = nullptr;
 			z____y_q1 = nullptr;
+			m_m__invoked = false;
+			m_m___p0 = nullptr;
+			m_m___q0 = nullptr;
+			m_m___a_p0 = nullptr;
+			m_m___a_q0 = nullptr;
+			m_m___b_p0 = nullptr;
+			m_m___b_q0 = nullptr;
 			Pa_b_invoked = false;
+			Pa_b_c_invoked = false;
 			Px___y_p0 = nullptr;
 			Px___y_q0 = nullptr;
 			Px_y___z_p0 = nullptr;
@@ -155,6 +163,46 @@ public:
 		Assert::AreEqual(std::string("xyz"), t);
 	}
 
+	TEST_METHOD(m_m_) {
+		Dispatch("G /m/m/\r");
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		Assert::IsTrue(m_m__invoked);
+	}
+
+	TEST_METHOD(m_m__) {
+		Dispatch("G /m/m/abc\r");
+		if(callsCollectParameter) {
+			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
+		}
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		std::string s(m_m___p0, m_m___q0);
+		Assert::AreEqual(std::string("abc"), s);
+	}
+
+	TEST_METHOD(m_m___a) {
+		Dispatch("G /m/m/abc/a\r");
+		if(callsCollectParameter) {
+			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
+		}
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		std::string s(m_m___a_p0, m_m___a_q0);
+		Assert::AreEqual(std::string("abc"), s);
+	}
+
+	TEST_METHOD(m_m___b) {
+		Dispatch("G /m/m/abc/b\r");
+		if(callsCollectParameter) {
+			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
+		}
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		std::string s(m_m___b_p0, m_m___b_q0);
+		Assert::AreEqual(std::string("abc"), s);
+	}
+
 	TEST_METHOD(Pa_b) {
 		Dispatch("P /a/b\r");
 		if(callsCollectParameter) {
@@ -163,6 +211,16 @@ public:
 		Assert::IsTrue(CollectQuery_succeeded);
 		Assert::IsFalse(CollectQuery_failed);
 		Assert::IsTrue(Pa_b_invoked);
+	}
+
+	TEST_METHOD(Pa_b_c) {
+		Dispatch("P /a/b/c\r");
+		if(callsCollectParameter) {
+			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
+		}
+		Assert::IsTrue(CollectQuery_succeeded);
+		Assert::IsFalse(CollectQuery_failed);
+		Assert::IsTrue(Pa_b_c_invoked);
 	}
 
 	TEST_METHOD(Px___y) {

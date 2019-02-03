@@ -7,6 +7,11 @@ G /r/:/p	r___p
 G /q/:/:	q____
 G /q/:	q__
 G /z/:/:/y	z____y
+G /m/m/	m_m_
+G /m/m/:	m_m__
+G /m/m/:/a	m_m___a
+G /m/m/:/b	m_m___b
 P /a/b	Pa_b
+P /a/b/c	Pa_b_c
 P /x/:/y	Px___y
 P /x/y/:/z	Px_y___z
