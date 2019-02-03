@@ -118,9 +118,7 @@ namespace {
 			} else if(segment == ":") {
 				PrintParameter(indent, parameterCount, false);
 				std::cout << indent << "if(p[" << index << "] == '/') {" << std::endl;
-				for(auto const& pair : children) {
-					pair.second.Print(options, indentLevel + 1, parameterCount);
-				}
+				PrintChildren(options, indentLevel, parameterCount, indent);
 				std::cout << indent << "} else if(CollectQuery(p + " << index << ")) {" << std::endl;
 				PrintFunctionReturn(indent, parameterCount, options);
 				std::cout << indent << '}' << std::endl;
@@ -133,9 +131,7 @@ namespace {
 					std::cout << indent << '{' << std::endl;
 				}
 				std::cout << indent << "\tif(p[" << (index + segment.size()) << "] == '/') {" << std::endl;
-				for(auto const& pair : children) {
-					pair.second.Print(options, indentLevel + 2, parameterCount);
-				}
+				PrintChildren(options, indentLevel + 1, parameterCount, indent);
 				std::cout << indent << "\t} else if(CollectQuery(p + " << (index + segment.size()) << ")) {" << std::endl;
 				PrintFunctionReturn(indent + '\t', parameterCount, options);
 				std::cout << indent << "\t}" << std::endl;
