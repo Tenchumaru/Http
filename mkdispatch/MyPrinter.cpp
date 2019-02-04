@@ -42,16 +42,18 @@ namespace {
 				}
 			}
 			if(!children.empty()) {
-				std::cout << indent << "\tswitch(p[" << prefix.size() << "]) {" << std::endl;
-				for(auto const& pair : children) {
-					if(pair.first == ':') {
-						continue;
+				if(std::any_of(children.cbegin(), children.cend(), [](auto const& pair) { return pair.first != ':'; })) {
+					std::cout << indent << "\tswitch(p[" << prefix.size() << "]) {" << std::endl;
+					for(auto const& pair : children) {
+						if(pair.first == ':') {
+							continue;
+						}
+						std::cout << indent << "\tcase '" << pair.first << "':" << std::endl;
+						pair.second.Print(options, indentLevel + 2, prefix.size() + 1, parameterCount);
+						std::cout << indent << "\t\tbreak;" << std::endl;
 					}
-					std::cout << indent << "\tcase '" << pair.first << "':" << std::endl;
-					pair.second.Print(options, indentLevel + 2, prefix.size() + 1, parameterCount);
-					std::cout << indent << "\t\tbreak;" << std::endl;
+					std::cout << indent << "\t}" << std::endl;
 				}
-				std::cout << indent << "\t}" << std::endl;
 				auto it = children.find(':');
 				if(it != children.cend()) {
 					std::cout << indent << "\tchar const* r" << parameterCount << " = p;" << std::endl;
