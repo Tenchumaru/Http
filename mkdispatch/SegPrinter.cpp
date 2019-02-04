@@ -41,10 +41,10 @@ namespace {
 	private:
 		struct NodeLess {
 			bool operator()(std::string const& left, std::string const& right) const {
-				if(left == "") {
+				if(left == ":") {
 					return false;
-				} else if(left == ":") {
-					return right == "";
+				} else if(left == "") {
+					return right == ":";
 				} else if(right == "" || right == ":") {
 					return true;
 				}
@@ -142,7 +142,7 @@ namespace {
 		void PrintChildren(Options const& options, size_t indentLevel, size_t parameterCount, std::string const& indent) const {
 			bool isNext = false;
 			for(auto const& pair : children) {
-				if(isNext) {
+				if(isNext && pair.first != ":") {
 					std::cout << indent << "\telse" << std::endl;
 				} else {
 					isNext = true;
@@ -175,7 +175,6 @@ namespace {
 		}
 
 		size_t PrintParameter(std::string const& indent, size_t& parameterCount, bool wantsSave = true) const {
-			std::cout << indent << ';' << std::endl;
 			if(wantsSave) {
 				std::cout << indent << "char const* r" << parameterCount << " = p;" << std::endl;
 			}
