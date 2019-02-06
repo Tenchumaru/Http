@@ -99,12 +99,6 @@ int main(int argc, char* argv[]) {
 		requests.push_back({ RemoveParameterNames(s.substr(0, it)), s.substr(it + 1) });
 	}
 
-	// Sort the requests.  This enables dealing with ambiguity by selecting
-	// later requests to favor non-parameters over parameters.
-	std::sort(requests.begin(), requests.end(), [](Printer::Request const& left, Printer::Request const& right) {
-		return left.line < right.line;
-	});
-
 	// Print the Dispatcher class.
 	Options options = { wantsStrings };
 	printer->Print(requests, options);
