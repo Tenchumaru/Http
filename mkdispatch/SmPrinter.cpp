@@ -22,8 +22,10 @@ namespace {
 				size_t currentStateIndex = 0;
 				char currentParameterNumber = 0x7f;
 				for(char ch : request.line) {
-					if(ch == ':') {
-						ch = ++currentParameterNumber;
+					if(ch == '/') {
+						++currentParameterNumber;
+					} else if(ch == ':') {
+						ch = currentParameterNumber;
 					}
 					rv.emplace_back(NfaState{});
 					rv[currentStateIndex].transitions.push_back({ ch, ++next });
@@ -52,9 +54,8 @@ namespace {
 				if(it == states.end()) {
 					break;
 				}
-				auto& pair = *it;
-				auto const& t = pair.first;
-				pair.second.first = true;
+				auto const& t = it->first;
+				it->second.first = true;
 				auto symbols = CollectSymbols(t);
 				for(char a : symbols) {
 					auto u = Move(t, a);
@@ -66,7 +67,7 @@ namespace {
 						}
 						state = p.first;
 					}
-					machine[pair.second.second][a] = state->second.second;
+					machine[it->second.second][a] = state->second.second;
 				}
 			}
 
@@ -205,7 +206,7 @@ namespace {
 		}
 		std::cout << std::endl << "\t};" << std::endl;
 	}
-#define PrintSpecialStateIndex(actions) PrintSpecialStateIndex_(actions, #actions)
+#define PrintSpecialStateIndex(indices) PrintSpecialStateIndex_(indices, #indices)
 }
 
 SmPrinter::SmPrinter() {}
@@ -213,10 +214,11 @@ SmPrinter::SmPrinter() {}
 SmPrinter::~SmPrinter() {}
 
 void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
-	// Determine the maximum number of parameters in a request.
+	// Determine the maximum index of a segment containing a parameter in a request.
 	ptrdiff_t nparameters = 0;
 	for(Printer::Request const& request : requests) {
-		nparameters = std::max(nparameters, std::count(request.line.cbegin(), request.line.cend(), ':'));
+		auto it = std::find(request.line.crbegin(), request.line.crend(), ':');
+		nparameters = std::max(nparameters, std::count(it, request.line.crend(), '/'));
 	}
 
 	// Create a NFA of the requests.
@@ -335,13 +337,14 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 		auto const& request = requests[i];
 		functionInvocations << "\t\t\tcase " << (i + 1) << ':' << std::endl;
 		functionInvocations << "\t\t\t\treturn " << request.fn << '(';
-		for(size_t j = 1, m = std::count(request.line.cbegin(), request.line.cend(), ':'); j <= m; ++j) {
+		for(auto it = request.line.cbegin(); it = std::find(it, request.line.cend(), ':'), it != request.line.cend(); ++it) {
+			auto parameterIndex = std::count(request.line.cbegin(), it, '/');
 			if(options.wantsStrings) {
-				functionInvocations << "xstring(begin[" << j << "], end[" << j << "])";
+				functionInvocations << "xstring(begin[" << parameterIndex << "], end[" << parameterIndex << "])";
 			} else {
-				functionInvocations << "begin[" << j << "], end[" << j << ']';
+				functionInvocations << "begin[" << parameterIndex << "], end[" << parameterIndex << ']';
 			}
-			if(j < m) {
+			if(std::find(it + 1, request.line.cend(), ':') != request.line.cend()) {
 				functionInvocations << ", ";
 			}
 		}
