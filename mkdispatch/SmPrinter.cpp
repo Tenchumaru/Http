@@ -147,14 +147,29 @@ namespace {
 		}
 
 		void CollectFinishing(std::map<size_t, size_t>& rv, bool wantsFinal, size_t state, map::mapped_type::value_type const& transition) {
-			if(transition.first && state == transition.second) {
-				if(!IsParameter(transition.first)) {
-					std::cerr << "warning: unexpected cirular state on '" << transition.first << '\'' << std::endl;
-				}
-				auto const& nexts = machine.find(transition.second);
-				for(auto const& next : nexts->second) {
-					if(next.first == (wantsFinal ? '\n' : '/')) {
-						rv.insert({ next.second, transition.first + 0x80 });
+			if(transition.first) {
+				if(state == transition.second) {
+					if(!IsParameter(transition.first)) {
+						throw std::logic_error("unexpected cirular state");
+					}
+					auto const& nexts = machine.find(transition.second);
+					for(auto const& next : nexts->second) {
+						if(next.first == (wantsFinal ? '\n' : '/')) {
+							rv.insert({ next.second, transition.first + 0x80 });
+						}
+					}
+				} else {
+					auto const& transitions = machine[state];
+					auto parameter = std::find_if(transitions.cbegin(), transitions.cend(), [](auto const& pair) {
+						return IsParameter(pair.first);
+					});
+					if(parameter != transitions.cend()) {
+						auto it = std::find_if(transitions.cbegin(), transitions.cend(), [wantsFinal](auto const& pair) {
+							return pair.first == (wantsFinal ? '\n' : '/');
+						});
+						if(it != transitions.cend()) {
+							rv.insert({ it->second, parameter->first + 0x80 });
+						}
 					}
 				}
 			}
