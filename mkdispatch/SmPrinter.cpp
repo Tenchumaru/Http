@@ -238,10 +238,6 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	auto innerParameterFinishingStates = machine.CollectFinishing(false);
 	auto finalParameterFinishingStates = machine.CollectFinishing(true);
 
-	// Print the parameters.
-	std::cout << "\tchar const* begin[" << (nparameters + 1) << "];" << std::endl;
-	std::cout << "\tchar const* end[" << (nparameters + 1) << "];" << std::endl;
-
 	// Collect the function indices.
 	std::map<std::string, size_t> fnIndices;
 	for(Request const& request : requests) {
@@ -336,6 +332,10 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	PrintSpecialStateIndex(parameterConsumingIndices);
 	PrintSpecialStateIndex(nextStateIndices);
 
+	// Print the parameters.
+	std::cout << "\tchar const* begin[" << (nparameters + 1) << "];" << std::endl;
+	std::cout << "\tchar const* end[" << (nparameters + 1) << "];" << std::endl;
+
 	// Collect the function invocations.
 	std::stringstream functionInvocations;
 	for(size_t i = 0, n = requests.size(); i < n; ++i) {
@@ -363,8 +363,9 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	std::string content = ss.str();
 	content.erase(0, content.find("// <<<\n") + 7);
 	content.erase(content.find("\t// >>>"));
-	auto it = content.find("\t\t\tcase 0: break; // |||\n");
-	content.erase(it, 25);
+	std::string s("\t\t\tcase 0: break; // |||\n");
+	auto it = content.find(s);
+	content.erase(it, s.size());
 	content.insert(it, functionInvocations.str());
 	std::cout << content;
 }
