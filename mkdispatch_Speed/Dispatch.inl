@@ -77,4 +77,69 @@ void TestDispatch(int count) {
 	std::cout << "PUT_extensions__clientId_configurations_count:  " << PUT_extensions__clientId_configurations_count << std::endl;
 	std::cout << "PUT_helix_users_extensions_count:  " << PUT_helix_users_extensions_count << std::endl;
 	std::cout << "PUT_helix_users_count:  " << PUT_helix_users_count << std::endl;
+
+	std::string DELETE_extensions__clientId_auth_secret_s0(DELETE_extensions__clientId_auth_secret_p0, DELETE_extensions__clientId_auth_secret_q0);
+	if(DELETE_extensions__clientId_auth_secret_s0 != "clientId") {
+		throw std::runtime_error("DELETE_extensions__clientId_auth_secret_s0");
+	}
+	std::string GET_extensions__clientId_auth_secret_s0(GET_extensions__clientId_auth_secret_p0, GET_extensions__clientId_auth_secret_q0);
+	if(GET_extensions__clientId_auth_secret_s0 != "clientId") {
+		throw std::runtime_error("GET_extensions__clientId_auth_secret_s0");
+	}
+	std::string GET_extensions__clientId_configurations_channels__channelId_s0(GET_extensions__clientId_configurations_channels__channelId_p0, GET_extensions__clientId_configurations_channels__channelId_q0);
+	if(GET_extensions__clientId_configurations_channels__channelId_s0 != "clientId") {
+		throw std::runtime_error("GET_extensions__clientId_configurations_channels__channelId_s0");
+	}
+	std::string GET_extensions__clientId_configurations_channels__channelId_s1(GET_extensions__clientId_configurations_channels__channelId_p1, GET_extensions__clientId_configurations_channels__channelId_q1);
+	if(GET_extensions__clientId_configurations_channels__channelId_s1 != "channelId") {
+		throw std::runtime_error("GET_extensions__clientId_configurations_channels__channelId_s1");
+	}
+	std::string GET_extensions__clientId_configurations_segments_broadcaster_s0(GET_extensions__clientId_configurations_segments_broadcaster_p0, GET_extensions__clientId_configurations_segments_broadcaster_q0);
+	if(GET_extensions__clientId_configurations_segments_broadcaster_s0 != "clientId") {
+		throw std::runtime_error("GET_extensions__clientId_configurations_segments_broadcaster_s0");
+	}
+	std::string GET_extensions__clientId_configurations_segments_developer_s0(GET_extensions__clientId_configurations_segments_developer_p0, GET_extensions__clientId_configurations_segments_developer_q0);
+	if(GET_extensions__clientId_configurations_segments_developer_s0 != "clientId") {
+		throw std::runtime_error("GET_extensions__clientId_configurations_segments_developer_s0");
+	}
+	std::string GET_extensions__clientId_configurations_segments_global_s0(GET_extensions__clientId_configurations_segments_global_p0, GET_extensions__clientId_configurations_segments_global_q0);
+	if(GET_extensions__clientId_configurations_segments_global_s0 != "clientId") {
+		throw std::runtime_error("GET_extensions__clientId_configurations_segments_global_s0");
+	}
+	std::string GET_extensions__clientId_live_activated_channels_s0(GET_extensions__clientId_live_activated_channels_p0, GET_extensions__clientId_live_activated_channels_q0);
+	if(GET_extensions__clientId_live_activated_channels_s0 != "clientId") {
+		throw std::runtime_error("GET_extensions__clientId_live_activated_channels_s0");
+	}
+	std::string POST_extensions__clientId__version_channels__channelId_chat_s0(POST_extensions__clientId__version_channels__channelId_chat_p0, POST_extensions__clientId__version_channels__channelId_chat_q0);
+	if(POST_extensions__clientId__version_channels__channelId_chat_s0 != "clientId") {
+		throw std::runtime_error("POST_extensions__clientId__version_channels__channelId_chat_s0");
+	}
+	std::string POST_extensions__clientId__version_channels__channelId_chat_s1(POST_extensions__clientId__version_channels__channelId_chat_p1, POST_extensions__clientId__version_channels__channelId_chat_q1);
+	if(POST_extensions__clientId__version_channels__channelId_chat_s1 != "version") {
+		throw std::runtime_error("POST_extensions__clientId__version_channels__channelId_chat_s1");
+	}
+	std::string POST_extensions__clientId__version_channels__channelId_chat_s2(POST_extensions__clientId__version_channels__channelId_chat_p2, POST_extensions__clientId__version_channels__channelId_chat_q2);
+	if(POST_extensions__clientId__version_channels__channelId_chat_s2 != "channelId") {
+		throw std::runtime_error("POST_extensions__clientId__version_channels__channelId_chat_s2");
+	}
+	std::string POST_extensions__clientId_auth_secret_s0(POST_extensions__clientId_auth_secret_p0, POST_extensions__clientId_auth_secret_q0);
+	if(POST_extensions__clientId_auth_secret_s0 != "clientId") {
+		throw std::runtime_error("POST_extensions__clientId_auth_secret_s0");
+	}
+	std::string POST_extensions_message__channelId_s0(POST_extensions_message__channelId_p0, POST_extensions_message__channelId_q0);
+	if(POST_extensions_message__channelId_s0 != "channelId") {
+		throw std::runtime_error("POST_extensions_message__channelId_s0");
+	}
+	std::string PUT_extensions__clientId__version_required_configuration_s0(PUT_extensions__clientId__version_required_configuration_p0, PUT_extensions__clientId__version_required_configuration_q0);
+	if(PUT_extensions__clientId__version_required_configuration_s0 != "clientId") {
+		throw std::runtime_error("PUT_extensions__clientId__version_required_configuration_s0");
+	}
+	std::string PUT_extensions__clientId__version_required_configuration_s1(PUT_extensions__clientId__version_required_configuration_p1, PUT_extensions__clientId__version_required_configuration_q1);
+	if(PUT_extensions__clientId__version_required_configuration_s1 != "version") {
+		throw std::runtime_error("PUT_extensions__clientId__version_required_configuration_s1");
+	}
+	std::string PUT_extensions__clientId_configurations_s0(PUT_extensions__clientId_configurations_p0, PUT_extensions__clientId_configurations_q0);
+	if(PUT_extensions__clientId_configurations_s0 != "clientId") {
+		throw std::runtime_error("PUT_extensions__clientId_configurations_s0");
+	}
 }
