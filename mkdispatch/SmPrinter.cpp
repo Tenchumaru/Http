@@ -260,8 +260,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	}
 
 	// Print the state machine.
-	std::vector<size_t> innerParameterFinishingIndices;
-	std::vector<size_t> finalParameterFinishingIndices;
+	std::vector<size_t> parameterFinishingIndices;
 	std::vector<size_t> functionIndices;
 	std::vector<size_t> parameterStartingIndices;
 	std::vector<size_t> parameterConsumingIndices;
@@ -282,11 +281,10 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 				// Skip this.  It's handled in the next block.
 			} else if(ch == '\n') {
 				states['\n'] = states['\r'] = states['?'] = specialStateFlag | functionIndices.size();
-				innerParameterFinishingIndices.push_back(0);
-				auto const& finalParameterFinishingState = finalParameterFinishingStates.find(stateNumber);
+				auto finalParameterFinishingState = finalParameterFinishingStates.find(stateNumber);
 				auto finalParameterFinishingIndex = finalParameterFinishingState == finalParameterFinishingStates.cend() ?
 					0 : finalParameterFinishingState->second;
-				finalParameterFinishingIndices.push_back(finalParameterFinishingIndex);
+				parameterFinishingIndices.push_back(finalParameterFinishingIndex);
 				functionIndices.push_back(fnIndices[nfaStates[machine[stateNumber].cbegin()->second].fn] + 1);
 				parameterStartingIndices.push_back(0);
 				parameterConsumingIndices.push_back(0);
@@ -308,8 +306,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 					states['/'] = specialStateFlag | functionIndices.size();
 					auto innerParameterFinishingIndex = innerParameterFinishingState == innerParameterFinishingStates.cend() ?
 						0 : innerParameterFinishingState->second;
-					innerParameterFinishingIndices.push_back(innerParameterFinishingIndex);
-					finalParameterFinishingIndices.push_back(0);
+					parameterFinishingIndices.push_back(innerParameterFinishingIndex);
 					functionIndices.push_back(0);
 					auto parameterConsumingIndex = parameterConsumingState == parameterConsumingStates.cend() ? 0 : parameterConsumingState->second;
 					if(parameterConsumingIndex) {
@@ -340,8 +337,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	std::cout << "\t};" << std::endl;
 
 	// Print the special state actions.
-	PrintSpecialStateIndex(innerParameterFinishingIndices);
-	PrintSpecialStateIndex(finalParameterFinishingIndices);
+	PrintSpecialStateIndex(parameterFinishingIndices);
 	PrintSpecialStateIndex(functionIndices);
 	PrintSpecialStateIndex(parameterStartingIndices);
 	PrintSpecialStateIndex(parameterConsumingIndices);
@@ -390,8 +386,7 @@ void MainLoop() {
 	char const* end[1];
 	using state_t = short;
 	state_t constexpr specialStateFlag = -0x8000;
-	std::vector<state_t> innerParameterFinishingIndices;
-	std::vector<state_t> finalParameterFinishingIndices;
+	std::vector<state_t> parameterFinishingIndices;
 	std::vector<state_t> functionIndices;
 	std::vector<state_t> parameterStartingIndices;
 	std::vector<state_t> parameterConsumingIndices;
@@ -409,13 +404,9 @@ void MainLoop() {
 			break;
 		}
 		int index = state & ~specialStateFlag;
-		auto innerParameterFinishingIndex = innerParameterFinishingIndices[index];
-		if(innerParameterFinishingIndex > 0) {
-			end[innerParameterFinishingIndex] = p - 1;
-		}
-		auto finalParameterFinishingIndex = finalParameterFinishingIndices[index];
-		if(finalParameterFinishingIndex > 0) {
-			end[finalParameterFinishingIndex] = p - 1;
+		auto parameterFinishingIndex = parameterFinishingIndices[index];
+		if(parameterFinishingIndex > 0) {
+			end[parameterFinishingIndex] = p - 1;
 		}
 		auto parameterConsumingIndex = parameterConsumingIndices[index];
 		if(parameterConsumingIndex > 0) {
