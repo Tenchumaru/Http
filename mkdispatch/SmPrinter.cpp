@@ -85,6 +85,11 @@ namespace {
 						it = std::find_if(states.cbegin(), states.cend(), [i](auto const& pair) {
 							return pair.first.find(i) != pair.first.cend();
 						});
+						std::cerr << "Note:  ambiguity found between";
+						for(auto nfaStateNumber : it->first) {
+							std::cerr << ' ' << nfaStates[nfaStateNumber].fn;
+						}
+						std::cerr << std::endl << "resolving in favor of " << nfaState.fn << std::endl;
 					}
 					machine[it->second.second]['\0'] = i;
 				}
