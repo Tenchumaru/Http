@@ -20,7 +20,7 @@ namespace {
 			size_t next = 0;
 			for(Printer::Request const& request : requests) {
 				size_t currentStateIndex = 0;
-				char currentParameterNumber = 0x7f;
+				char currentParameterNumber = -0x80;
 				for(char ch : request.line) {
 					if(ch == '/') {
 						++currentParameterNumber;
@@ -137,9 +137,9 @@ namespace {
 				for(auto const& next : nexts->second) {
 					if(IsParameter(next.first)) {
 						if(wantsConsuming && nexts->second.size() == 1) {
-							rv.insert({ transition.second, next.first + 0x81 });
+							rv.insert({ transition.second, next.first + 0x80 });
 						} else if(!wantsConsuming && nexts->second.size() > 1) {
-							rv.insert({ transition.second, next.first + 0x81 });
+							rv.insert({ transition.second, next.first + 0x80 });
 						}
 					}
 				}
@@ -147,14 +147,14 @@ namespace {
 		}
 
 		void CollectFinishing(std::map<size_t, size_t>& rv, bool wantsFinal, size_t state, map::mapped_type::value_type const& transition) {
-			if(state == transition.second) {
+			if(transition.first && state == transition.second) {
 				if(!IsParameter(transition.first)) {
 					std::cerr << "warning: unexpected cirular state on '" << transition.first << '\'' << std::endl;
 				}
 				auto const& nexts = machine.find(transition.second);
 				for(auto const& next : nexts->second) {
 					if(next.first == (wantsFinal ? '\n' : '/')) {
-						rv.insert({ next.second, transition.first + 0x81 });
+						rv.insert({ next.second, transition.first + 0x80 });
 					}
 				}
 			}
