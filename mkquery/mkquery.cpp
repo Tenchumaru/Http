@@ -12,6 +12,94 @@ namespace {
 	}
 }
 
+// Assume "one" and "two" are the expected names.
+// Assume "one" is less than two values and "two" is any number of values.
+using xstring = std::pair<char const*, char const*>;
+xstring Qone;
+std::vector<xstring> Qtwo;
+
+bool CollectName(char const*& p, xstring*& q) {
+	switch(*p) {
+	case 'o':
+		if(memcmp(p + 1, "ne", 2) == 0 && p[3] == '=') {
+			p += 4;
+			q = &Qone;
+			return true;
+		}
+		break;
+	case 't':
+		if(memcmp(p + 1, "wo", 2) == 0 && p[3] == '=') {
+			Qtwo.emplace_back(xstring{});
+			p += 4;
+			q = &Qtwo.back();
+			return true;
+		}
+		break;
+	}
+	while(*p != '\r' && *p != '\n' && *p != '#' && *p != '=' && *p != '&') {
+		++p;
+	}
+	if(*p == '=') {
+		++p;
+		q = nullptr;
+		return true;
+	}
+	return false;
+}
+
+void Initialize() {
+	Qone = xstring();
+	Qtwo.clear();
+}
+
+// <<<
+void CollectValue(char const*& p, xstring& q) {
+	q.first = p;
+	while(*p != '\r' && *p != '\n' && *p != '#' && *p != '&') {
+		++p;
+	}
+	q.second = p;
+	if(*p == '&') {
+		++p;
+	}
+}
+
+bool CollectQuery(char const* p) {
+	Initialize();
+	if(*p == '\r' || *p == '\n') {
+		return true;
+	}
+	if(*p != '?') {
+		return false;
+	}
+	++p;
+
+	xstring* q;
+	while(CollectName(p, q)) {
+		if(q) {
+			CollectValue(p, *q);
+		} else {
+			while(*p != '\r' && *p != '\n' && *p != '#' && *p != '&') {
+				++p;
+			}
+			if(*p == '&') {
+				++p;
+			} else {
+				break;
+			}
+		}
+	}
+
+	// Ignore any fragment.
+	if(*p == '#') {
+		do {
+			++p;
+		} while(*p != '\r' && *p != '\n');
+	}
+	return *p == '\r' || *p == '\n';
+}
+// >>>
+
 int main(int argc, char* argv[]) {
 	// Configure the input and output files.
 	std::ifstream fin;
@@ -26,10 +114,79 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Read the names to capture.
-	std::vector<std::string> names;
-	std::copy(std::istream_iterator<std::string>(*pin), std::istream_iterator<std::string>(), std::back_inserter(names));
+	std::map<std::string, bool> names;
+	std::transform(std::istream_iterator<std::string>(*pin), std::istream_iterator<std::string>(), std::inserter(names, names.end()), [](std::string const& name) {
+		if(name.back() == '+') {
+			return std::make_pair(name.substr(0, name.size() - 1), true);
+		} else {
+			return std::make_pair(name, false);
+		}
+	});
 
-	// Print the CollectQuery function.
-	*pout << "bool CollectQuery(char const* p) {" << std::endl;
+	// Split the names into groups based on the first character.
+	std::map<char, std::vector<decltype(names)::value_type>> nameGroups;
+	for(auto const& pair : names) {
+		nameGroups[pair.first[0]].push_back(pair);
+	}
+
+	// Print the variables.
+	*pout << "using xstring = std::pair<char const*, char const*>;" << std::endl;
+	for(auto const& pair : names) {
+		if(pair.second) {
+			*pout << "std::vector<xstring>";
+		} else {
+			*pout << "xstring";
+		}
+		*pout << " Q" << pair.first << ';' << std::endl;
+	}
+
+	// Print the Initialize function.
+	*pout << std::endl;
+	*pout << "inline void Initialize() {" << std::endl;
+	for(auto const& pair : names) {
+		*pout << "\tQ" << pair.first;
+		if(pair.second) {
+			*pout << ".clear()";
+		} else {
+			*pout << " = xstring{}";
+		}
+		*pout << ';' << std::endl;
+	}
 	*pout << '}' << std::endl;
+
+	// Print the CollectName function.
+	*pout << std::endl;
+	*pout << "bool CollectName(char const*& p, xstring*& q) {" << std::endl;
+	*pout << "\tswitch(*p) {" << std::endl;
+	for(auto const& nameGroup : nameGroups) {
+		*pout << "\tcase '" << nameGroup.first << "':" << std::endl;
+		for(auto const& pair : nameGroup.second) {
+			*pout << "\t\tif(memcmp(p + 1, \"" << pair.first.substr(1) << "=\", " << pair.first.size() << ") == 0) {" << std::endl;
+			*pout << "\t\t\tp += " << (pair.first.size() + 1) << ';' << std::endl;
+			if(pair.second) {
+				*pout << "\t\t\tQ" << pair.first << ".emplace_back(xstring{});" << std::endl;
+				*pout << "\t\t\tq = &Q" << pair.first << ".back();" << std::endl;
+			} else {
+				*pout << "\t\t\tq = &Q" << pair.first << ';' << std::endl;
+			}
+			*pout << "\t\t\treturn true;" << std::endl;
+			*pout << "\t\t}" << std::endl;
+		}
+		*pout << "\t\tbreak;" << std::endl;
+	}
+	*pout << "\t}" << std::endl;
+	*pout << "\twhile(*p != '\\r' && *p != '\\n' && *p != '#' && *p != '=' && *p != '&') {" << std::endl;
+	*pout << "\t\t++p;" << std::endl;
+	*pout << "\t}" << std::endl;
+	*pout << "\tif(*p == '=') {" << std::endl;
+	*pout << "\t\t++p;" << std::endl;
+	*pout << "\t\tq = nullptr;" << std::endl;
+	*pout << "\t\treturn true;" << std::endl;
+	*pout << "\t}" << std::endl;
+	*pout << "\treturn false;" << std::endl;
+	*pout << '}' << std::endl;
+
+	// Print the CollectValue and CollectQuery functions.
+	*pout << std::endl;
+#include "mkquery.inl"
 }
