@@ -15,6 +15,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Json_Test", "Json_Test\Json
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{53A3E688-DE4F-4A89-AF78-09B29F9FCB55}"
 	ProjectSection(SolutionItems) = preProject
+		ExtractCode.js = ExtractCode.js
 		Makefile = Makefile
 		Pre-build.cmd = Pre-build.cmd
 	EndProjectSection
