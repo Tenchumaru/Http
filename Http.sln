@@ -34,6 +34,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mkdispatch_Speed", "mkdispa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mkquery", "mkquery\mkquery.vcxproj", "{A4CCF255-F49C-4CFE-93ED-A43036AE5F7B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mkquery_Test", "mkquery_Test\mkquery_Test.vcxproj", "{D111174A-70B6-4CC9-A946-76748A44AB41}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A4CCF255-F49C-4CFE-93ED-A43036AE5F7B} = {A4CCF255-F49C-4CFE-93ED-A43036AE5F7B}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -114,6 +119,14 @@ Global
 		{A4CCF255-F49C-4CFE-93ED-A43036AE5F7B}.Release|x64.Build.0 = Release|x64
 		{A4CCF255-F49C-4CFE-93ED-A43036AE5F7B}.Release|x86.ActiveCfg = Release|Win32
 		{A4CCF255-F49C-4CFE-93ED-A43036AE5F7B}.Release|x86.Build.0 = Release|Win32
+		{D111174A-70B6-4CC9-A946-76748A44AB41}.Debug|x64.ActiveCfg = Debug|x64
+		{D111174A-70B6-4CC9-A946-76748A44AB41}.Debug|x64.Build.0 = Debug|x64
+		{D111174A-70B6-4CC9-A946-76748A44AB41}.Debug|x86.ActiveCfg = Debug|Win32
+		{D111174A-70B6-4CC9-A946-76748A44AB41}.Debug|x86.Build.0 = Debug|Win32
+		{D111174A-70B6-4CC9-A946-76748A44AB41}.Release|x64.ActiveCfg = Release|x64
+		{D111174A-70B6-4CC9-A946-76748A44AB41}.Release|x64.Build.0 = Release|x64
+		{D111174A-70B6-4CC9-A946-76748A44AB41}.Release|x86.ActiveCfg = Release|Win32
+		{D111174A-70B6-4CC9-A946-76748A44AB41}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
