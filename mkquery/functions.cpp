@@ -12,7 +12,7 @@ bool CollectName(char const*& p, xstring*& q) {
 
 void CollectValue(char const*& p, xstring& q) {
 	q.first = p;
-	while(*p != '\r' && *p != '\n' && *p != '#' && *p != '&') {
+	while(*p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
 		++p;
 	}
 	q.second = p;
@@ -23,7 +23,14 @@ void CollectValue(char const*& p, xstring& q) {
 
 bool CollectQuery(char const* p) {
 	Initialize();
-	if(*p == '\r' || *p == '\n') {
+
+	// Check for early termination cases.
+	if(*p == '#') {
+		do {
+			++p;
+		} while(*p != ' ' && *p != '\r' && *p != '\n');
+	}
+	if(*p == ' ') {
 		return true;
 	}
 	if(*p != '?') {
@@ -31,12 +38,13 @@ bool CollectQuery(char const* p) {
 	}
 	++p;
 
+	// Loop, expecting name-value pairs.
 	xstring* q;
 	while(CollectName(p, q)) {
 		if(q) {
 			CollectValue(p, *q);
 		} else {
-			while(*p != '\r' && *p != '\n' && *p != '#' && *p != '&') {
+			while(*p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
 				++p;
 			}
 			if(*p == '&') {
@@ -51,7 +59,7 @@ bool CollectQuery(char const* p) {
 	if(*p == '#') {
 		do {
 			++p;
-		} while(*p != '\r' && *p != '\n');
+		} while(*p != ' ' && *p != '\r' && *p != '\n');
 	}
-	return *p == '\r' || *p == '\n';
+	return *p == ' ';
 }

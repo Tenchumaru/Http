@@ -10,7 +10,7 @@ namespace mkquery_Test {
 public:
 
 	TEST_METHOD(Basic) {
-		Assert::IsTrue(CollectQuery("?one=1&ones=11&two=2&ones=12&three=3\r"));
+		Assert::IsTrue(CollectQuery("?one=1&ones=11&two=2&ones=12&three=3 "));
 		std::string one(Qone.first, Qone.second);
 		Assert::AreEqual(std::string("1"), one);
 		std::string two(Qtwo.first, Qtwo.second);
