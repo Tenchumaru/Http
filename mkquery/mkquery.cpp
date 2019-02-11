@@ -12,94 +12,6 @@ namespace {
 	}
 }
 
-// Assume "one" and "two" are the expected names.
-// Assume "one" is less than two values and "two" is any number of values.
-using xstring = std::pair<char const*, char const*>;
-xstring Qone;
-std::vector<xstring> Qtwo;
-
-bool CollectName(char const*& p, xstring*& q) {
-	switch(*p) {
-	case 'o':
-		if(memcmp(p + 1, "ne", 2) == 0 && p[3] == '=') {
-			p += 4;
-			q = &Qone;
-			return true;
-		}
-		break;
-	case 't':
-		if(memcmp(p + 1, "wo", 2) == 0 && p[3] == '=') {
-			Qtwo.emplace_back(xstring{});
-			p += 4;
-			q = &Qtwo.back();
-			return true;
-		}
-		break;
-	}
-	while(*p != '\r' && *p != '\n' && *p != '#' && *p != '=' && *p != '&') {
-		++p;
-	}
-	if(*p == '=') {
-		++p;
-		q = nullptr;
-		return true;
-	}
-	return false;
-}
-
-void Initialize() {
-	Qone = xstring();
-	Qtwo.clear();
-}
-
-// <<<
-void CollectValue(char const*& p, xstring& q) {
-	q.first = p;
-	while(*p != '\r' && *p != '\n' && *p != '#' && *p != '&') {
-		++p;
-	}
-	q.second = p;
-	if(*p == '&') {
-		++p;
-	}
-}
-
-bool CollectQuery(char const* p) {
-	Initialize();
-	if(*p == '\r' || *p == '\n') {
-		return true;
-	}
-	if(*p != '?') {
-		return false;
-	}
-	++p;
-
-	xstring* q;
-	while(CollectName(p, q)) {
-		if(q) {
-			CollectValue(p, *q);
-		} else {
-			while(*p != '\r' && *p != '\n' && *p != '#' && *p != '&') {
-				++p;
-			}
-			if(*p == '&') {
-				++p;
-			} else {
-				break;
-			}
-		}
-	}
-
-	// Ignore any fragment.
-	if(*p == '#') {
-		do {
-			++p;
-		} while(*p != '\r' && *p != '\n');
-	}
-	return *p == '\r' || *p == '\n';
-}
-// >>>
-
 int main(int argc, char* argv[]) {
 	// Configure the input and output files.
 	std::ifstream fin;
@@ -188,5 +100,5 @@ int main(int argc, char* argv[]) {
 
 	// Print the CollectValue and CollectQuery functions.
 	*pout << std::endl;
-#include "mkquery.inl"
+#include "functions.inl"
 }

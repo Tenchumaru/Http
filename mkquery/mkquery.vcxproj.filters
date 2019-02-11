@@ -26,9 +26,12 @@
     <ClCompile Include="mkquery.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="mkquery.inl">
+    <None Include="functions.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
