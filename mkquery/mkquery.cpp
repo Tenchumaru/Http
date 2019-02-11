@@ -87,18 +87,8 @@ int main(int argc, char* argv[]) {
 		*pout << "\t\tbreak;" << std::endl;
 	}
 	*pout << "\t}" << std::endl;
-	*pout << "\twhile(*p != '\\r' && *p != '\\n' && *p != '#' && *p != '=' && *p != '&') {" << std::endl;
-	*pout << "\t\t++p;" << std::endl;
-	*pout << "\t}" << std::endl;
-	*pout << "\tif(*p == '=') {" << std::endl;
-	*pout << "\t\t++p;" << std::endl;
-	*pout << "\t\tq = nullptr;" << std::endl;
-	*pout << "\t\treturn true;" << std::endl;
-	*pout << "\t}" << std::endl;
-	*pout << "\treturn false;" << std::endl;
-	*pout << '}' << std::endl;
 
-	// Print the CollectValue and CollectQuery functions.
-	*pout << std::endl;
+	// Print the rest of the CollectName function followed by the CollectValue
+	// and CollectQuery functions.
 #include "functions.inl"
 }

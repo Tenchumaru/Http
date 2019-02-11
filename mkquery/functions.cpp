@@ -1,3 +1,15 @@
+bool CollectName(char const*& p, xstring*& q) {
+	while(*p != '=' && *p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
+		++p;
+	}
+	if(*p == '=') {
+		++p;
+		q = nullptr;
+		return true;
+	}
+	return false;
+}
+
 void CollectValue(char const*& p, xstring& q) {
 	q.first = p;
 	while(*p != '\r' && *p != '\n' && *p != '#' && *p != '&') {
