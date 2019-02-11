@@ -69,24 +69,26 @@ int main(int argc, char* argv[]) {
 	// Print the CollectName function.
 	*pout << std::endl;
 	*pout << "bool CollectName(char const*& p, xstring*& q) {" << std::endl;
-	*pout << "\tswitch(*p) {" << std::endl;
-	for(auto const& nameGroup : nameGroups) {
-		*pout << "\tcase '" << nameGroup.first << "':" << std::endl;
-		for(auto const& pair : nameGroup.second) {
-			*pout << "\t\tif(memcmp(p + 1, \"" << pair.first.substr(1) << "=\", " << pair.first.size() << ") == 0) {" << std::endl;
-			*pout << "\t\t\tp += " << (pair.first.size() + 1) << ';' << std::endl;
-			if(pair.second) {
-				*pout << "\t\t\tQ" << pair.first << ".emplace_back(xstring{});" << std::endl;
-				*pout << "\t\t\tq = &Q" << pair.first << ".back();" << std::endl;
-			} else {
-				*pout << "\t\t\tq = &Q" << pair.first << ';' << std::endl;
+	if(!nameGroups.empty()) {
+		*pout << "\tswitch(*p) {" << std::endl;
+		for(auto const& nameGroup : nameGroups) {
+			*pout << "\tcase '" << nameGroup.first << "':" << std::endl;
+			for(auto const& pair : nameGroup.second) {
+				*pout << "\t\tif(memcmp(p + 1, \"" << pair.first.substr(1) << "=\", " << pair.first.size() << ") == 0) {" << std::endl;
+				*pout << "\t\t\tp += " << (pair.first.size() + 1) << ';' << std::endl;
+				if(pair.second) {
+					*pout << "\t\t\tQ" << pair.first << ".emplace_back(xstring{});" << std::endl;
+					*pout << "\t\t\tq = &Q" << pair.first << ".back();" << std::endl;
+				} else {
+					*pout << "\t\t\tq = &Q" << pair.first << ';' << std::endl;
+				}
+				*pout << "\t\t\treturn true;" << std::endl;
+				*pout << "\t\t}" << std::endl;
 			}
-			*pout << "\t\t\treturn true;" << std::endl;
-			*pout << "\t\t}" << std::endl;
+			*pout << "\t\tbreak;" << std::endl;
 		}
-		*pout << "\t\tbreak;" << std::endl;
+		*pout << "\t}" << std::endl;
 	}
-	*pout << "\t}" << std::endl;
 
 	// Print the rest of the CollectName function followed by the CollectValue
 	// and CollectQuery functions.
