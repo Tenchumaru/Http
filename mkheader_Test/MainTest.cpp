@@ -15,6 +15,8 @@ public:
 		Assert::AreEqual(std::string("test"), contentType);
 		std::string myCustomHeader(HmyCustomHeader.first, HmyCustomHeader.second);
 		Assert::AreEqual(std::string("test"), myCustomHeader);
+		Assert::IsNull(HcustomHeader.first);
+		Assert::IsNull(HcustomHeader.second);
 	}
 	};
 }
