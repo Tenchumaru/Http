@@ -38,8 +38,22 @@ int main(int argc, char* argv[]) {
 	// Read the names to capture.
 	std::vector<std::pair<std::string, std::string>> names;
 	std::transform(std::istream_iterator<std::string>(*pin), std::istream_iterator<std::string>(), std::back_inserter(names), [](std::string const& name) {
-		std::string variableName = std::regex_replace(name, std::regex("-"), "_");
-		return std::make_pair(name, variableName);
+		auto i = name.find('-');
+		std::string firstName = name.substr(0, i);
+		auto& f = std::use_facet<std::ctype<char>>(std::locale());
+		f.tolower(&firstName[0], &firstName[firstName.size()]);
+		std::stringstream variableName;
+		variableName << firstName;
+		while(i != name.npos) {
+			++i;
+			auto j = name.find('-', i);
+			auto nextName = name.substr(i, j - i);
+			f.toupper(&nextName[0], &nextName[1]);
+			f.tolower(&nextName[1], &nextName[nextName.size()]);
+			variableName << nextName;
+			i = j;
+		}
+		return std::make_pair(name, variableName.str());
 	});
 
 	// Split the names into groups based on the first character.
