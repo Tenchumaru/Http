@@ -41,6 +41,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mkquery_Test", "mkquery_Tes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mkheader", "mkheader\mkheader.vcxproj", "{6FE14E5C-808C-475C-A0EE-56A5ADB51B50}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mkheader_Test", "mkheader_Test\mkheader_Test.vcxproj", "{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6FE14E5C-808C-475C-A0EE-56A5ADB51B50} = {6FE14E5C-808C-475C-A0EE-56A5ADB51B50}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -137,6 +142,14 @@ Global
 		{6FE14E5C-808C-475C-A0EE-56A5ADB51B50}.Release|x64.Build.0 = Release|x64
 		{6FE14E5C-808C-475C-A0EE-56A5ADB51B50}.Release|x86.ActiveCfg = Release|Win32
 		{6FE14E5C-808C-475C-A0EE-56A5ADB51B50}.Release|x86.Build.0 = Release|Win32
+		{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}.Debug|x64.ActiveCfg = Debug|x64
+		{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}.Debug|x64.Build.0 = Debug|x64
+		{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}.Debug|x86.ActiveCfg = Debug|Win32
+		{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}.Debug|x86.Build.0 = Debug|Win32
+		{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}.Release|x64.ActiveCfg = Release|x64
+		{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}.Release|x64.Build.0 = Release|x64
+		{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}.Release|x86.ActiveCfg = Release|Win32
+		{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
