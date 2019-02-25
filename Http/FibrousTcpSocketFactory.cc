@@ -37,7 +37,7 @@ FibrousTcpSocketFactory::FibrousTcpSocketFactory() {}
 
 FibrousTcpSocketFactory::~FibrousTcpSocketFactory() {}
 
-void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn_t onConnect_) {
+void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConnect_) {
 	// Enable the server socket for asynchronous connections.
 	set_nonblocking(server);
 	onConnect = onConnect_;
@@ -69,7 +69,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn
 		for(;;) {
 			SOCKET ready = waiter.Wait();
 			if(ready == server) {
-				client = accept(server, p, &sock_addr_size);
+				client = accept(server, p, &addressSize);
 				if(client == INVALID_SOCKET) {
 					// Assume the failure is due to the network infrastructure
 					// rejecting the connection.
@@ -78,7 +78,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn
 				}
 				set_nonblocking(client);
 #ifdef _DEBUG
-				if(sock_addr_size == 16) {
+				if(addressSize == 16) {
 					std::cout << "new connection: " << client << '@' << std::hex << ntohl(u.ipv4.sin_addr.s_addr) << std::dec <<
 						':' << ntohs(u.ipv4.sin_port) << std::endl;
 				} else {

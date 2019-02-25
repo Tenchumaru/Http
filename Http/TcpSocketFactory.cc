@@ -35,7 +35,7 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 		throw std::runtime_error("TcpSocketFactory::CreateServer.getaddrinfo");
 	}
 	SOCKET server= INVALID_SOCKET;
-	socklen_t sock_addr_size= 0;
+	socklen_t addressSize= 0;
 	try {
 		for(auto const* rp= addresses; rp != nullptr; rp= rp->ai_next) {
 			server= socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
@@ -51,8 +51,8 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 				throw std::runtime_error("TcpSocketFactory::CreateServer.setsockopt(SO_REUSEPORT)");
 			}
 #endif
-			sock_addr_size= static_cast<int>(rp->ai_addrlen);
-			if(bind(server, rp->ai_addr, sock_addr_size) == 0) {
+			addressSize= static_cast<int>(rp->ai_addrlen);
+			if(bind(server, rp->ai_addr, addressSize) == 0) {
 				break;
 			}
 #ifdef _DEBUG
@@ -72,10 +72,10 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 
 	// CreateServer for client connections.
 	check(listen(server, 1));
-	Accept(server, sock_addr_size, onConnect);
+	Accept(server, addressSize, onConnect);
 }
 
-void TcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn_t onConnect) {
+void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConnect) {
 	try {
 		// Await connections and requests.
 		union {
@@ -84,7 +84,7 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn_t onCo
 		} u{};
 		auto* p= reinterpret_cast<sockaddr*>(&u);
 		for(;;) {
-			SOCKET client= accept(server, p, &sock_addr_size);
+			SOCKET client= accept(server, p, &addressSize);
 			if(client == INVALID_SOCKET) {
 				// Assume the failure is due to the network infrastructure
 				// rejecting the connection.
@@ -92,7 +92,7 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t sock_addr_size, fn_t onCo
 				continue;
 			}
 #ifdef _DEBUG
-			if(sock_addr_size == 16) {
+			if(addressSize == 16) {
 				std::cout << "new connection: " << client << '@' << std::hex << ntohl(u.ipv4.sin_addr.s_addr) << std::dec <<
 					':' << ntohs(u.ipv4.sin_port) << std::endl;
 			} else {
