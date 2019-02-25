@@ -78,11 +78,8 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConnect) {
 	try {
 		// Await connections and requests.
-		union {
-			sockaddr_in ipv4;
-			sockaddr_in6 ipv6;
-		} u{};
-		auto* p= reinterpret_cast<sockaddr*>(&u);
+		SOCKADDR_STORAGE address;
+		auto* p= reinterpret_cast<sockaddr*>(&address);
 		for(;;) {
 			SOCKET client= accept(server, p, &addressSize);
 			if(client == INVALID_SOCKET) {
@@ -92,14 +89,13 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConne
 				continue;
 			}
 #ifdef _DEBUG
-			if(addressSize == 16) {
-				std::cout << "new connection: " << client << '@' << std::hex << ntohl(u.ipv4.sin_addr.s_addr) << std::dec <<
-					':' << ntohs(u.ipv4.sin_port) << std::endl;
+			char node[NI_MAXHOST], service[NI_MAXSERV];
+			if(getnameinfo(p, addressSize, node, sizeof(node), service, sizeof(service), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+				std::cout << "new connection: " << client << '@' << node << ':' << service << std::endl;
 			} else {
-				std::cout << "new connection: " << client << "@IPv6:" << ntohs(u.ipv6.sin6_port) << std::endl;
+				std::cerr << "cannot get name information for accepted socket of family " << address.ss_family << std::endl;
 			}
 #endif
-			static_assert(sizeof(uint64_t) >= sizeof(SOCKET), "unexpected size");
 
 			// This is a new client connection.  Handle it.
 			onConnect(TcpSocket(client));

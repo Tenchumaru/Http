@@ -61,11 +61,8 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 
 	try {
 		// Await connections and requests.
-		union {
-			sockaddr_in ipv4;
-			sockaddr_in6 ipv6;
-		} u{};
-		auto* p = reinterpret_cast<sockaddr*>(&u);
+		SOCKADDR_STORAGE address;
+		auto* p = reinterpret_cast<sockaddr*>(&address);
 		for(;;) {
 			SOCKET ready = waiter.Wait();
 			if(ready == server) {
@@ -76,15 +73,15 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 					std::cout << "failed connection: " << errno << std::endl;
 					continue;
 				}
-				set_nonblocking(client);
 #ifdef _DEBUG
-				if(addressSize == 16) {
-					std::cout << "new connection: " << client << '@' << std::hex << ntohl(u.ipv4.sin_addr.s_addr) << std::dec <<
-						':' << ntohs(u.ipv4.sin_port) << std::endl;
+				char node[NI_MAXHOST], service[NI_MAXSERV];
+				if(getnameinfo(p, addressSize, node, sizeof(node), service, sizeof(service), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+					std::cout << "new connection: " << client << '@' << node << ':' << service << std::endl;
 				} else {
-					std::cout << "new connection: " << client << "@IPv6:" << ntohs(u.ipv6.sin6_port) << std::endl;
+					std::cerr << "cannot get name information for accepted socket of family " << address.ss_family << std::endl;
 				}
 #endif
+				set_nonblocking(client);
 
 				// Create a fiber and invoke the handler on it.
 				void* fiber;
