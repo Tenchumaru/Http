@@ -9,7 +9,7 @@ using FiberFn = LPFIBER_START_ROUTINE;
 #endif
 
 namespace {
-	size_t const stackSize = 0x10000;
+	constexpr size_t stackSize = 0x10000;
 
 	void set_nonblocking(SOCKET s) {
 #ifdef _WIN32

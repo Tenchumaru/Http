@@ -2,12 +2,12 @@
 #include "HttpParser.h"
 
 namespace {
-	size_t const versionSize = 8; // Eight characters for "HTTP #.#".  See https://tools.ietf.org/html/rfc7230#appendix-B.
+	constexpr size_t versionSize = 8; // Eight characters for "HTTP #.#".  See https://tools.ietf.org/html/rfc7230#appendix-B.
 	// TODO:  the following are configurable.
-	size_t const maxNameSize = 222;
-	size_t const maxValueSize = 888;
-	size_t const maxContentLength = 1024 * 1024;
-	size_t const maxHeaders = 99;
+	constexpr size_t maxNameSize = 222;
+	constexpr size_t maxValueSize = 888;
+	constexpr size_t maxContentLength = 1024 * 1024;
+	constexpr size_t maxHeaders = 99;
 	char const* const closeSignal = reinterpret_cast<char const*>(8);
 }
 

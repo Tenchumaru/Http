@@ -40,7 +40,7 @@ public:
 				"Connection: keep-alive\r\n"
 				"Upgrade-Insecure-Requests: 1\r\n"
 				"\r\n";
-			int const size = _countof(request) - 1;
+			constexpr int size = _countof(request) - 1;
 			if(len < size) {
 				return -1;
 			}
@@ -116,7 +116,7 @@ public:
 				"Connection: keep-alive\r\n"
 				"Upgrade-Insecure-Requests: 1\r\n"
 				"\r\n";
-			int const size = _countof(request) - 1;
+			constexpr int size = _countof(request) - 1;
 			if(len < size) {
 				return -1;
 			}
