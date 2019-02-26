@@ -44,20 +44,20 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 	Waiter waiter;
 	waiter.Add(server, POLLIN);
 
-	// Create the await function.
-	std::unordered_map<SOCKET, void*> fiberMap;
-	Await = [this, &waiter, &fiberMap](SOCKET s, short pollValue) {
-		waiter.Add(s, pollValue);
-		fiberMap[s] = GetCurrentFiber();
-		SwitchToFiber(mainFiber);
-		fiberMap.erase(s);
-	};
-
 	// Initialize for coroutines.
 	mainFiber = ConvertThreadToFiber(this);
 	if(!mainFiber) {
 		throw std::runtime_error("ConvertThreadToFiber");
 	}
+
+	// Create the await function.
+	std::unordered_map<SOCKET, void*> fiberMap;
+	Await = [mainFiber = mainFiber, &waiter, &fiberMap](SOCKET s, short pollValue) {
+		waiter.Add(s, pollValue);
+		fiberMap[s] = GetCurrentFiber();
+		SwitchToFiber(mainFiber);
+		fiberMap.erase(s);
+	};
 
 	try {
 		// Await connections and requests.
