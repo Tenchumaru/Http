@@ -11,13 +11,13 @@ using FiberFn = LPFIBER_START_ROUTINE;
 namespace {
 	constexpr size_t stackSize = 0x10000;
 
-	void set_nonblocking(SOCKET s) {
+	bool set_nonblocking(SOCKET s) {
 #ifdef _WIN32
 		u_long value = 1;
 		auto const result = ioctlsocket(s, FIONBIO, &value);
 		if(result != 0) {
 			std::cout << "set_nonblocking ioctlsocket failure: " << errno << std::endl;
-			throw std::runtime_error("set_nonblocking ioctlsocket failure");
+			return false;
 		}
 #else
 		auto result = fcntl(s, F_GETFL, 0);
@@ -27,9 +27,10 @@ namespace {
 		}
 		if(result != 0) {
 			perror("set_nonblocking fcntl failure");
-			throw std::runtime_error("set_nonblocking fcntl failure");
+			return false;
 		}
 #endif
+		return true;
 	}
 }
 
@@ -39,7 +40,9 @@ FibrousTcpSocketFactory::~FibrousTcpSocketFactory() {}
 
 void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConnect_) {
 	// Enable the server socket for asynchronous connections.
-	set_nonblocking(server);
+	if(!set_nonblocking(server)) {
+		throw std::runtime_error("set_nonblocking");
+	}
 	onConnect = onConnect_;
 	Waiter waiter;
 	waiter.Add(server, POLLIN);
@@ -81,7 +84,10 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 					std::cerr << "cannot get name information for accepted socket of family " << address.ss_family << std::endl;
 				}
 #endif
-				set_nonblocking(client);
+				if(!set_nonblocking(client)) {
+					close(client);
+					continue;
+				}
 
 				// Create a fiber and invoke the handler on it.
 				void* fiber;
