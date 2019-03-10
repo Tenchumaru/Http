@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ClosableResponse.h" />
+    <ClInclude Include="DispatchParser.h" />
     <ClInclude Include="FibrousTcpSocket.h" />
     <ClInclude Include="FibrousTcpSocketFactory.h" />
     <ClInclude Include="HeaderMap.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="Waiter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DispatchParser.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />
     <ClCompile Include="FibrousTcpSocketFactory.cc" />
     <ClCompile Include="HttpParser.cc" />

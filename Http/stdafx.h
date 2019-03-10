@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <ctime>
 #include <algorithm>
+#include <array>
 #include <codecvt>
 #include <functional>
 #include <iostream>
