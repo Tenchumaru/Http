@@ -8,6 +8,7 @@
 #include <iterator>
 #include <locale>
 #include <map>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>

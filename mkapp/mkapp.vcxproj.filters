@@ -27,6 +27,9 @@
     <ClInclude Include="..\mkdispatch\Printer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mkapp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -35,13 +38,7 @@
     <ClCompile Include="mkapp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mkquery.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mkheader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mkheader.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mkquery.cpp">

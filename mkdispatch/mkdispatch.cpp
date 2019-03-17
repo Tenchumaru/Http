@@ -101,5 +101,5 @@ int main(int argc, char* argv[]) {
 
 	// Print the Dispatcher class.
 	Options options = { wantsStrings };
-	printer->Print(requests, options);
+	printer->Print(requests, options, std::cout);
 }

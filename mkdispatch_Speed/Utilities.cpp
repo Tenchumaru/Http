@@ -19,11 +19,18 @@ char const* CollectParameter(char const*& p, size_t index) {
 	return q;
 }
 
-bool CollectQuery(char const* p) {
+bool CollectQueries(char const* p) {
 	return *p == '?' || *p == '\r' || *p == '\n';
 }
 
-void FourZeroFour() {
+void FourHundred(Response& response, char const* message) {
+	response, message;
+	std::cout << "unexpected FourHundred: " << message << std::endl;
+	exit(1);
+}
+
+void FourZeroFour(Response& response) {
+	response;
 	std::cout << "unexpected FourZeroFour" << std::endl;
 	exit(1);
 }

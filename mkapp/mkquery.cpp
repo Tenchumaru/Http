@@ -1,62 +1,101 @@
 #include "pch.h"
+#include "mkapp.h"
 
-void mkquery(std::map<std::string, bool> names, std::ostream* pout) {
+std::string mkquery(std::set<std::string> const& names, std::ostream& out) {
+	std::map<std::string, int> pairs;
+	std::transform(names.cbegin(), names.cend(), std::inserter(pairs, pairs.end()), [](std::string const& name) {
+		auto i = name.find('[');
+		if(i != name.npos) {
+			return std::make_pair(name.substr(0, i), std::stoi(name.substr(i + 1)));
+		} else {
+			return std::make_pair(name, 0);
+		}
+	});
+
 	// Split the names into groups based on the first character.
-	std::map<char, std::vector<std::remove_reference_t<decltype(names)>::value_type>> nameGroups;
-	for(auto const& pair : names) {
-		nameGroups[pair.first[0]].push_back(pair);
-	}
-
-	// Print the variables.
-	*pout << "using xstring = std::pair<char const*, char const*>;" << std::endl;
-	for(auto const& pair : names) {
+	std::map<char, std::vector<decltype(pairs)::value_type>> nameGroups;
+	std::string rv = "Query";
+	for(auto const& pair : pairs) {
+		auto const& name = pair.first;
+		nameGroups[name[0]].push_back(pair);
+		rv += '_';
+		rv += name;
 		if(pair.second) {
-			*pout << "std::vector<xstring>";
-		} else {
-			*pout << "xstring";
+			rv += '_';
 		}
-		*pout << " Q" << pair.first << ';' << std::endl;
 	}
 
-	// Print the Initialize function.
-	*pout << std::endl;
-	*pout << "inline void Initialize() {" << std::endl;
-	for(auto const& pair : names) {
-		*pout << "\tQ" << pair.first;
-		if(pair.second) {
-			*pout << ".clear()";
-		} else {
-			*pout << " = xstring{}";
+	// Print the class definition.
+	out << "class " << rv << " : public QueryBase {" << std::endl;
+	out << "public:" << std::endl;
+	out << '\t' << rv << "()";
+	char separator = ':';
+	for(auto const& pair : pairs) {
+		if(!pair.second) {
+			out << separator << ' ' << pair.first << "()";
+			separator = ',';
 		}
-		*pout << ';' << std::endl;
 	}
-	*pout << '}' << std::endl;
+	out << " {}" << std::endl;
 
-	// Print the CollectName function.
-	*pout << std::endl;
-	*pout << "bool CollectName(char const*& p, xstring*& q) {" << std::endl;
+	// Print the public property accessors.
+	out << std::endl;
+	for(auto const& pair : pairs) {
+		auto s = Capitalize(pair.first);
+		auto type = GetType(pair.second);
+		out << "\t__declspec(property(get = Get" << s << ")) " << type << " const& " << s << ';' << std::endl;
+	}
+
+	// Print the public method accessors.
+	out << std::endl;
+	for(auto const& pair : pairs) {
+		auto s = Capitalize(pair.first);
+		auto type = GetType(pair.second);
+		out << '\t' << type << " const& Get" << s << "() const { return " << pair.first << "; }" << std::endl;
+	}
+
+	// Print the CollectQueryName method.
+	out << std::endl;
+	out << "\tbool CollectQueryName(char const*& p, xstring*& q) override {" << std::endl;
 	if(!nameGroups.empty()) {
-		*pout << "\tswitch(*p) {" << std::endl;
+		out << "\t\tswitch(*p) {" << std::endl;
 		for(auto const& nameGroup : nameGroups) {
-			*pout << "\tcase '" << nameGroup.first << "':" << std::endl;
+			out << "\t\tcase '" << nameGroup.first << "':" << std::endl;
 			for(auto const& pair : nameGroup.second) {
-				*pout << "\t\tif(memcmp(p + 1, \"" << pair.first.substr(1) << "=\", " << pair.first.size() << ") == 0) {" << std::endl;
-				*pout << "\t\t\tp += " << (pair.first.size() + 1) << ';' << std::endl;
+				out << "\t\t\tif(memcmp(p + 1, \"" << pair.first.substr(1) << "=\", " << pair.first.size() << ") == 0) {" << std::endl;
 				if(pair.second) {
-					*pout << "\t\t\tQ" << pair.first << ".emplace_back(xstring{});" << std::endl;
-					*pout << "\t\t\tq = &Q" << pair.first << ".back();" << std::endl;
+					out << "\t\t\t\tif(" << pair.first << ".count >= " << pair.first << ".max) {" << std::endl;
+					out << "\t\t\t\t\tthrow std::runtime_error(\"overflow of " << pair.first << "\");" << std::endl;
+					out << "\t\t\t\t}" << std::endl;
+					out << "\t\t\t\tq = &" << pair.first << "[" << pair.first << ".count];" << std::endl;
+					out << "\t\t\t\t++" << pair.first << ".count;" << std::endl;
 				} else {
-					*pout << "\t\t\tq = &Q" << pair.first << ';' << std::endl;
+					out << "\t\t\t\tq = &" << pair.first << ';' << std::endl;
 				}
-				*pout << "\t\t\treturn true;" << std::endl;
-				*pout << "\t\t}" << std::endl;
+				out << "\t\t\t\tp += " << (pair.first.size() + 1) << ';' << std::endl;
+				out << "\t\t\t\treturn true;" << std::endl;
+				out << "\t\t\t}" << std::endl;
 			}
-			*pout << "\t\tbreak;" << std::endl;
+			out << "\t\t\tbreak;" << std::endl;
 		}
-		*pout << "\t}" << std::endl;
+		out << "\t\t}" << std::endl;
 	}
+	out << "\t\treturn __super::CollectQueryName(p, q);" << std::endl;
+	out << "\t}" << std::endl;
 
-	// Print the rest of the CollectName function followed by the CollectValue
-	// and CollectQuery functions.
-#include "mkquery.inl"
+	// Print the member variables.
+	out << std::endl;
+	out << "private:" << std::endl;
+	for(auto const& pair : pairs) {
+		out << '\t';
+		if(pair.second) {
+			out << "xvector<" << pair.second << '>';
+		} else {
+			out << "xstring";
+		}
+		out << ' ' << pair.first << ';' << std::endl;
+	}
+	out << "};" << std::endl;
+
+	return rv;
 }

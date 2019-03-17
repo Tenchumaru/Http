@@ -5,7 +5,7 @@ namespace {
 	struct Group {
 		using vector = MyPrinter::vector;
 
-		Group(vector const& requests) {
+		Group(vector const& requests, std::ostream& out) : out(out) {
 			// Determine the common prefix for the requests.
 			prefix = requests.cbegin()->line;
 			for(auto const& request : requests) {
@@ -20,12 +20,14 @@ namespace {
 			for(auto const& request : requests) {
 				if(request.line == prefix) {
 					fn = request.fn;
+					queriesFn = request.queriesFn;
+					headersFn = request.headersFn;
 				} else {
 					requestGroups[request.line[index]].push_back(request);
 				}
 			}
 			for(auto const& pair : requestGroups) {
-				children.insert({ pair.first, Group(pair.second) });
+				children.insert({ pair.first, Group(pair.second, out) });
 			}
 		}
 
@@ -34,7 +36,7 @@ namespace {
 			size_t printedParameterNumber;
 			if(index == prefix.size()) {
 				printedParameterNumber = 0;
-				std::cout << indent << '{' << std::endl;
+				out << indent << '{' << std::endl;
 			} else {
 				printedParameterNumber = parameterCount + 1;
 				if(!PrintCompare(indent, index, parameterCount)) {
@@ -43,46 +45,75 @@ namespace {
 			}
 			if(!children.empty()) {
 				if(std::any_of(children.cbegin(), children.cend(), [](auto const& pair) { return pair.first != ':'; })) {
-					std::cout << indent << "\tswitch(p[" << prefix.size() << "]) {" << std::endl;
+					out << indent << "\tswitch(p[" << prefix.size() << "]) {" << std::endl;
 					for(auto const& pair : children) {
 						if(pair.first == ':') {
 							continue;
 						}
-						std::cout << indent << "\tcase '" << pair.first << "':" << std::endl;
+						out << indent << "\tcase '" << pair.first << "':" << std::endl;
 						pair.second.Print(options, indentLevel + 2, prefix.size() + 1, parameterCount);
-						std::cout << indent << "\t\tbreak;" << std::endl;
+						out << indent << "\t\tbreak;" << std::endl;
 					}
-					std::cout << indent << "\t}" << std::endl;
+					out << indent << "\t}" << std::endl;
 				}
 				auto it = children.find(':');
 				if(it != children.cend()) {
-					std::cout << indent << "\tchar const* r" << parameterCount << " = p;" << std::endl;
-					std::cout << indent << "\tif(CollectParameter(p, " << prefix.size() <<
+					out << indent << "\tchar const* r" << parameterCount << " = p;" << std::endl;
+					out << indent << "\tif(CollectParameter(p, " << prefix.size() <<
 						", p" << parameterCount << ", q" << parameterCount << ")) {" << std::endl;
 					it->second.Print(options, indentLevel + 2, prefix.size() + 1, parameterCount + 1);
-					std::cout << indent << "\t}" << std::endl;
-					std::cout << indent << "\tp = r" << parameterCount << ';' << std::endl;
+					out << indent << "\t}" << std::endl;
+					out << indent << "\tp = r" << parameterCount << ';' << std::endl;
 				}
 			}
 			if(!fn.empty()) {
-				std::cout << indent << "\tif(CollectQuery(p + " << prefix.size() << ")) {" << std::endl;
-				std::cout << indent << "\t\treturn " << fn << '(';
+				out << indent << "\tif(AtEndOfPath(p[" << prefix.size() << "])) {" << std::endl;
+				out << indent << "\t\t" << (queriesFn.empty() ? "QueryBase" : queriesFn) << " queries;" << std::endl;
+				out << indent << "\t\tif(!queries.CollectQueries(p, " << prefix.size() << ")) {" << std::endl;
+				out << indent << "\t\t\treturn FourHundred(response, \"bad query string\");" << std::endl;
+				out << indent << "\t\t}" << std::endl;
+				out << indent << "\t\t" << (headersFn.empty() ? "HeaderBase" : headersFn) << " headers;" << std::endl;
+				out << indent << "\t\tif(!headers.CollectHeaders(p)) {" << std::endl;
+				out << indent << "\t\t\treturn FourHundred(response, \"bad headers\");" << std::endl;
+				out << indent << "\t\t}" << std::endl;
+				out << indent << "\t\treturn ";
+				std::vector<std::string> parameters;
 				for(decltype(parameterCount) i = 0; i < parameterCount; ++i) {
+					std::stringstream ss;
 					if(options.wantsStrings) {
-						std::cout << "xstring(p" << i << ", " << 'q' << i << ')';
+						ss << "xstring(p" << i << ", " << 'q' << i << ')';
 					} else {
-						std::cout << 'p' << i << ", " << 'q' << i;
+						ss << 'p' << i << ", " << 'q' << i;
 					}
-					if(i + 1 < parameterCount) {
-						std::cout << ", ";
-					}
+					parameters.push_back(ss.str());
 				}
-				std::cout << ");" << std::endl;
-				std::cout << indent << "\t}" << std::endl;
+				if(!queriesFn.empty()) {
+					parameters.push_back("std::move(queries)");
+				}
+				if(!headersFn.empty()) {
+					parameters.push_back("std::move(headers)");
+				}
+				if(fn.back() == '+') {
+					parameters.push_back("Body(headers, p)");
+				}
+				parameters.push_back("response");
+				out << (fn.back() == '+' ? fn.substr(0, fn.size() - 1) : fn);
+				out << '(';
+				bool isFirst = true;
+				for(auto const& parameter : parameters) {
+					if(isFirst) {
+						isFirst = false;
+					} else {
+						out << ", ";
+					}
+					out << parameter;
+				}
+				out << ");" << std::endl;
+				out << indent << "\t}" << std::endl;
 			}
-			std::cout << indent << '}' << std::endl;
+			out << indent << '}' << std::endl;
 			if(printedParameterNumber) {
-				std::cout << indent << "p = r" << (printedParameterNumber - 1) << "; }" << std::endl;
+				out << indent << "p = r" << (printedParameterNumber - 1) << "; }" << std::endl;
 			}
 		}
 
@@ -90,27 +121,27 @@ namespace {
 			auto substr = prefix.substr(index);
 			auto i = substr.find(':');
 			if(i == std::string::npos) {
-				std::cout << indent << "if(";
+				out << indent << "if(";
 				PrintCompare(index, substr, substr.size());
-				std::cout << ") {" << std::endl;
+				out << ") {" << std::endl;
 				return false;
 			} else {
-				std::cout << indent << "{ char const* r" << parameterCount << " = p;" << std::endl;
-				std::cout << indent << "if(";
+				out << indent << "{ char const* r" << parameterCount << " = p;" << std::endl;
+				out << indent << "if(";
 				PrintCompare(index, substr.substr(0, i), i);
 				decltype(i) j = 0;
 				do {
-					std::cout << " && CollectParameter(p, " << (index + i) << ", p" << parameterCount << ", q" << parameterCount << ')';
+					out << " && CollectParameter(p, " << (index + i) << ", p" << parameterCount << ", q" << parameterCount << ')';
 					j = substr.find(':', ++i);
 					if(j == std::string::npos) {
 						j = substr.size();
 					}
-					std::cout << " && ";
+					out << " && ";
 					PrintCompare(index + i, substr.substr(i, j - i), j - i);
 					++parameterCount;
 					i = j;
 				} while(j < substr.size());
-				std::cout << ") {" << std::endl;
+				out << ") {" << std::endl;
 				return true;
 			}
 		}
@@ -118,18 +149,19 @@ namespace {
 		void PrintCompare(size_t const index, std::string const& s, size_t count) const {
 			switch(count) {
 			case 0:
-				std::cout << "true";
+				out << "true";
 				break;
 			case 1:
-				std::cout << "p[" << index << "] == '" << s << '\'';
+				out << "p[" << index << "] == '" << s << '\'';
 				break;
 			default:
-				std::cout << "memcmp(p + " << index << ", \"" << s << "\", " << count << ") == 0";
+				out << "memcmp(p + " << index << ", \"" << s << "\", " << count << ") == 0";
 			}
 		}
 
+		std::ostream& out;
 		std::map<char, Group> children;
-		std::string prefix, fn;
+		std::string prefix, fn, queriesFn, headersFn;
 	};
 }
 
@@ -137,7 +169,7 @@ MyPrinter::MyPrinter() {}
 
 MyPrinter::~MyPrinter() {}
 
-void MyPrinter::InternalPrint(vector const& requests, Options const& options) {
+void MyPrinter::InternalPrint(vector const& requests, Options const& options, std::ostream& out) {
 	// Split the requests into groups based on the first character.
 	std::map<char, vector> requestGroups;
 	for(auto const& request : requests) {
@@ -145,7 +177,7 @@ void MyPrinter::InternalPrint(vector const& requests, Options const& options) {
 	}
 	std::map<char, Group> groups;
 	for(auto const& pair : requestGroups) {
-		groups.insert({ pair.first, Group(pair.second) });
+		groups.insert({ pair.first, Group(pair.second, out) });
 	}
 
 	// Determine the maximum number of parameters.
@@ -156,16 +188,16 @@ void MyPrinter::InternalPrint(vector const& requests, Options const& options) {
 
 	// Print parameter declarations.
 	for(decltype(nparameters) i = 0; i < nparameters; ++i) {
-		std::cout << "\tchar const* p" << i << ';' << std::endl;
-		std::cout << "\tchar const* q" << i << ';' << std::endl;
+		out << "\tchar const* p" << i << ';' << std::endl;
+		out << "\tchar const* q" << i << ';' << std::endl;
 	}
 
 	// Print the Dispatch function code.
-	std::cout << "\tswitch(*p) {" << std::endl;
+	out << "\tswitch(*p) {" << std::endl;
 	for(auto const& pair : groups) {
-		std::cout << "\tcase '" << pair.first << "':" << std::endl;
+		out << "\tcase '" << pair.first << "':" << std::endl;
 		pair.second.Print(options, 2, 1, 0);
-		std::cout << "\t\tbreak;" << std::endl;
+		out << "\t\tbreak;" << std::endl;
 	}
-	std::cout << "\t}" << std::endl;
+	out << "\t}" << std::endl;
 }

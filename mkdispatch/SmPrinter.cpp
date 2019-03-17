@@ -219,21 +219,21 @@ namespace {
 		}
 	};
 
-	void PrintSpecialStateIndex_(std::vector<size_t> const& specialStateIndices, char const* name) {
-		std::cout << "\tstatic state_t " << name << '[' << specialStateIndices.size() << "] = {" << std::endl << "\t\t";
+	void PrintSpecialStateIndex_(std::vector<size_t> const& specialStateIndices, char const* name, std::ostream& out) {
+		out << "\tstatic state_t " << name << '[' << specialStateIndices.size() << "] = {" << std::endl << "\t\t";
 		for(size_t specialStateIndex : specialStateIndices) {
-			std::cout << specialStateIndex << ',';
+			out << specialStateIndex << ',';
 		}
-		std::cout << std::endl << "\t};" << std::endl;
+		out << std::endl << "\t};" << std::endl;
 	}
-#define PrintSpecialStateIndex(indices) PrintSpecialStateIndex_(indices, #indices)
+#define PrintSpecialStateIndex(indices) PrintSpecialStateIndex_(indices, #indices, out)
 }
 
 SmPrinter::SmPrinter() {}
 
 SmPrinter::~SmPrinter() {}
 
-void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
+void SmPrinter::InternalPrint(vector const& requests, Options const& options, std::ostream& out) {
 	// Determine the maximum index of a segment containing a parameter in a request.
 	ptrdiff_t nparameters = 0;
 	for(Printer::Request const& request : requests) {
@@ -268,11 +268,11 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	size_t shift = machine.size() < 128 ? 0 : machine.size() < 32768 ? 8 : 24;
 	size_t specialStateFlag = 0x80 << shift;
 	auto const* type = machine.size() < 128 ? "char" : machine.size() < 32768 ? "short" : "int";
-	std::cout << "\tusing state_t = " << type << ';' << std::endl;
-	std::cout << "\tstate_t constexpr specialStateFlag = -0x" << std::hex << specialStateFlag << std::dec << ';' << std::endl;
-	std::cout << "\tstatic state_t states[" << machine.size() << "][256] = {" << std::endl;
+	out << "\tusing state_t = " << type << ';' << std::endl;
+	out << "\tstate_t constexpr specialStateFlag = -0x" << std::hex << specialStateFlag << std::dec << ';' << std::endl;
+	out << "\tstatic state_t states[" << machine.size() << "][256] = {" << std::endl;
 	for(auto const& dfaState : machine) {
-		std::cout << "\t\t{";
+		out << "\t\t{";
 		std::vector<size_t> states(256, 0);
 		for(auto const& pair : dfaState.second) {
 			char ch = pair.first;
@@ -280,7 +280,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 			if(ch == '\0') {
 				// Skip this.  It's handled in the next block.
 			} else if(ch == '\n') {
-				states['\n'] = states['\r'] = states['?'] = specialStateFlag | functionIndices.size();
+				states['\n'] = states['\r'] = states[' '] = states['?'] = specialStateFlag | functionIndices.size();
 				auto finalParameterFinishingState = finalParameterFinishingStates.find(stateNumber);
 				auto finalParameterFinishingIndex = finalParameterFinishingState == finalParameterFinishingStates.cend() ?
 					0 : finalParameterFinishingState->second;
@@ -328,13 +328,13 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 		states.erase(std::find_if(states.crbegin(), states.crend(), [](auto state) { return state != 0; }).base(), states.cend());
 		for(auto state : states) {
 			if(state & specialStateFlag) {
-				std::cout << "specialStateFlag|";
+				out << "specialStateFlag|";
 			}
-			std::cout << (state & ~specialStateFlag) << ',';
+			out << (state & ~specialStateFlag) << ',';
 		}
-		std::cout << "}, // " << dfaState.first << std::endl;
+		out << "}, // " << dfaState.first << std::endl;
 	}
-	std::cout << "\t};" << std::endl;
+	out << "\t};" << std::endl;
 
 	// Print the special state actions.
 	PrintSpecialStateIndex(parameterFinishingIndices);
@@ -344,8 +344,8 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	PrintSpecialStateIndex(nextStateIndices);
 
 	// Print the parameters.
-	std::cout << "\tchar const* begin[" << (nparameters + 1) << "];" << std::endl;
-	std::cout << "\tchar const* end[" << (nparameters + 1) << "];" << std::endl;
+	out << "\tchar const* begin[" << (nparameters + 1) << "];" << std::endl;
+	out << "\tchar const* end[" << (nparameters + 1) << "];" << std::endl;
 
 	// Collect the function invocations.
 	std::stringstream functionInvocations;
@@ -360,10 +360,9 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 			} else {
 				functionInvocations << "begin[" << parameterIndex << "], end[" << parameterIndex << ']';
 			}
-			if(std::find(it + 1, request.line.cend(), ':') != request.line.cend()) {
-				functionInvocations << ", ";
-			}
+			functionInvocations << ", ";
 		}
+		functionInvocations << "response";
 		functionInvocations << ");" << std::endl;
 	}
 
@@ -378,7 +377,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options) {
 	auto it = content.find(s);
 	content.erase(it, s.size());
 	content.insert(it, functionInvocations.str());
-	std::cout << content;
+	out << content;
 }
 
 void MainLoop() {
@@ -393,7 +392,7 @@ void MainLoop() {
 	std::vector<state_t> nextStateIndices;
 	state_t states[1][256] = {};
 	char const* p = nullptr;
-	auto CollectQuery = [](char const*) { return false; };
+	auto CollectQueries = [](char const*) { return false; };
 	// <<<
 	for(state_t state = 0;;) {
 		do {
@@ -411,13 +410,13 @@ void MainLoop() {
 		auto parameterConsumingIndex = parameterConsumingIndices[index];
 		if(parameterConsumingIndex > 0) {
 			begin[parameterConsumingIndex] = p;
-			while(++p, *p != '/' && *p != '\n' && *p != '\r' && *p != '?') {
+			while(++p, *p != '/' && *p != '\n' && *p != '\r' && *p != ' ' && *p != '?') {
 				continue;
 			}
 		}
 		auto functionIndex = functionIndices[index];
 		if(functionIndex > 0) {
-			if(!CollectQuery(p - 1)) {
+			if(!CollectQueries(p - 1)) {
 				break;
 			}
 			switch(functionIndex) {

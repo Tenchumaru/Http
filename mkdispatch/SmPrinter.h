@@ -8,5 +8,5 @@ public:
 	~SmPrinter();
 
 private:
-	void InternalPrint(vector const& requests, Options const& options) override;
+	void InternalPrint(vector const& requests, Options const& options, std::ostream& out) override;
 };

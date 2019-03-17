@@ -1,5 +1,5 @@
 G /	root
-one ones+ two
+one ones[100] two
 Content-Type my-custom-header CUSTOM-HEADER
 G /a/b	a_b
 
@@ -37,15 +37,15 @@ G /m/m/:/a	m_m___a
 G /m/m/:/b	m_m___b
 
 
-P /a/b	Pa_b
+P /a/b	Pa_b+
 
+Content-Length
+P /a/b/c	Pa_b_c+
 
-P /a/b/c	Pa_b_c
+Content-Length
+P /x/:/y	Px___y+
 
+Content-Length
+P /x/y/:/z	Px_y___z+
 
-P /x/:/y	Px___y
-
-
-P /x/y/:/z	Px_y___z
-
-
+Content-Length
