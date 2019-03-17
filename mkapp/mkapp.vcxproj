@@ -179,9 +179,14 @@ cscript //nologo "$(SolutionDir)ExtractCode.js" "$(ProjectDir)mkquery.cxx" "$(Pr
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\mkdispatch\MyPrinter.h" />
+    <ClInclude Include="..\mkdispatch\Options.h" />
+    <ClInclude Include="..\mkdispatch\Printer.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\mkdispatch\MyPrinter.cpp" />
+    <ClCompile Include="..\mkdispatch\Printer.cpp" />
     <ClCompile Include="mkapp.cpp" />
     <ClCompile Include="mkheader.cpp" />
     <ClCompile Include="mkheader.cxx">
