@@ -1,3 +1,0 @@
-Content-Type
-my-custom-header
-CUSTOM-HEADER

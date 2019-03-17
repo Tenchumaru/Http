@@ -1,42 +1,8 @@
 #include "pch.h"
 
-namespace {
-	template<typename F>
-	F* Open(F& f, char const* filePath, char const* message) {
-		f.open(filePath);
-		if(f) {
-			return &f;
-		}
-		std::cerr << "cannot open \"" << filePath << "\" for " << message << std::endl;
-		return nullptr;
-	}
-}
-
-int main(int argc, char* argv[]) {
-	// Configure the input and output files.
-	std::ifstream fin;
-	std::istream* pin = argc > 1 ? Open(fin, argv[1], "reading") : &std::cin;
-	if(!pin) {
-		return 1;
-	}
-	std::ofstream fout;
-	std::ostream* pout = argc > 2 ? Open(fout, argv[2], "writing") : &std::cout;
-	if(!pout) {
-		return 1;
-	}
-
-	// Read the names to capture.
-	std::map<std::string, bool> names;
-	std::transform(std::istream_iterator<std::string>(*pin), std::istream_iterator<std::string>(), std::inserter(names, names.end()), [](std::string const& name) {
-		if(name.back() == '+') {
-			return std::make_pair(name.substr(0, name.size() - 1), true);
-		} else {
-			return std::make_pair(name, false);
-		}
-	});
-
+void mkquery(std::map<std::string, bool> names, std::ostream* pout) {
 	// Split the names into groups based on the first character.
-	std::map<char, std::vector<decltype(names)::value_type>> nameGroups;
+	std::map<char, std::vector<std::remove_reference_t<decltype(names)>::value_type>> nameGroups;
 	for(auto const& pair : names) {
 		nameGroups[pair.first[0]].push_back(pair);
 	}
@@ -92,5 +58,5 @@ int main(int argc, char* argv[]) {
 
 	// Print the rest of the CollectName function followed by the CollectValue
 	// and CollectQuery functions.
-#include "functions.inl"
+#include "mkquery.inl"
 }

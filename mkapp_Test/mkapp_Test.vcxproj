@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{6AB29F6E-9C89-44F4-82F5-AAD93BB2C811}</ProjectGuid>
+    <ProjectGuid>{3C0AAF75-546B-4326-947E-B620F85EC4F2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>mkheader_Test</RootNamespace>
+    <RootNamespace>mkapp_Test</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
   </PropertyGroup>
@@ -101,8 +101,10 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkheader" "$(ProjectDir)basic.txt" "$(ProjectDir)Basic.inl"</Command>
-      <Message>Creating mkheader tests...</Message>
+      <Command>"$(OutDir)mkapp" "$(ProjectDir)basic.txt" "$(ProjectDir)Basic.inl"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Creating mkquery tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -119,8 +121,10 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkheader" "$(ProjectDir)basic.txt" "$(ProjectDir)Basic.inl"</Command>
-      <Message>Creating mkheader tests...</Message>
+      <Command>"$(OutDir)mkapp" "$(ProjectDir)basic.txt" "$(ProjectDir)Basic.inl"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Creating mkquery tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -141,8 +145,10 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkheader" "$(ProjectDir)basic.txt" "$(ProjectDir)Basic.inl"</Command>
-      <Message>Creating mkheader tests...</Message>
+      <Command>"$(OutDir)mkapp" "$(ProjectDir)basic.txt" "$(ProjectDir)Basic.inl"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Creating mkquery tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -163,8 +169,10 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkheader" "$(ProjectDir)basic.txt" "$(ProjectDir)Basic.inl"</Command>
-      <Message>Creating mkheader tests...</Message>
+      <Command>"$(OutDir)mkapp" "$(ProjectDir)basic.txt" "$(ProjectDir)Basic.inl"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Creating mkquery tests...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
