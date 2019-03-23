@@ -4,6 +4,7 @@
 #include "CppUnitTest.h"
 
 #include <functional>
+#include <locale>
 #include <map>
 #include <memory>
 #include <string>

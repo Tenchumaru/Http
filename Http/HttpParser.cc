@@ -158,11 +158,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 	while(p < q) {
 		if(*p == '\n') {
-			// Found it; validate the name.
-			if(name.empty()) {
-				throw Exception(Exception::BadRequest);
-			}
-
+			// Found it.
 			if(name[0] != ' ') {
 				// Add it and the header name to the collection of headers.
 				headers.insert({ name, value });

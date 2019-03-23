@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Sockets.h"
+#include "../Http/Http.h"
 #include "../Http/HttpServer.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

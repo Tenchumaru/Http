@@ -1,63 +1,63 @@
 // https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
-static std::map<int, char const*> const result_codes={
-	{ 100, "Continue" },
-	{ 101, "Switching Protocols" },
-	{ 102, "Processing" },
-	{ 103, "Early Hints" },
-	{ 200, "OK" },
-	{ 201, "Created" },
-	{ 202, "Accepted" },
-	{ 203, "Non-Authoritative Information" },
-	{ 204, "No Content" },
-	{ 205, "Reset Content" },
-	{ 206, "Partial Content" },
-	{ 207, "Multi-Status" },
-	{ 208, "Already Reported" },
-	{ 226, "IM Used" },
-	{ 300, "Multiple Choices" },
-	{ 301, "Moved Permanently" },
-	{ 302, "Found" },
-	{ 303, "See Other" },
-	{ 304, "Not Modified" },
-	{ 305, "Use Proxy" },
-	{ 307, "Temporary Redirect" },
-	{ 308, "Permanent Redirect" },
-	{ 400, "Bad Request" },
-	{ 401, "Unauthorized" },
-	{ 402, "Payment Required" },
-	{ 403, "Forbidden" },
-	{ 404, "Not Found" },
-	{ 405, "Method Not Allowed" },
-	{ 406, "Not Acceptable" },
-	{ 407, "Proxy Authentication Required" },
-	{ 408, "Request Timeout" },
-	{ 409, "Conflict" },
-	{ 410, "Gone" },
-	{ 411, "Length Required" },
-	{ 412, "Precondition Failed" },
-	{ 413, "Payload Too Large" },
-	{ 414, "URI Too Long" },
-	{ 415, "Unsupported Media Type" },
-	{ 416, "Range Not Satisfiable" },
-	{ 417, "Expectation Failed" },
-	{ 421, "Misdirected Request" },
-	{ 422, "Unprocessable Entity" },
-	{ 423, "Locked" },
-	{ 424, "Failed Dependency" },
-	{ 426, "Upgrade Required" },
-	{ 428, "Precondition Required" },
-	{ 429, "Too Many Requests" },
-	{ 431, "Request Header Fields Too Large" },
-	{ 451, "Unavailable For Legal Reasons" },
-	{ 500, "Internal Server Error" },
-	{ 501, "Not Implemented" },
-	{ 502, "Bad Gateway" },
-	{ 503, "Service Unavailable" },
-	{ 504, "Gateway Timeout" },
-	{ 505, "HTTP Version Not Supported" },
-	{ 506, "Variant Also Negotiates" },
-	{ 507, "Insufficient Storage" },
-	{ 508, "Loop Detected" },
-	{ 510, "Not Extended" },
-	{ 511, "Network Authentication Required" },
-};
+namespace ResultCodes {
+	char constexpr Continue[]                      =  "HTTP/1.1 100 Continue\r\n";
+	char constexpr SwitchingProtocols[]            =  "HTTP/1.1 101 Switching Protocols\r\n";
+	char constexpr Processing[]                    =  "HTTP/1.1 102 Processing\r\n";
+	char constexpr EarlyHints[]                    =  "HTTP/1.1 103 Early Hints\r\n";
+	char constexpr OK[]                            =  "HTTP/1.1 200 OK\r\n";
+	char constexpr Created[]                       =  "HTTP/1.1 201 Created\r\n";
+	char constexpr Accepted[]                      =  "HTTP/1.1 202 Accepted\r\n";
+	char constexpr NonAuthoritativeInformation[]   =  "HTTP/1.1 203 Non-Authoritative Information\r\n";
+	char constexpr NoContent[]                     =  "HTTP/1.1 204 No Content\r\n";
+	char constexpr ResetContent[]                  =  "HTTP/1.1 205 Reset Content\r\n";
+	char constexpr PartialContent[]                =  "HTTP/1.1 206 Partial Content\r\n";
+	char constexpr MultiStatus[]                   =  "HTTP/1.1 207 Multi-Status\r\n";
+	char constexpr AlreadyReported[]               =  "HTTP/1.1 208 Already Reported\r\n";
+	char constexpr IMUsed[]                        =  "HTTP/1.1 226 IM Used\r\n";
+	char constexpr MultipleChoices[]               =  "HTTP/1.1 300 Multiple Choices\r\n";
+	char constexpr MovedPermanently[]              =  "HTTP/1.1 301 Moved Permanently\r\n";
+	char constexpr Found[]                         =  "HTTP/1.1 302 Found\r\n";
+	char constexpr SeeOther[]                      =  "HTTP/1.1 303 See Other\r\n";
+	char constexpr NotModified[]                   =  "HTTP/1.1 304 Not Modified\r\n";
+	char constexpr UseProxy[]                      =  "HTTP/1.1 305 Use Proxy\r\n";
+	char constexpr TemporaryRedirect[]             =  "HTTP/1.1 307 Temporary Redirect\r\n";
+	char constexpr PermanentRedirect[]             =  "HTTP/1.1 308 Permanent Redirect\r\n";
+	char constexpr BadRequest[]                    =  "HTTP/1.1 400 Bad Request\r\n";
+	char constexpr Unauthorized[]                  =  "HTTP/1.1 401 Unauthorized\r\n";
+	char constexpr PaymentRequired[]               =  "HTTP/1.1 402 Payment Required\r\n";
+	char constexpr Forbidden[]                     =  "HTTP/1.1 403 Forbidden\r\n";
+	char constexpr NotFound[]                      =  "HTTP/1.1 404 Not Found\r\n";
+	char constexpr MethodNotAllowed[]              =  "HTTP/1.1 405 Method Not Allowed\r\n";
+	char constexpr NotAcceptable[]                 =  "HTTP/1.1 406 Not Acceptable\r\n";
+	char constexpr ProxyAuthenticationRequired[]   =  "HTTP/1.1 407 Proxy Authentication Required\r\n";
+	char constexpr RequestTimeout[]                =  "HTTP/1.1 408 Request Timeout\r\n";
+	char constexpr Conflict[]                      =  "HTTP/1.1 409 Conflict\r\n";
+	char constexpr Gone[]                          =  "HTTP/1.1 410 Gone\r\n";
+	char constexpr LengthRequired[]                =  "HTTP/1.1 411 Length Required\r\n";
+	char constexpr PreconditionFailed[]            =  "HTTP/1.1 412 Precondition Failed\r\n";
+	char constexpr PayloadTooLarge[]               =  "HTTP/1.1 413 Payload Too Large\r\n";
+	char constexpr URITooLong[]                    =  "HTTP/1.1 414 URI Too Long\r\n";
+	char constexpr UnsupportedMediaType[]          =  "HTTP/1.1 415 Unsupported Media Type\r\n";
+	char constexpr RangeNotSatisfiable[]           =  "HTTP/1.1 416 Range Not Satisfiable\r\n";
+	char constexpr ExpectationFailed[]             =  "HTTP/1.1 417 Expectation Failed\r\n";
+	char constexpr MisdirectedRequest[]            =  "HTTP/1.1 421 Misdirected Request\r\n";
+	char constexpr UnprocessableEntity[]           =  "HTTP/1.1 422 Unprocessable Entity\r\n";
+	char constexpr Locked[]                        =  "HTTP/1.1 423 Locked\r\n";
+	char constexpr FailedDependency[]              =  "HTTP/1.1 424 Failed Dependency\r\n";
+	char constexpr UpgradeRequired[]               =  "HTTP/1.1 426 Upgrade Required\r\n";
+	char constexpr PreconditionRequired[]          =  "HTTP/1.1 428 Precondition Required\r\n";
+	char constexpr TooManyRequests[]               =  "HTTP/1.1 429 Too Many Requests\r\n";
+	char constexpr RequestHeaderFieldsTooLarge[]   =  "HTTP/1.1 431 Request Header Fields Too Large\r\n";
+	char constexpr UnavailableForLegalReasons[]    =  "HTTP/1.1 451 Unavailable For Legal Reasons\r\n";
+	char constexpr InternalServerError[]           =  "HTTP/1.1 500 Internal Server Error\r\n";
+	char constexpr NotImplemented[]                =  "HTTP/1.1 501 Not Implemented\r\n";
+	char constexpr BadGateway[]                    =  "HTTP/1.1 502 Bad Gateway\r\n";
+	char constexpr ServiceUnavailable[]            =  "HTTP/1.1 503 Service Unavailable\r\n";
+	char constexpr GatewayTimeout[]                =  "HTTP/1.1 504 Gateway Timeout\r\n";
+	char constexpr HTTPVersionNotSupported[]       =  "HTTP/1.1 505 HTTP Version Not Supported\r\n";
+	char constexpr VariantAlsoNegotiates[]         =  "HTTP/1.1 506 Variant Also Negotiates\r\n";
+	char constexpr InsufficientStorage[]           =  "HTTP/1.1 507 Insufficient Storage\r\n";
+	char constexpr LoopDetected[]                  =  "HTTP/1.1 508 Loop Detected\r\n";
+	char constexpr NotExtended[]                   =  "HTTP/1.1 510 Not Extended\r\n";
+	char constexpr NetworkAuthenticationRequired[] =  "HTTP/1.1 511 Network Authentication Required\r\n";
+}

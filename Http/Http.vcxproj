@@ -151,9 +151,12 @@
     <ClInclude Include="DispatchParser.h" />
     <ClInclude Include="FibrousTcpSocket.h" />
     <ClInclude Include="FibrousTcpSocketFactory.h" />
+    <ClInclude Include="HeaderBase.h" />
     <ClInclude Include="HeaderMap.h" />
+    <ClInclude Include="Http.h" />
     <ClInclude Include="HttpParser.h" />
     <ClInclude Include="HttpServer.h" />
+    <ClInclude Include="QueryBase.h" />
     <ClInclude Include="Request.h" />
     <ClInclude Include="RequestParser.h" />
     <ClInclude Include="Response.h" />
@@ -164,11 +167,13 @@
     <ClInclude Include="TcpSocketFactory.h" />
     <ClInclude Include="Uri.h" />
     <ClInclude Include="Waiter.h" />
+    <ClInclude Include="xtypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DispatchParser.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />
     <ClCompile Include="FibrousTcpSocketFactory.cc" />
+    <ClCompile Include="Http.cc" />
     <ClCompile Include="HttpParser.cc" />
     <ClCompile Include="HttpServer.cc" />
     <ClCompile Include="RequestParser.cc" />
