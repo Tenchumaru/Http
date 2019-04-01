@@ -86,6 +86,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)App.txt" "$(ProjectDir)App.inl"</Command>
+      <Message>Creating query and header classes...</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -99,6 +103,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)App.txt" "$(ProjectDir)App.inl"</Command>
+      <Message>Creating query and header classes...</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -115,6 +123,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)App.txt" "$(ProjectDir)App.inl"</Command>
+      <Message>Creating query and header classes...</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -131,6 +143,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)App.txt" "$(ProjectDir)App.inl"</Command>
+      <Message>Creating query and header classes...</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -152,6 +168,12 @@
     <ProjectReference Include="..\Json\Json.vcxproj">
       <Project>{f5b1597d-2ad2-4921-a0d0-ead4839dc863}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="App.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

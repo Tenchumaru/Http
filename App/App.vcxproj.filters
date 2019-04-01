@@ -30,4 +30,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="App.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.inl">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

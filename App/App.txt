@@ -1,0 +1,36 @@
+GET /helix/users	GET_helix_users
+id login
+Authorization
+GET /helix/users/follows	GET_helix_users_follows
+after first from_id to_id
+Client-ID
+PUT /helix/users	PUT_helix_users+
+
+Authorization Content-Length
+GET /helix/users/extensions/list	GET_helix_users_extensions_list
+
+Authorization
+GET /helix/users/extensions	GET_helix_users_extensions
+user_id
+Authorization
+PUT /helix/users/extensions	PUT_helix_users_extensions+
+
+Authorization Content-Length
+GET /helix/videos	GET_helix_videos
+id user_id game_id after before first language period sort type
+Client-ID
+POST /extensions/:clientId/auth/secret	POST_extensions__clientId_auth_secret+
+
+Client-ID Content-Type Content-Length
+GET /extensions/:clientId/auth/secret	GET_extensions__clientId_auth_secret
+
+Authorization Client-ID
+DELETE /extensions/:clientId/auth/secret	DELETE_extensions__clientId_auth_secret
+
+Client-ID
+GET /text	GET_text
+
+origin
+GET /json	GET_json
+
+origin

@@ -11,6 +11,7 @@
 #endif
 
 #include <functional>
+#include <locale>
 #include <map>
 #include <sstream>
 #include <string>
