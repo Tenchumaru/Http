@@ -10,6 +10,7 @@
 # define SOCKET int
 #endif
 
+#include <array>
 #include <functional>
 #include <locale>
 #include <map>

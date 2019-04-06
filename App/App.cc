@@ -2,6 +2,8 @@
 #include "../Json/Json.h"
 #include "../Http/Http.h"
 #include "../Http/HttpServer.h"
+#include "../Http/ClosableResponse.h"
+#include "App.inl"
 
 void GET_helix_users(Query_id_login&& queries, Header_authorization&& headers, Response& response) {
 	 queries, headers;

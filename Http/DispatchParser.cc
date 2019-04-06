@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "DispatchParser.h"
 
-using ptr_t = char*;
+using ptr_t = char const*;
 
 class Body {
 public:
@@ -18,7 +18,7 @@ private:
 	TcpSocket& client;
 };
 
-extern void Dispatch(ptr_t begin, ptr_t body, ptr_t& next, ptr_t end, TcpSocket& client);
+extern void Dispatch(ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket& client);
 
 Body::Body(ptr_t begin, ptr_t& next, TcpSocket& client) : begin(begin), next(next), client(client) {}
 
@@ -30,8 +30,8 @@ DispatchParser::DispatchParser(TcpSocket& client) : client(client) {
 	constexpr auto bufferSize = 16 * 1024;
 	static_assert(bufferSize % sizeof(intptr_t) == 0);
 	std::array<intptr_t, bufferSize / sizeof(intptr_t)> buffer;
-	auto const begin = reinterpret_cast<ptr_t>(buffer.data()) + pattern.size();
-	auto const end = reinterpret_cast<ptr_t>(buffer.data() + buffer.size());
+	auto const begin = reinterpret_cast<char*>(buffer.data()) + pattern.size();
+	auto const end = reinterpret_cast<char*>(buffer.data() + buffer.size());
 
 	buffer[0] = 0;
 	for(;;) {
