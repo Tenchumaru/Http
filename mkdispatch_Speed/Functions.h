@@ -2,8 +2,17 @@
 
 using xstring = std::pair<char const*, char const*>;
 
+class TcpSocket {
+public:
+};
+
 class Response {
 public:
+};
+
+class ClosableResponse : public Response {
+public:
+	ClosableResponse(TcpSocket& /*client*/, char* /*begin*/, char* /*end*/) {}
 };
 
 class QueryBase {

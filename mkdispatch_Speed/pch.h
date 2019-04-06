@@ -9,6 +9,7 @@
 #ifndef PCH_H
 #define PCH_H
 
+#include <array>
 #include <chrono>
 #include <iostream>
 #include <locale>

@@ -344,8 +344,8 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 	PrintSpecialStateIndex(nextStateIndices);
 
 	// Print the parameters.
-	out << "\tchar const* begin[" << (nparameters + 1) << "];" << std::endl;
-	out << "\tchar const* end[" << (nparameters + 1) << "];" << std::endl;
+	out << "\tchar const* parametersBegin[" << (nparameters + 1) << "];" << std::endl;
+	out << "\tchar const* parametersEnd[" << (nparameters + 1) << "];" << std::endl;
 
 	// Collect the function invocations.
 	std::stringstream functionInvocations;
@@ -356,9 +356,9 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 		for(auto it = request.line.cbegin(); it = std::find(it, request.line.cend(), ':'), it != request.line.cend(); ++it) {
 			auto parameterIndex = std::count(request.line.cbegin(), it, '/');
 			if(options.wantsStrings) {
-				functionInvocations << "xstring(begin[" << parameterIndex << "], end[" << parameterIndex << "])";
+				functionInvocations << "xstring(parametersBegin[" << parameterIndex << "], parametersEnd[" << parameterIndex << "])";
 			} else {
-				functionInvocations << "begin[" << parameterIndex << "], end[" << parameterIndex << ']';
+				functionInvocations << "parametersBegin[" << parameterIndex << "], parametersEnd[" << parameterIndex << ']';
 			}
 			functionInvocations << ", ";
 		}
@@ -381,8 +381,8 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 }
 
 void MainLoop() {
-	char const* begin[1];
-	char const* end[1];
+	char const* parametersBegin[1];
+	char const* parametersEnd[1];
 	using state_t = short;
 	state_t constexpr specialStateFlag = -0x8000;
 	std::vector<state_t> parameterFinishingIndices;
@@ -405,11 +405,11 @@ void MainLoop() {
 		int index = state & ~specialStateFlag;
 		auto parameterFinishingIndex = parameterFinishingIndices[index];
 		if(parameterFinishingIndex > 0) {
-			end[parameterFinishingIndex] = p - 1;
+			parametersEnd[parameterFinishingIndex] = p - 1;
 		}
 		auto parameterConsumingIndex = parameterConsumingIndices[index];
 		if(parameterConsumingIndex > 0) {
-			begin[parameterConsumingIndex] = p;
+			parametersBegin[parameterConsumingIndex] = p;
 			while(++p, *p != '/' && *p != '\n' && *p != '\r' && *p != ' ' && *p != '?') {
 				continue;
 			}
@@ -425,7 +425,7 @@ void MainLoop() {
 		}
 		auto parameterStartingIndex = parameterStartingIndices[index];
 		if(parameterStartingIndex > 0) {
-			begin[parameterStartingIndex] = p;
+			parametersBegin[parameterStartingIndex] = p;
 		}
 		state = nextStateIndices[index];
 	}

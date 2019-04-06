@@ -10,5 +10,6 @@
 // Headers for CppUnitTest
 #include "CppUnitTest.h"
 
+#include <array>
 #include <locale>
 #include <string>
