@@ -78,6 +78,9 @@
     <ClInclude Include="xtypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StatusLines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -122,10 +125,8 @@
     <ClCompile Include="Http.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ResultCodes.inl">
-      <Filter>Header Files</Filter>
-    </None>
+    <ClCompile Include="StatusLines.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

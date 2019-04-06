@@ -1,5 +1,7 @@
 #pragma once
 
+#include "xtypes.h"
+
 class HeaderBase {
 public:
 	virtual bool CollectHeaderName(char const*& p, xstring*& q) {

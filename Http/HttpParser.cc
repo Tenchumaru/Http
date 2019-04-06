@@ -33,14 +33,14 @@ char const* HttpParser::CollectFirst(char const* p, char const* const q) {
 		if(*p == ' ') {
 			// Validate it and start collecting the next part.
 			if(!ValidateFirst(first)) {
-				throw Exception(Exception::MethodNotAllowed);
+				throw Exception(StatusLines::MethodNotAllowed);
 			}
 			next.clear();
 			fn = &HttpParser::CollectNext;
 			return p + 1;
 		} else if(*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
-			throw Exception(Exception::BadRequest);
+			throw Exception(StatusLines::BadRequest);
 		}
 		first += *p;
 		++p;
@@ -53,14 +53,14 @@ char const* HttpParser::CollectNext(char const* p, char const* const q) {
 		if(*p == ' ') {
 			// Validate it and start collecting the last part.
 			if(!ValidateNext(next)) {
-				throw Exception(Exception::BadRequest);
+				throw Exception(StatusLines::BadRequest);
 			}
 			last.clear();
 			fn = &HttpParser::CollectLast;
 			return p + 1;
 		} else if(*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
-			throw Exception(Exception::BadRequest);
+			throw Exception(StatusLines::BadRequest);
 		}
 		next += *p;
 		++p;
@@ -75,7 +75,7 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 		} else if(*p == '\n') {
 			// Validate it and start collecting the first header name.
 			if(!ValidateLast(last)) {
-				throw Exception(Exception::BadRequest);
+				throw Exception(StatusLines::BadRequest);
 			}
 			name.clear();
 			fn = &HttpParser::CollectHeaderName;
@@ -91,7 +91,7 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 	// Check for too many headers.
 	if(headers.size() > maxHeaders) {
-		throw Exception(Exception::BadRequest);
+		throw Exception(StatusLines::BadRequest);
 	}
 
 	// Look for the end of the name (a colon).
@@ -99,7 +99,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 		if(*p == ':') {
 			// Found it; validate the name.
 			if(name.empty()) {
-				throw Exception(Exception::BadRequest);
+				throw Exception(StatusLines::BadRequest);
 			}
 
 			// Start collecting the header value.
@@ -111,7 +111,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 		} else if(*p == '\n') {
 			// Didn't find it.  If there is a name, it's an invalid message.
 			if(!name.empty()) {
-				throw Exception(Exception::BadRequest);
+				throw Exception(StatusLines::BadRequest);
 			}
 
 			// Get the content length, if any.
@@ -130,7 +130,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			if(contentLength > maxContentLength) {
 				// && .49999999999999
 				// : ]
-				throw Exception(Exception::PayloadTooLarge);
+				throw Exception(StatusLines::PayloadTooLarge);
 			}
 			// TODO:  for requests, check for the "Expect: 100-continue" header.
 
@@ -142,12 +142,12 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			if(name.empty()) {
 				name += ' ';
 			} else if(name != " ") {
-				throw Exception(Exception::BadRequest);
+				throw Exception(StatusLines::BadRequest);
 			}
 		} else {
 			name += *p;
 			if(name.size() >= maxNameSize) {
-				throw Exception(Exception::BadRequest);
+				throw Exception(StatusLines::BadRequest);
 			}
 		}
 		++p;
@@ -173,7 +173,7 @@ char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 		} else if(!value.empty() || !isspace(*p)) {
 			value += *p;
 			if(value.size() >= maxValueSize) {
-				throw Exception(Exception::BadRequest);
+				throw Exception(StatusLines::BadRequest);
 			}
 		}
 		++p;

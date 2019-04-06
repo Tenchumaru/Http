@@ -1,5 +1,6 @@
 #pragma once
 
+#include "StatusLines.h"
 #include "HeaderMap.h"
 #include "Uri.h"
 
@@ -7,15 +8,13 @@ class HttpParser {
 public:
 	class Exception : public std::runtime_error {
 	public:
-		enum : unsigned short { Close = 0, BadRequest = 400, MethodNotAllowed = 405, PayloadTooLarge = 413 };
-
-		explicit Exception(unsigned short statusCode) : std::runtime_error("HttpParser"), statusCode(statusCode) {}
+		explicit Exception(StatusLines::StatusLine const& statusLine) : std::runtime_error("HttpParser"), statusLine(statusLine) {}
 		~Exception() {}
-		unsigned short GetStatusCode() const { return statusCode; }
-		__declspec(property(get = GetStatusCode)) unsigned short const StatusCode;
+		StatusLines::StatusLine const& GetStatusLine() const { return statusLine; }
+		__declspec(property(get = GetStatusLine)) StatusLines::StatusLine const& StatusLine;
 
 	private:
-		unsigned short statusCode;
+		StatusLines::StatusLine const& statusLine;
 	};
 
 	HttpParser();

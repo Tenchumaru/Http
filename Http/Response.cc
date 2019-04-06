@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Response.h"
-#include "ResultCodes.inl"
 
 namespace {
 	std::string const contentLengthKey = "Content-Length";
@@ -42,7 +41,7 @@ Response::~Response() {}
 
 void Response::WriteHeader(xstring const& name, xstring const& value) {
 	if(next == begin) {
-		WriteStatus(ResultCodes::OK);
+		WriteStatus(StatusLines::OK);
 	}
 	auto nameSize = name.second - name.first;
 	auto valueSize = value.second - value.first;

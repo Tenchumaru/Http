@@ -1,5 +1,7 @@
 #pragma once
 
+#include "xtypes.h"
+
 class QueryBase {
 public:
 	virtual bool CollectQueryName(char const*& p, xstring*& q) {

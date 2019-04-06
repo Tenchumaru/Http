@@ -1,18 +1,18 @@
 #pragma once
 
 #include "xtypes.h"
+#include "StatusLines.h"
 #include "TcpSocket.h"
 
 class Response {
 public:
 	Response(TcpSocket& client, char* begin, char* end);
-	template<size_t T>
-	void WriteStatus(char const (&status)[T]) {
+	void WriteStatus(StatusLines::StatusLine const& statusLine) {
 		if(next != begin) {
 			throw std::logic_error("WriteStatus");
 		}
-		memcpy(begin, status, T - 1);
-		next = begin + T - 1;
+		memcpy(begin, statusLine.first, statusLine.second);
+		next = begin + statusLine.second;
 	}
 	void WriteHeader(std::string const& name, std::string const& value) {
 		WriteHeader(xstring{ name.data(), name.data() + name.size() }, xstring{ value.data(), value.data() + value.size() });
@@ -28,8 +28,7 @@ public:
 	}
 
 protected:
-	// These are protected since derived classes control the response
-	// connection lifetime.
+	// These are protected since derived classes control the response lifetime.
 	~Response();
 	void Close();
 
