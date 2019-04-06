@@ -1,7 +1,5 @@
 #pragma once
 
-#include <WS2tcpip.h>
-
 namespace Http_Test {
 	namespace Sockets {
 		extern std::function<SOCKET(SOCKET, struct sockaddr* addr, int* addrlen)> OnAccept;

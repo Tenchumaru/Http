@@ -26,12 +26,13 @@ namespace {
 
 Response::Response(TcpSocket& client, char* begin, char* end) :
 	begin(begin),
-	end(end),
 	next(begin),
+	end(end),
 	outputStreamBuffer(*this, client),
 	responseStream(&outputStreamBuffer),
 	wroteContentLength(false),
-	wroteServer(false) {
+	wroteServer(false),
+	inBody(false) {
 	if(end - begin < minimumHeaderBufferSize) {
 		throw std::runtime_error("minimumHeaderBufferSize");
 	}
@@ -68,6 +69,12 @@ void Response::WriteHeader(xstring const& name, xstring const& value) {
 }
 
 void Response::Close() {
+	if(!inBody && next != begin) {
+		if(!wroteContentLength) {
+			static char constexpr zero[] = "0";
+			WriteHeader(contentLengthKey, xstring{ zero, zero + sizeof(zero) - 1 });
+		}
+	}
 	outputStreamBuffer.Close();
 }
 
@@ -96,6 +103,7 @@ Response::nstreambuf::nstreambuf(Response& response, TcpSocket& client) :
 	internalSendFn(&nstreambuf::InternalSend),
 	sendFn(&nstreambuf::InitialSend),
 	begin(response.begin),
+	next(response.next),
 	end(response.end) {
 	static_assert(sizeof(char_type) == sizeof(char));
 }
@@ -168,8 +176,18 @@ void Response::nstreambuf::ChunkedClose() {
 }
 
 void Response::nstreambuf::SimpleClose() {
-	// Send any remaining data.
-	InternalSendBuffer();
+	// If there are no data in the response, do nothing.
+	if(response.next != begin) {
+		// If there are data but none has been sent, the headers have not yet
+		// been completed.
+		if(sendFn == &nstreambuf::InitialSend) {
+			response.CompleteHeaders();
+			next = response.next;
+		}
+
+		// Send any remaining data.
+		InternalSendBuffer();
+	}
 }
 
 void Response::nstreambuf::InternalSendBuffer() {

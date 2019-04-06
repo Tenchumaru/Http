@@ -23,6 +23,7 @@ public:
 	void WriteHeader(xstring const& name, xstring const& value);
 	template<typename T>
 	Response& operator<<(T t) {
+		inBody = true;
 		responseStream << t;
 		return *this;
 	}
@@ -50,8 +51,8 @@ private:
 		Fn2 internalSendFn;
 		Fn2 sendFn;
 		char* begin;
-		char* end;
 		char* next;
+		char* end;
 
 		void InitialSend(char_type const* s, std::streamsize n);
 		void Send(char_type const* s, std::streamsize n);
@@ -64,12 +65,13 @@ private:
 	};
 
 	char* begin;
-	char* end;
 	char* next;
+	char* end;
 	nstreambuf outputStreamBuffer;
 	std::ostream responseStream;
 	bool wroteContentLength;
 	bool wroteServer;
+	bool inBody;
 
 	bool CompleteHeaders();
 };

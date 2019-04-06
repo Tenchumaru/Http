@@ -82,13 +82,15 @@ public:
 			}
 		}
 
+		// Check for final termination.
 		if(*p == '\r') {
 			++p;
 		}
 		if(*p == '\n') {
 			++p;
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 private:

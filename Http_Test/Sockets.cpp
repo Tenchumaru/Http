@@ -4,8 +4,29 @@
 using namespace Http_Test::Sockets;
 
 namespace {
+	template<typename F>
+	intptr_t Replace(F f, intptr_t& imp) {
+		auto p = reinterpret_cast<intptr_t>(f);
+		std::swap(p, imp);
+		return p;
+	}
+
+	intptr_t original_accept;
+	intptr_t original_getnameinfo;
+	intptr_t original_recv;
+	intptr_t original_send;
+	intptr_t original_closesocket;
+	intptr_t original_WSAPoll;
+	intptr_t original_ioctlsocket;
+
 	SOCKET WSAAPI test_accept(SOCKET s, struct sockaddr* addr, int* addrlen) {
 		return OnAccept(s, addr, addrlen);
+	}
+
+	INT WSAAPI test_getnameinfo(const SOCKADDR*, socklen_t, PCHAR pNodeBuffer, DWORD NodeBufferSize, PCHAR pServiceBuffer, DWORD ServiceBufferSize, INT) {
+		strncpy_s(pNodeBuffer, NodeBufferSize, "test", NodeBufferSize);
+		strncpy_s(pServiceBuffer, ServiceBufferSize, "test", ServiceBufferSize);
+		return 0;
 	}
 
 	int WSAAPI test_recv(SOCKET s, char* buf, int len, int flags) {
@@ -30,6 +51,7 @@ namespace {
 }
 
 extern "C" intptr_t __imp_accept;
+extern "C" intptr_t __imp_getnameinfo;
 extern "C" intptr_t __imp_recv;
 extern "C" intptr_t __imp_send;
 extern "C" intptr_t __imp_closesocket;
@@ -47,20 +69,21 @@ namespace Http_Test {
 	}
 
 	TEST_MODULE_INITIALIZE(ConfigureSockets) {
-		__imp_accept= reinterpret_cast<decltype(__imp_accept)>(&test_accept);
-		__imp_recv= reinterpret_cast<decltype(__imp_recv)>(&test_recv);
-		__imp_send= reinterpret_cast<decltype(__imp_send)>(&test_send);
-		__imp_closesocket= reinterpret_cast<decltype(__imp_closesocket)>(&test_closesocket);
-		__imp_WSAPoll= reinterpret_cast<decltype(__imp_WSAPoll)>(&test_WSAPoll);
-		__imp_ioctlsocket= reinterpret_cast<decltype(__imp_ioctlsocket)>(&test_ioctlsocket);
+		original_accept = Replace(test_accept, __imp_accept);
+		original_getnameinfo = Replace(test_getnameinfo, __imp_getnameinfo);
+		original_recv = Replace(test_recv, __imp_recv);
+		original_send = Replace(test_send, __imp_send);
+		original_closesocket = Replace(test_closesocket, __imp_closesocket);
+		original_WSAPoll = Replace(test_WSAPoll, __imp_WSAPoll);
+		original_ioctlsocket = Replace(test_ioctlsocket, __imp_ioctlsocket);
 	}
 }
 
 void Http_Test::Sockets::Initialize() {
-	OnAccept= [](SOCKET s, struct sockaddr* addr, int* addrlen) { return INVALID_SOCKET; };
-	OnReceive= [](SOCKET, char* buf, int len, int flags) { return 0; };
-	OnSend= [](SOCKET, char const* buf, int len, int flags) { return 0; };
-	OnClose= [](SOCKET) { return 0; };
-	OnPoll= [](LPWSAPOLLFD fdArray, ULONG fds, INT timeout) { return 0; };
-	OnIoctl= [](SOCKET s, long cmd, u_long* argp) { return 0; };
+	OnAccept = [](SOCKET s, struct sockaddr* addr, int* addrlen) { return INVALID_SOCKET; };
+	OnReceive = [](SOCKET, char* buf, int len, int flags) { return 0; };
+	OnSend = [](SOCKET, char const* buf, int len, int flags) { return 0; };
+	OnClose = [](SOCKET s) { reinterpret_cast<decltype(closesocket)*>(original_closesocket)(s); return 0; };
+	OnPoll = [](LPWSAPOLLFD fdArray, ULONG fds, INT timeout) { return 0; };
+	OnIoctl = [](SOCKET s, long cmd, u_long* argp) { return 0; };
 }

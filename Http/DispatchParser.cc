@@ -40,6 +40,9 @@ DispatchParser::DispatchParser(TcpSocket& client) : client(client) {
 			// There are no more data.
 			return;
 		}
+		if(m < 0) {
+			throw std::runtime_error("receive error"); // TODO
+		}
 		auto next = begin + m;
 		auto body = std::search(begin, next, searcher);
 		if(body != next) {

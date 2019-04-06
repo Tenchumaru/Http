@@ -2,8 +2,10 @@
 #include "Sockets.h"
 #include "../Http/Http.h"
 #include "../Http/HttpServer.h"
+#include "Dispatch.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using Http_Test::Dispatch::ptr_t;
 
 namespace Http_Test {
 	TEST_CLASS(HttpServerTest) {
@@ -13,77 +15,18 @@ public:
 		Sockets::Initialize();
 	}
 
-	TEST_METHOD(HttpServerListenWithHandler) {
+	TEST_METHOD(HttpServerListen) {
 		// Arrange
-		SOCKET expectedSocket = INVALID_SOCKET;
-		Sockets::OnAccept = [&](SOCKET s, sockaddr* addr, int* addrlen) {
-			if(addr == nullptr || addrlen == nullptr) {
-				return INVALID_SOCKET;
-			}
-			if(expectedSocket != INVALID_SOCKET) {
-				throw std::runtime_error("exit");
-			}
-			expectedSocket = s | 0x10000;
-			return expectedSocket;
-		};
-		bool invoked = false;
-		Sockets::OnReceive = [&](SOCKET s, char* buf, int len, int flags) {
-			if(expectedSocket != s || flags != 0 || invoked) {
-				return -1;
-			}
-			char const request[] = "GET /f/15 HTTP/1.1\r\n"
-				"Host: localhost:6006\r\n"
-				"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0\r\n"
-				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
-				"Accept-Language: en-US,en;q=0.5\r\n"
-				"Accept-Encoding: gzip, deflate\r\n"
-				"DNT: 1\r\n"
-				"Connection: keep-alive\r\n"
-				"Upgrade-Insecure-Requests: 1\r\n"
-				"\r\n";
-			constexpr int size = _countof(request) - 1;
-			if(len < size) {
-				return -1;
-			}
-			invoked = true;
-			memcpy_s(buf, len, request, size);
-			return size;
-		};
-		std::string response;
-		Sockets::OnSend = [&](SOCKET s, char const* buf, int len, int flags) {
-			if(expectedSocket != s || flags != 0 || buf == nullptr) {
-				return -1;
-			}
-			response.append(buf, len);
-			return len;
-		};
-		Sockets::OnPoll = [&](_Inout_ LPWSAPOLLFD fdArray, _In_ size_t fds, _In_ INT timeout) {
-			if(fds == 1) {
-				fdArray->revents = fdArray->events & (POLLIN | POLLOUT);
-				return 0;
-			}
-			return -1;
-		};
-		std::string path;
-		auto fn = [&path](Request const& request, Response& response) {
-			path = request.Uri.Path;
-			response.Ok("okay");
-		};
-		HttpServer server;
-		server.Add("/f/", fn);
-
-		// Act
-		server.Listen(6006);
-
-		// Assert
-		Assert::AreEqual("/f/15", path.c_str());
-		Assert::AreEqual(0ull, response.find("HTTP/1.1 200 OK"));
-		Assert::AreNotEqual(response.npos, response.find("Content-Length: 4\r\n"));
-		Assert::AreEqual("okay", response.substr(response.size() - 4).c_str());
-	}
-
-	TEST_METHOD(HttpServerListenWithoutHandler) {
-		// Arrange
+		static char const request[] = "GET /f/15 HTTP/1.1\r\n"
+			"Host: localhost:6006\r\n"
+			"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0\r\n"
+			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
+			"Accept-Language: en-US,en;q=0.5\r\n"
+			"Accept-Encoding: gzip, deflate\r\n"
+			"DNT: 1\r\n"
+			"Connection: keep-alive\r\n"
+			"Upgrade-Insecure-Requests: 1\r\n"
+			"\r\n";
 		Sockets::OnPoll = [&](_Inout_ LPWSAPOLLFD fdArray, _In_ size_t fds, _In_ INT timeout) {
 			if(fds == 1) {
 				fdArray->revents = fdArray->events & (POLLIN | POLLOUT);
@@ -104,19 +47,12 @@ public:
 		};
 		bool invoked = false;
 		Sockets::OnReceive = [&](SOCKET s, char* buf, int len, int flags) {
-			if(expectedSocket != s || flags != 0 || invoked) {
+			if(expectedSocket != s || flags != 0) {
 				return -1;
 			}
-			char const request[] = "GET /f/15 HTTP/1.1\r\n"
-				"Host: localhost:6006\r\n"
-				"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0\r\n"
-				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
-				"Accept-Language: en-US,en;q=0.5\r\n"
-				"Accept-Encoding: gzip, deflate\r\n"
-				"DNT: 1\r\n"
-				"Connection: keep-alive\r\n"
-				"Upgrade-Insecure-Requests: 1\r\n"
-				"\r\n";
+			if(invoked) {
+				return 0;
+			}
 			constexpr int size = _countof(request) - 1;
 			if(len < size) {
 				return -1;
@@ -125,13 +61,9 @@ public:
 			memcpy_s(buf, len, request, size);
 			return size;
 		};
-		std::string response;
-		Sockets::OnSend = [&](SOCKET s, char const* buf, int len, int flags) {
-			if(expectedSocket != s || flags != 0 || buf == nullptr) {
-				return -1;
-			}
-			response.append(buf, len);
-			return len;
+		std::string actualRequest;
+		Dispatch::OnDispatch = [&actualRequest](ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket& client) {
+			actualRequest.assign(begin, body);
 		};
 		HttpServer server;
 
@@ -139,9 +71,7 @@ public:
 		server.Listen(6006);
 
 		// Assert
-		Assert::AreEqual(0ull, response.find("HTTP/1.1 404 Not Found\r\n"));
-		Assert::AreNotEqual(response.npos, response.find("Content-Length: 0\r\n"));
-		Assert::AreEqual("\r\n\r\n", response.substr(response.size() - 4).c_str());
+		Assert::AreEqual(std::string(request), actualRequest);
 	}
 	};
 }

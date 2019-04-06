@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Sockets.h"
+#include "../Http/Http.h"
 #include "../Http/TcpSocket.h"
 #include "../Http/ClosableResponse.h"
 
@@ -13,7 +14,7 @@ public:
 		Sockets::Initialize();
 	}
 
-	TEST_METHOD(ResponseOk) {
+	TEST_METHOD(ResponseClose) {
 		// Arrange
 		bool invoked = false;
 		SOCKET actualSocket = INVALID_SOCKET;
@@ -30,22 +31,17 @@ public:
 			return len;
 		};
 		TcpSocket socket(expectedSocket);
-		ClosableResponse response(socket);
+		std::array<char, 4096> buffer;
+		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 
 		// Act
-		response.Ok("okay");
 		response.Close();
 
 		// Assert
-		Assert::IsTrue(invoked);
-		Assert::AreEqual(expectedSocket, actualSocket);
-		Assert::AreEqual(0, actualFlags);
-		Assert::AreEqual(0ull, text.find("HTTP/1.1 200 OK"));
-		Assert::AreNotEqual(text.npos, text.find("Content-Length: 4\r\n"));
-		Assert::AreEqual("okay", text.substr(text.size() - 4).c_str());
+		Assert::IsFalse(invoked);
 	}
 
-	TEST_METHOD(ResponseEnd) {
+	TEST_METHOD(ResponseWriteStatus) {
 		// Arrange
 		std::string text;
 		Sockets::OnSend = [&text](SOCKET s, char const* p, int len, int flags) {
@@ -56,16 +52,17 @@ public:
 			return len;
 		};
 		TcpSocket socket(expectedSocket);
-		ClosableResponse response(socket);
+		std::array<char, 4096> buffer;
+		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 
 		// Act
-		response.End(204);
+		response.WriteStatus(StatusLines::NoContent);
 		response.Close();
 
 		// Assert
-		Assert::AreEqual(0ull, text.find("HTTP/1.1 204 No Content"));
-		Assert::AreNotEqual(text.npos, text.find("Content-Length: 0\r\n"));
+		Assert::AreEqual(0ull, text.find("HTTP/1.1 204 No Content\r\n"));
 		Assert::AreEqual("\r\n\r\n", text.substr(text.size() - 4).c_str());
+		Assert::IsFalse(std::isspace(text[text.size() - 5], std::locale()));
 	}
 
 	TEST_METHOD(ResponseChunked) {
@@ -79,19 +76,20 @@ public:
 			return len;
 		};
 		TcpSocket socket(expectedSocket);
-		ClosableResponse response(socket);
-		std::string m(1111, '.');
+		std::array<char, 777> buffer;
+		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
+		std::string m(333, '.');
 
 		// Act
-		response.ResponseStream << m << m << m;
+		response << m << m << m;
 		response.Close();
 
 		// Assert
-		Assert::AreEqual(0ull, text.find("HTTP/1.1 200 OK"));
-		Assert::AreEqual(text.npos, text.find("Content-Length: 0\r\n"));
+		Assert::AreEqual(decltype(text.npos)(), text.find("HTTP/1.1 200 OK"));
+		Assert::AreEqual(text.npos, text.find("Content-Length: "));
 		Assert::AreNotEqual(text.npos, text.find("Transfer-Encoding: chunked\r\n"));
 		std::stringstream responseBody;
-		responseBody << "\r\n\r\n8ae\r\n" << m << m << "\r\n457\r\n" << m << "\r\n0\r\n\r\n";
+		responseBody << "\r\n\r\n29a\r\n" << m << m << "\r\n14d\r\n" << m << "\r\n0\r\n\r\n";
 		Assert::AreEqual(responseBody.str().c_str(), text.substr(text.size() - responseBody.str().size()).c_str());
 	}
 

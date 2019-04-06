@@ -3,6 +3,9 @@
 #include "targetver.h"
 #include "CppUnitTest.h"
 
+#include <WS2tcpip.h>
+
+#include <array>
 #include <functional>
 #include <locale>
 #include <map>

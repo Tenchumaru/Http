@@ -24,12 +24,12 @@
     <ClInclude Include="Sockets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Dispatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RequestParserTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SocketTest.cpp">
@@ -54,6 +54,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HttpServerTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HeaderBaseTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DispatchTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Dispatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
