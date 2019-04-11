@@ -76,6 +76,11 @@ namespace {
 				out << indent << "\t\tif(!headers.CollectHeaders(p)) {" << std::endl;
 				out << indent << "\t\t\treturn FourHundred(response, \"bad headers\");" << std::endl;
 				out << indent << "\t\t}" << std::endl;
+				if(fn.back() == '+') {
+					out << indent << "\t\tif(!headers.ContentLength.first) {" << std::endl;
+					out << indent << "\t\t\treturn FourHundred(response, \"bad content length header\");" << std::endl;
+					out << indent << "\t\t}" << std::endl;
+				}
 				out << indent << "\t\treturn ";
 				std::vector<std::string> parameters;
 				for(decltype(parameterCount) i = 0; i < parameterCount; ++i) {
@@ -94,7 +99,7 @@ namespace {
 					parameters.push_back("std::move(headers)");
 				}
 				if(fn.back() == '+') {
-					parameters.push_back("Body(headers, p)");
+					parameters.push_back("Body(body, next, atoi(headers.ContentLength.first), client)");
 				}
 				parameters.push_back("response");
 				out << (fn.back() == '+' ? fn.substr(0, fn.size() - 1) : fn);
