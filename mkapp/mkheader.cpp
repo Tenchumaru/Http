@@ -92,7 +92,7 @@ std::string mkheader(std::set<std::string, HeaderNameLess> const& names, std::os
 		}
 		out << "\t\t}" << std::endl;
 	}
-	out << "\t\treturn CollectHeaderName(p, q);" << std::endl;
+	out << "\t\treturn __super::CollectHeaderName(p, q);" << std::endl;
 	out << "\t}" << std::endl;
 
 	// Print the member variables.
