@@ -18,4 +18,6 @@ struct xvector {
 
 	iterator begin() const { return iterator{ *this }; }
 	iterator end() const { return iterator{ *this, count }; }
+	xstring& operator[](int const index) { return values[index]; }
+	xstring const& operator[](int const index) const { return values[index]; }
 };
