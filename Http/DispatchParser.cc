@@ -3,24 +3,7 @@
 
 using ptr_t = char const*;
 
-class Body {
-public:
-	Body(ptr_t begin, ptr_t& next, TcpSocket& client);
-	Body(Body const&) = delete;
-	Body(Body&&) = default;
-	Body& operator=(Body const&) = delete;
-	Body& operator=(Body&&) = default;
-	~Body() = default;
-
-private:
-	ptr_t begin;
-	ptr_t& next;
-	TcpSocket& client;
-};
-
 extern void Dispatch(ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket& client);
-
-Body::Body(ptr_t begin, ptr_t& next, TcpSocket& client) : begin(begin), next(next), client(client) {}
 
 std::array<char, 4> pattern = { '\r', '\n', '\r', '\n' };
 std::boyer_moore_searcher searcher(pattern.begin(), pattern.end());

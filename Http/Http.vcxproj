@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Body.h" />
     <ClInclude Include="ClosableResponse.h" />
     <ClInclude Include="DispatchParser.h" />
     <ClInclude Include="FibrousTcpSocket.h" />
@@ -171,6 +172,7 @@
     <ClInclude Include="xtypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Body.cc" />
     <ClCompile Include="DispatchParser.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />
     <ClCompile Include="FibrousTcpSocketFactory.cc" />

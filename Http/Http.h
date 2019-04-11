@@ -2,6 +2,7 @@
 
 #include "HeaderBase.h"
 #include "QueryBase.h"
+#include "Body.h"
 #include "Request.h"
 #include "Response.h"
 #include "StatusLines.h"
