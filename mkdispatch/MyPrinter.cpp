@@ -78,6 +78,11 @@ namespace {
 				out << indent << "\t\t}" << std::endl;
 				if(fn.back() == '+') {
 					out << indent << "\t\tif(!headers.ContentLength.first) {" << std::endl;
+					out << indent << "\t\t\treturn FourHundred(response, \"no content length header\");" << std::endl;
+					out << indent << "\t\t}" << std::endl;
+					out << indent << "\t\tchar* end_;" << std::endl;
+					out << indent << "\t\tauto size = std::strtol(headers.ContentLength.first, &end_, 10);" << std::endl;
+					out << indent << "\t\tif(size == LONG_MAX || size == LONG_MIN || end_ != headers.ContentLength.second) {" << std::endl;
 					out << indent << "\t\t\treturn FourHundred(response, \"bad content length header\");" << std::endl;
 					out << indent << "\t\t}" << std::endl;
 				}
@@ -99,7 +104,7 @@ namespace {
 					parameters.push_back("std::move(headers)");
 				}
 				if(fn.back() == '+') {
-					parameters.push_back("Body(body, next, atoi(headers.ContentLength.first), client)");
+					parameters.push_back("Body(body, next, size, client)");
 				}
 				parameters.push_back("response");
 				out << (fn.back() == '+' ? fn.substr(0, fn.size() - 1) : fn);
