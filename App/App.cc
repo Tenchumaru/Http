@@ -3,6 +3,8 @@
 #include "../Http/Http.h"
 #include "../Http/HttpServer.h"
 #include "../Http/ClosableResponse.h"
+
+// First, include it for the classes.
 #include "App.inl"
 
 void GET_helix_users(Query_id_login&& queries, Header_authorization&& headers, Response& response) {
@@ -15,8 +17,8 @@ void GET_helix_users_follows(Query_after_first_from_id_to_id&& queries, Header_c
 	response << "Hello, World!";
 }
 
-void PUT_helix_users(Header_authorization_contentXlength&& headers, Response& response) {
-	 headers;
+void PUT_helix_users(Header_authorization_contentXlength&& headers, Body&& body, Response& response) {
+	 headers, body;
 	response << "Hello, World!";
 }
 
@@ -30,8 +32,8 @@ void GET_helix_users_extensions(Query_user_id&& queries, Header_authorization&& 
 	response << "Hello, World!";
 }
 
-void PUT_helix_users_extensions(Header_authorization_contentXlength&& headers, Response& response) {
-	 headers;
+void PUT_helix_users_extensions(Header_authorization_contentXlength&& headers, Body&& body, Response& response) {
+	 headers, body;
 	response << "Hello, World!";
 }
 
@@ -40,8 +42,8 @@ void GET_helix_videos(Query_after_before_first_game_id_id_language_period_sort_t
 	response << "Hello, World!";
 }
 
-void POST_extensions__clientId_auth_secret(xstring&& clientId, Header_clientXid_contentXlength_contentXtype&& headers, Response& response) {
-	 clientId, headers;
+void POST_extensions__clientId_auth_secret(xstring&& clientId, Header_clientXid_contentXlength_contentXtype&& headers, Body&& body, Response& response) {
+	 clientId, headers, body;
 	response << "Hello, World!";
 }
 
@@ -72,6 +74,10 @@ void GET_text(Header_origin&& headers, Response& response) {
 	response.WriteHeader("Content-Type", "text/plain");
 	response << "Hello, World!";
 }
+
+// Then, include it for the Dispatch function.
+#define DISPATCH
+#include "App.inl"
 
 int main() {
 	HttpServer server;
