@@ -176,6 +176,9 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Http\HeaderBase.h" />
+    <ClInclude Include="..\Http\QueryBase.h" />
+    <ClInclude Include="..\Http\xtypes.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
