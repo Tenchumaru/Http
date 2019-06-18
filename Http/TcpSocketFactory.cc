@@ -10,9 +10,9 @@ void TcpSocketFactory::CreateServer(unsigned short port, fn_t onConnect) {
 void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 #ifdef _WIN32
 	// Initialize the socket library.
-	static bool isInitialized= [] {
+	static bool isInitialized = [] {
 		WSADATA wsaData;
-		auto result= WSAStartup(MAKEWORD(2, 2), &wsaData);
+		auto result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if(result) {
 			std::cerr << "WSAStartup error " << result << std::endl;
 			throw std::runtime_error("TcpSocketFactory::CreateServer.WSAStartup");
@@ -23,22 +23,22 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 
 	// Create and bind the server socket.
 	addrinfo hints{};
-	hints.ai_family= AF_UNSPEC; // Allow IPv4 or IPv6.
-	hints.ai_socktype= SOCK_STREAM;
-	hints.ai_flags= AI_PASSIVE; // Use INADDR_ANY for the resulting addresses.
+	hints.ai_family = AF_UNSPEC; // Allow IPv4 or IPv6.
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE; // Use INADDR_ANY for the resulting addresses.
 	addrinfo* addresses;
 	if(getaddrinfo(nullptr, service, &hints, &addresses)) {
 		throw std::runtime_error("TcpSocketFactory::CreateServer.getaddrinfo");
 	}
-	SOCKET server= INVALID_SOCKET;
-	socklen_t addressSize= 0;
+	SOCKET server = INVALID_SOCKET;
+	socklen_t addressSize = 0;
 	try {
-		for(auto const* rp= addresses; rp != nullptr; rp= rp->ai_next) {
-			server= socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+		for(auto const* rp = addresses; rp != nullptr; rp = rp->ai_next) {
+			server = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 			if(server == INVALID_SOCKET) {
 				continue;
 			}
-			int reuse= 1;
+			int reuse = 1;
 			if(setsockopt(server, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char const*>(&reuse), sizeof(reuse)) < 0) {
 				throw std::runtime_error("TcpSocketFactory::CreateServer.setsockopt(SO_REUSEADDR)");
 			}
@@ -47,7 +47,7 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 				throw std::runtime_error("TcpSocketFactory::CreateServer.setsockopt(SO_REUSEPORT)");
 			}
 #endif
-			addressSize= static_cast<int>(rp->ai_addrlen);
+			addressSize = static_cast<int>(rp->ai_addrlen);
 			if(bind(server, rp->ai_addr, addressSize) == 0) {
 				break;
 			}
@@ -55,7 +55,7 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 			std::cout << "bind failed: " << errno << std::endl;
 #endif
 			close(server);
-			server= INVALID_SOCKET;
+			server = INVALID_SOCKET;
 		}
 		freeaddrinfo(addresses);
 	} catch(std::exception const&) {
@@ -75,9 +75,9 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConne
 	try {
 		// Await connections and requests.
 		SOCKADDR_STORAGE address;
-		auto* p= reinterpret_cast<sockaddr*>(&address);
+		auto* p = reinterpret_cast<sockaddr*>(&address);
 		for(;;) {
-			SOCKET client= accept(server, p, &addressSize);
+			SOCKET client = accept(server, p, &addressSize);
 			if(client == INVALID_SOCKET) {
 				// Assume the failure is due to the network infrastructure
 				// rejecting the connection.

@@ -4,7 +4,7 @@
 
 class TcpSocketFactory {
 public:
-	using fn_t= std::function<void(TcpSocket&&)>;
+	using fn_t = std::function<void(TcpSocket&&)>;
 
 	TcpSocketFactory() = default;
 	TcpSocketFactory(TcpSocketFactory const&) = default;

@@ -2,8 +2,8 @@
 
 class Uri {
 public:
-	using map= std::unordered_map<std::string, std::string>;
-	using pair= std::pair<std::string, std::string>;
+	using map = std::unordered_map<std::string, std::string>;
+	using pair = std::pair<std::string, std::string>;
 
 	Uri() = default;
 	Uri(Uri const&) = default;
@@ -25,14 +25,14 @@ public:
 	map const& GetQuery() const { return query; }
 	std::string const& GetFragment() const { return fragment; }
 
-	__declspec(property(get=GetScheme)) std::string const& Scheme;
-	__declspec(property(get=GetAuthority)) std::string const& Authority;
-	__declspec(property(get=GetHost)) std::string const& Host;
-	__declspec(property(get=GetPort)) std::string const& Port;
-	__declspec(property(get=GetPath)) std::string const& Path;
-	__declspec(property(get=GetRawQuery)) std::string const& RawQuery;
-	__declspec(property(get=GetQuery)) map const& Query;
-	__declspec(property(get=GetFragment)) std::string const& Fragment;
+	__declspec(property(get = GetScheme)) std::string const& Scheme;
+	__declspec(property(get = GetAuthority)) std::string const& Authority;
+	__declspec(property(get = GetHost)) std::string const& Host;
+	__declspec(property(get = GetPort)) std::string const& Port;
+	__declspec(property(get = GetPath)) std::string const& Path;
+	__declspec(property(get = GetRawQuery)) std::string const& RawQuery;
+	__declspec(property(get = GetQuery)) map const& Query;
+	__declspec(property(get = GetFragment)) std::string const& Fragment;
 
 private:
 	std::string scheme, authority, host, port, path, rawQuery, fragment;

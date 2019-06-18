@@ -269,7 +269,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 	size_t specialStateFlag = 0x80 << shift;
 	auto const* type = machine.size() < 128 ? "char" : machine.size() < 32768 ? "short" : "int";
 	out << "\tusing state_t = " << type << ';' << std::endl;
-	out << "\tstate_t constexpr specialStateFlag = -0x" << std::hex << specialStateFlag << std::dec << ';' << std::endl;
+	out << "\tconstexpr state_t specialStateFlag = -0x" << std::hex << specialStateFlag << std::dec << ';' << std::endl;
 	out << "\tstatic state_t states[" << machine.size() << "][256] = {" << std::endl;
 	for(auto const& dfaState : machine) {
 		out << "\t\t{";
@@ -384,7 +384,7 @@ void MainLoop() {
 	char const* parametersBegin[1];
 	char const* parametersEnd[1];
 	using state_t = short;
-	state_t constexpr specialStateFlag = -0x8000;
+	constexpr state_t specialStateFlag = -0x8000;
 	std::vector<state_t> parameterFinishingIndices;
 	std::vector<state_t> functionIndices;
 	std::vector<state_t> parameterStartingIndices;

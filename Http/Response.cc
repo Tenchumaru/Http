@@ -5,7 +5,7 @@ namespace {
 	std::string const contentLengthKey = "Content-Length";
 	std::string const serverKey = "Server";
 	char const defaultResponse[] = "HTTP/1.1 200 OK\r\n";
-	ptrdiff_t constexpr minimumHeaderBufferSize = 512;
+	constexpr ptrdiff_t minimumHeaderBufferSize = 512;
 
 	// TODO:  consider creating a thread that runs once per second to update
 	// the time buffer.
@@ -69,7 +69,7 @@ void Response::WriteHeader(xstring const& name, xstring const& value) {
 void Response::Close() {
 	if(!inBody && next != begin) {
 		if(!wroteContentLength) {
-			static char constexpr zero[] = "0";
+			static constexpr char zero[] = "0";
 			WriteHeader(contentLengthKey, xstring{ zero, zero + sizeof(zero) - 1 });
 		}
 	}
