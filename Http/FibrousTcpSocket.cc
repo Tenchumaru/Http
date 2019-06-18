@@ -8,7 +8,7 @@ FibrousTcpSocket::~FibrousTcpSocket() {}
 int FibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
 	int result;
 	do {
-		result = recv(socket, buffer, static_cast<int>(bufferSize), 0);
+		result = TcpSocket::InternalReceive(buffer, bufferSize);
 	} while(IsAwaiting(result, POLLIN));
 	return result;
 }
@@ -16,7 +16,7 @@ int FibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
 int FibrousTcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
 	int result;
 	do {
-		result = send(socket, buffer, static_cast<int>(bufferSize), 0);
+		result = TcpSocket::InternalSend(buffer, bufferSize);
 	} while(IsAwaiting(result, POLLOUT));
 	return result;
 }
