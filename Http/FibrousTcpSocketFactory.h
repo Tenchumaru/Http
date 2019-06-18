@@ -4,8 +4,12 @@
 
 class FibrousTcpSocketFactory : public TcpSocketFactory {
 public:
-	FibrousTcpSocketFactory();
-	~FibrousTcpSocketFactory();
+	FibrousTcpSocketFactory() = default;
+	FibrousTcpSocketFactory(FibrousTcpSocketFactory const&) = delete;
+	FibrousTcpSocketFactory(FibrousTcpSocketFactory&&) = default;
+	FibrousTcpSocketFactory& operator=(FibrousTcpSocketFactory const&) = delete;
+	FibrousTcpSocketFactory& operator=(FibrousTcpSocketFactory&&) = default;
+	~FibrousTcpSocketFactory() = default;
 
 private:
 	std::vector<void*> availableFibers;

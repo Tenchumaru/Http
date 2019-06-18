@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "TcpSocketFactory.h"
 
-TcpSocketFactory::TcpSocketFactory() {}
-
-TcpSocketFactory::~TcpSocketFactory() {}
-
 void TcpSocketFactory::CreateServer(unsigned short port, fn_t onConnect) {
 	char buf[6];
 	sprintf_s(buf, "%d", port);

@@ -11,10 +11,6 @@ namespace {
 	char const* const closeSignal = reinterpret_cast<char const*>(8);
 }
 
-HttpParser::HttpParser() : fn(&HttpParser::CollectFirst) {}
-
-HttpParser::~HttpParser() {}
-
 bool HttpParser::Add(char const* p, size_t n) {
 	char const* const q = p + n;
 	while(p != nullptr && p != closeSignal && p < q) {

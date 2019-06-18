@@ -34,10 +34,6 @@ namespace {
 	}
 }
 
-FibrousTcpSocketFactory::FibrousTcpSocketFactory() {}
-
-FibrousTcpSocketFactory::~FibrousTcpSocketFactory() {}
-
 void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConnect_) {
 	// Enable the server socket for asynchronous connections.
 	if(!set_nonblocking(server)) {

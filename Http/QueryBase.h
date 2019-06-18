@@ -4,6 +4,13 @@
 
 class QueryBase {
 public:
+	QueryBase() = default;
+	QueryBase(QueryBase const&) = default;
+	QueryBase(QueryBase&&) = default;
+	QueryBase& operator=(QueryBase const&) = default;
+	QueryBase& operator=(QueryBase&&) = default;
+	virtual ~QueryBase() = default;
+
 	virtual bool CollectQueryName(char const*& p, xstring*& q) {
 		while(*p != '=' && *p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
 			++p;

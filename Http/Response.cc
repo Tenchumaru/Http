@@ -38,8 +38,6 @@ Response::Response(TcpSocket& client, char* begin, char* end) :
 	}
 }
 
-Response::~Response() {}
-
 void Response::WriteHeader(xstring const& name, xstring const& value) {
 	if(next == begin) {
 		WriteStatus(StatusLines::OK);

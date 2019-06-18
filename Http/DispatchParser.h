@@ -4,8 +4,13 @@
 
 class DispatchParser {
 public:
-	DispatchParser(TcpSocket& client);
-	~DispatchParser();
+	explicit DispatchParser(TcpSocket& client);
+	DispatchParser() = delete;
+	DispatchParser(DispatchParser const&) = delete;
+	DispatchParser(DispatchParser&&) = default;
+	DispatchParser& operator=(DispatchParser const&) = delete;
+	DispatchParser& operator=(DispatchParser&&) = default;
+	~DispatchParser() = default;
 
 private:
 	TcpSocket& client;

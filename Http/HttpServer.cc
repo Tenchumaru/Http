@@ -13,10 +13,6 @@
 // request depends on the outcome of an earlier request, this will necessitate
 // synchronization to ensure effects occur in the expected order.
 
-HttpServer::HttpServer() {}
-
-HttpServer::~HttpServer() {}
-
 void HttpServer::Listen(unsigned short port) {
 	auto connectFn = [this](TcpSocket&& client) {
 #if 0

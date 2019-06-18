@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "TcpSocket.h"
 
-TcpSocket::TcpSocket(SOCKET socket) : Socket(socket) {}
-
-TcpSocket::~TcpSocket() {}
-
 int TcpSocket::Receive(char* buffer, size_t bufferSize) {
 	return InternalReceive(buffer, bufferSize);
 }

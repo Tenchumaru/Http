@@ -4,8 +4,14 @@
 
 class TcpSocket : public Socket {
 public:
-	TcpSocket(SOCKET socket);
-	~TcpSocket();
+	explicit TcpSocket(SOCKET socket) : Socket(socket) {}
+	TcpSocket() = delete;
+	TcpSocket(TcpSocket const&) = delete;
+	TcpSocket(TcpSocket&&) = default;
+	TcpSocket& operator=(TcpSocket const&) = delete;
+	TcpSocket& operator=(TcpSocket&&) = default;
+	~TcpSocket() = default;
+
 	int Receive(char* buffer, size_t bufferSize);
 	int Send(char const* buffer, size_t bufferSize);
 

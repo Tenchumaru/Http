@@ -5,6 +5,13 @@ public:
 	using map= std::unordered_map<std::string, std::string>;
 	using pair= std::pair<std::string, std::string>;
 
+	Uri() = default;
+	Uri(Uri const&) = default;
+	Uri(Uri&&) = default;
+	Uri& operator=(Uri const&) = default;
+	Uri& operator=(Uri&&) = default;
+	~Uri() = default;
+
 	static bool Create(std::string const& s, Uri& uri);
 	static bool DecodeResource(std::string& resource, bool isPlusSpace);
 	static bool ParseQuery(std::string const& rawQuery, map& query);

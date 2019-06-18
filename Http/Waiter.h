@@ -4,8 +4,13 @@ class Waiter {
 public:
 	using fn_t = std::function<void(SOCKET)>;
 
-	Waiter();
-	~Waiter();
+	Waiter() : current(&a), next(&b), entry(a.cend()) {}
+	Waiter(Waiter const&) = delete;
+	Waiter(Waiter&&) = default;
+	Waiter& operator=(Waiter const&) = delete;
+	Waiter& operator=(Waiter&&) = default;
+	~Waiter() = default;
+
 	void Add(SOCKET s, short pollValue);
 	SOCKET Wait();
 	void Wait(fn_t onReady);

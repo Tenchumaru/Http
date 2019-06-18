@@ -5,7 +5,12 @@
 
 class HttpServer {
 public:
-	HttpServer();
-	~HttpServer();
+	HttpServer() = default;
+	HttpServer(HttpServer const&) = delete;
+	HttpServer(HttpServer&&) = default;
+	HttpServer& operator=(HttpServer const&) = delete;
+	HttpServer& operator=(HttpServer&&) = default;
+	~HttpServer() = default;
+
 	void Listen(unsigned short port);
 };

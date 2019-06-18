@@ -8,8 +8,13 @@ class RequestParser : public HttpParser {
 public:
 	using fn_t = std::function<bool(Request const& request)>;
 
-	explicit RequestParser(fn_t requestHandler);
-	~RequestParser();
+	explicit RequestParser(fn_t requestHandler) : requestHandler(requestHandler) {}
+	RequestParser() = delete;
+	RequestParser(RequestParser const&) = delete;
+	RequestParser(RequestParser&&) = default;
+	RequestParser& operator=(RequestParser const&) = delete;
+	RequestParser& operator=(RequestParser&&) = default;
+	~RequestParser() = default;
 
 private:
 	fn_t requestHandler;

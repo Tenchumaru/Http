@@ -6,8 +6,13 @@ class TcpSocketFactory {
 public:
 	using fn_t= std::function<void(TcpSocket&&)>;
 
-	TcpSocketFactory();
-	virtual ~TcpSocketFactory();
+	TcpSocketFactory() = default;
+	TcpSocketFactory(TcpSocketFactory const&) = default;
+	TcpSocketFactory(TcpSocketFactory&&) = default;
+	TcpSocketFactory& operator=(TcpSocketFactory const&) = default;
+	TcpSocketFactory& operator=(TcpSocketFactory&&) = default;
+	virtual ~TcpSocketFactory() = default;
+
 	void CreateClient(char const* hostName, unsigned short port, fn_t onConnect);
 	void CreateClient(char const* hostName, char const* service, fn_t onConnect);
 	void CreateServer(unsigned short port, fn_t onConnect);

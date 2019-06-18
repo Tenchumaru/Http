@@ -172,7 +172,6 @@
     <ClInclude Include="xtypes.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Body.cc" />
     <ClCompile Include="DispatchParser.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />
     <ClCompile Include="FibrousTcpSocketFactory.cc" />

@@ -7,10 +7,6 @@ static int poll(_Inout_ LPWSAPOLLFD fdArray, _In_ size_t fds, _In_ INT timeout) 
 }
 #endif
 
-Waiter::Waiter() : current(&a), next(&b), entry(a.cend()) {}
-
-Waiter::~Waiter() {}
-
 void Waiter::Add(SOCKET s, short pollValue) {
 	next->push_back({ s, pollValue });
 }

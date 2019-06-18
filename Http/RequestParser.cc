@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "RequestParser.h"
 
-RequestParser::RequestParser(fn_t requestHandler) : requestHandler(requestHandler) {}
-
-RequestParser::~RequestParser() {}
-
 bool RequestParser::ValidateNext(std::string const& s) {
 	return Uri::Create(s, uri);
 }

@@ -7,6 +7,12 @@
 class Response {
 public:
 	Response(TcpSocket& client, char* begin, char* end);
+	Response() = delete;
+	Response(Response const&) = delete;
+	Response(Response&&) = default;
+	Response& operator=(Response const&) = delete;
+	Response& operator=(Response&&) = default;
+
 	void WriteStatus(StatusLines::StatusLine const& statusLine) {
 		if(next != begin) {
 			throw std::logic_error("WriteStatus");
@@ -30,7 +36,7 @@ public:
 
 protected:
 	// These are protected since derived classes control the response lifetime.
-	~Response();
+	~Response() = default;
 	void Close();
 
 private:

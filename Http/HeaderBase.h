@@ -4,6 +4,13 @@
 
 class HeaderBase {
 public:
+	HeaderBase() = default;
+	HeaderBase(HeaderBase const&) = delete;
+	HeaderBase(HeaderBase&&) = default;
+	HeaderBase& operator=(HeaderBase const&) = delete;
+	HeaderBase& operator=(HeaderBase&&) = default;
+	virtual ~HeaderBase() = default;
+
 	virtual bool CollectHeaderName(char const*& p, xstring*& q) {
 		while(*p != ':' && *p != '\r' && *p != '\n') {
 			++p;

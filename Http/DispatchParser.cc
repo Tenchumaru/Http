@@ -56,5 +56,3 @@ DispatchParser::DispatchParser(TcpSocket& client) : client(client) {
 		Dispatch(begin, body, next, end, client);
 	}
 }
-
-DispatchParser::~DispatchParser() {}

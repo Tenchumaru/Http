@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "FibrousTcpSocket.h"
 
-FibrousTcpSocket::FibrousTcpSocket(SOCKET socket, fn_t Await) : TcpSocket(socket), Await(Await) {}
-
-FibrousTcpSocket::~FibrousTcpSocket() {}
-
 int FibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
 	int result;
 	do {

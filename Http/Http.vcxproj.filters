@@ -131,9 +131,6 @@
     <ClCompile Include="StatusLines.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Body.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

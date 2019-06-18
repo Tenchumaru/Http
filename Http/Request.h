@@ -5,6 +5,13 @@
 
 class Request {
 public:
+	Request() = default;
+	Request(Request const&) = delete;
+	Request(Request&&) = default;
+	Request& operator=(Request const&) = delete;
+	Request& operator=(Request&&) = default;
+	~Request() = default;
+
 	std::string const& GetVerb() const { return verb; }
 	Uri const& GetUri() const { return uri; }
 	int GetVersion() const { return version; }

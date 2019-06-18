@@ -17,8 +17,13 @@ public:
 		StatusLines::StatusLine const& statusLine;
 	};
 
-	HttpParser();
-	virtual ~HttpParser();
+	HttpParser() = default;
+	HttpParser(HttpParser const&) = delete;
+	HttpParser(HttpParser&&) = default;
+	HttpParser& operator=(HttpParser const&) = delete;
+	HttpParser& operator=(HttpParser&&) = default;
+	virtual ~HttpParser() = default;
+
 	bool Add(char const* p, size_t n);
 
 protected:
@@ -31,7 +36,7 @@ protected:
 private:
 	using fn_t = char const*(HttpParser::*)(char const* p, char const* const q);
 
-	fn_t fn;
+	fn_t fn = &HttpParser::CollectFirst;
 	std::string name, value;
 	size_t contentLength;
 
