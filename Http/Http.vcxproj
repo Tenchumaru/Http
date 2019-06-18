@@ -161,6 +161,7 @@
     <ClInclude Include="Request.h" />
     <ClInclude Include="RequestParser.h" />
     <ClInclude Include="Response.h" />
+    <ClInclude Include="SecureFibrousTcpSocket.h" />
     <ClInclude Include="Socket.h" />
     <ClInclude Include="StatusLines.h" />
     <ClInclude Include="stdafx.h" />
@@ -180,6 +181,7 @@
     <ClCompile Include="HttpServer.cc" />
     <ClCompile Include="RequestParser.cc" />
     <ClCompile Include="Response.cc" />
+    <ClCompile Include="SecureFibrousTcpSocket.cc" />
     <ClCompile Include="Socket.cc" />
     <ClCompile Include="StatusLines.cc" />
     <ClCompile Include="stdafx.cpp">

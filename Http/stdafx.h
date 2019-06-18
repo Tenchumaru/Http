@@ -5,13 +5,17 @@
 
 # include <WS2tcpip.h>
 # include <tchar.h>
+# include <crtdbg.h>
 #else
 # include <fcntl.h>
 # include <poll.h>
 # include <string.h>
 # include <unistd.h>
 # include <netdb.h>
+# include <cassert>
 #endif
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -31,6 +35,7 @@
 #include <vector>
 
 #ifdef _WIN32
+# define assert _ASSERT
 # define close closesocket
 # undef errno
 # define errno (WSAGetLastError())
