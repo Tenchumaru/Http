@@ -12,6 +12,8 @@ public:
 	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket&&) = default;
 	~SecureFibrousTcpSocket();
 
+	static void Configure(char const* certificateChainFile, char const* privateKeyFile);
+
 protected:
 	int InternalReceive(char* buffer, size_t bufferSize) override;
 	int InternalSend(char const* buffer, size_t bufferSize) override;

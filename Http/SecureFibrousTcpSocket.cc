@@ -136,6 +136,17 @@ SecureFibrousTcpSocket::~SecureFibrousTcpSocket() {
 	SSL_free(ssl);
 }
 
+void SecureFibrousTcpSocket::Configure(char const* certificateChainFile, char const* privateKeyFile) {
+	if(SSL_CTX_use_certificate_chain_file(sslContext, certificateChainFile) <= 0) {
+		ERR_print_errors_fp(stderr);
+		throw std::runtime_error("SecureFibrousTcpSocket::Configure.SSL_CTX_use_certificate_chain_file");
+	}
+	if(SSL_CTX_use_PrivateKey_file(sslContext, privateKeyFile, SSL_FILETYPE_PEM) <= 0) {
+		ERR_print_errors_fp(stderr);
+		throw std::runtime_error("SecureFibrousTcpSocket::Configure.SSL_CTX_use_PrivateKey_file");
+	}
+}
+
 int SecureFibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
 	if(!bufferSize) {
 		assert(bufferSize);
