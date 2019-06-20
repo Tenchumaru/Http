@@ -13,6 +13,17 @@
 // request depends on the outcome of an earlier request, this will necessitate
 // synchronization to ensure effects occur in the expected order.
 
+void HttpServer::ConfigureSecurity(char const* certificateChainFile_, char const* privateKeyFile_) {
+	// Validate parameters.
+	if(!certificateChainFile_ || !privateKeyFile_) {
+		throw std::runtime_error("HttpServer::ConfigureSecurity null arguments");
+	}
+
+	// Save parameter values.
+	certificateChainFile = certificateChainFile_;
+	privateKeyFile = privateKeyFile_;
+}
+
 void HttpServer::Listen(unsigned short port) {
 	auto connectFn = [this](TcpSocket&& client) {
 #if 0
@@ -70,5 +81,8 @@ void HttpServer::Listen(unsigned short port) {
 		}
 	};
 	FibrousTcpSocketFactory server;
+	if(!certificateChainFile.empty()) {
+		server.ConfigureSecurity(certificateChainFile.c_str(), privateKeyFile.c_str());
+	}
 	server.CreateServer(port, connectFn);
 }
