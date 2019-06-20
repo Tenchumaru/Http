@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FibrousTcpSocketFactory.h"
-#include "FibrousTcpSocket.h"
+#include "SecureFibrousTcpSocket.h"
 #include "Waiter.h"
 #ifdef _WIN32
 using FiberFn = LPFIBER_START_ROUTINE;
@@ -32,6 +32,39 @@ namespace {
 #endif
 		return true;
 	}
+}
+
+void FibrousTcpSocketFactory::ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile) {
+	// Validate parameters.
+	if(sslContext) {
+		throw std::runtime_error("FibrousTcpSocketFactory::ConfigureSecurity already invoked");
+	}
+	if(!certificateChainFile || !privateKeyFile) {
+		throw std::runtime_error("FibrousTcpSocketFactory::ConfigureSecurity null arguments");
+	}
+
+	// Initialize OpenSSL.
+	SSL_load_error_strings();
+	OpenSSL_add_ssl_algorithms();
+
+	// Create the SSL context.
+	sslContext = SSL_CTX_new(TLS_server_method());
+	if(!sslContext) {
+		perror("Cannot create SSL context");
+		ERR_print_errors_fp(stderr);
+		throw std::runtime_error("FibrousTcpSocketFactory::ConfigureSecurity.SSL_CTX_new");
+	}
+	if(SSL_CTX_use_certificate_chain_file(sslContext, certificateChainFile) <= 0) {
+		ERR_print_errors_fp(stderr);
+		throw std::runtime_error("FibrousTcpSocketFactory::ConfigureSecurity.SSL_CTX_use_certificate_chain_file");
+	}
+	if(SSL_CTX_use_PrivateKey_file(sslContext, privateKeyFile, SSL_FILETYPE_PEM) <= 0) {
+		ERR_print_errors_fp(stderr);
+		throw std::runtime_error("FibrousTcpSocketFactory::ConfigureSecurity.SSL_CTX_use_PrivateKey_file");
+	}
+
+	// Set the connection invocation function.
+	invokeOnConnectFn = &FibrousTcpSocketFactory::InvokeSecureOnConnect;
 }
 
 void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConnect_) {
@@ -88,7 +121,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 				// Create a fiber and invoke the handler on it.
 				void* fiber;
 				if(availableFibers.empty()) {
-					fiber = CreateFiber(stackSize, &FibrousTcpSocketFactory::InvokeOnConnect, this);
+					fiber = CreateFiber(stackSize, invokeOnConnectFn, this);
 				} else {
 					fiber = availableFibers.back();
 					availableFibers.pop_back();
@@ -120,9 +153,10 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 
 void FibrousTcpSocketFactory::InvokeOnConnect(void* parameter) {
 	auto* p = reinterpret_cast<FibrousTcpSocketFactory*>(parameter);
-	for(;;) {
-		p->onConnect(FibrousTcpSocket(p->client, p->awaitFn));
-		p->availableFibers.push_back(GetCurrentFiber());
-		SwitchToFiber(p->mainFiber);
-	}
+	p->InvokeOnConnect(FibrousTcpSocket(p->client, p->awaitFn));
+}
+
+void FibrousTcpSocketFactory::InvokeSecureOnConnect(void* parameter) {
+	auto* p = reinterpret_cast<FibrousTcpSocketFactory*>(parameter);
+	p->InvokeOnConnect(SecureFibrousTcpSocket(p->client, p->awaitFn, p->sslContext, true));
 }

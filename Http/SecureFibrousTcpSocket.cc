@@ -2,22 +2,6 @@
 #include "SecureFibrousTcpSocket.h"
 
 namespace {
-	// TODO:  consider using thread-local storage for this.
-	SSL_CTX* sslContext = [] {
-		// Initialize OpenSSL.
-		SSL_load_error_strings();
-		OpenSSL_add_ssl_algorithms();
-
-		// Create the SSL context.
-		auto* const rv = SSL_CTX_new(TLS_server_method());
-		if(!rv) {
-			perror("Cannot create SSL context");
-			ERR_print_errors_fp(stderr);
-			exit(EXIT_FAILURE);
-		}
-		return rv;
-	}();
-
 #ifdef _DEBUG
 	void PrintCommand(int command) {
 		char const* s = "(unknown)";
@@ -107,7 +91,7 @@ BIO_METHOD* SecureFibrousTcpSocket::bioMethod = [] {
 	return rv;
 }();
 
-SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, bool isServer) :
+SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_CTX* sslContext, bool isServer) :
 	FibrousTcpSocket(socket, awaitFn),
 	ssl(SSL_new(sslContext)) {
 	if(!ssl) {
@@ -134,17 +118,6 @@ SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, bool
 
 SecureFibrousTcpSocket::~SecureFibrousTcpSocket() {
 	SSL_free(ssl);
-}
-
-void SecureFibrousTcpSocket::Configure(char const* certificateChainFile, char const* privateKeyFile) {
-	if(SSL_CTX_use_certificate_chain_file(sslContext, certificateChainFile) <= 0) {
-		ERR_print_errors_fp(stderr);
-		throw std::runtime_error("SecureFibrousTcpSocket::Configure.SSL_CTX_use_certificate_chain_file");
-	}
-	if(SSL_CTX_use_PrivateKey_file(sslContext, privateKeyFile, SSL_FILETYPE_PEM) <= 0) {
-		ERR_print_errors_fp(stderr);
-		throw std::runtime_error("SecureFibrousTcpSocket::Configure.SSL_CTX_use_PrivateKey_file");
-	}
 }
 
 int SecureFibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {

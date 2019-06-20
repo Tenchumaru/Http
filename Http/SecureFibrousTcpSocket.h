@@ -4,15 +4,13 @@
 
 class SecureFibrousTcpSocket : public FibrousTcpSocket {
 public:
-	SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, bool isServer);
+	SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_CTX* sslContext, bool isServer);
 	SecureFibrousTcpSocket() = delete;
 	SecureFibrousTcpSocket(SecureFibrousTcpSocket const&) = delete;
 	SecureFibrousTcpSocket(SecureFibrousTcpSocket&&) = default;
 	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket const&) = delete;
 	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket&&) = default;
 	~SecureFibrousTcpSocket();
-
-	static void Configure(char const* certificateChainFile, char const* privateKeyFile);
 
 protected:
 	int InternalReceive(char* buffer, size_t bufferSize) override;
