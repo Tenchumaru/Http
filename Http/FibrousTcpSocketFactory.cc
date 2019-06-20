@@ -51,7 +51,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 
 	// Create the await function.
 	std::unordered_map<SOCKET, void*> fiberMap;
-	Await = [mainFiber = mainFiber, &waiter, &fiberMap](SOCKET s, short pollValue) {
+	awaitFn = [mainFiber = mainFiber, &waiter, &fiberMap](SOCKET s, short pollValue) {
 		waiter.Add(s, pollValue);
 		fiberMap[s] = GetCurrentFiber();
 		SwitchToFiber(mainFiber);
@@ -121,7 +121,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 void FibrousTcpSocketFactory::InvokeOnConnect(void* parameter) {
 	auto* p = reinterpret_cast<FibrousTcpSocketFactory*>(parameter);
 	for(;;) {
-		p->onConnect(FibrousTcpSocket(p->client, p->Await));
+		p->onConnect(FibrousTcpSocket(p->client, p->awaitFn));
 		p->availableFibers.push_back(GetCurrentFiber());
 		SwitchToFiber(p->mainFiber);
 	}

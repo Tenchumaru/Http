@@ -4,7 +4,7 @@
 
 class SecureFibrousTcpSocket : public FibrousTcpSocket {
 public:
-	SecureFibrousTcpSocket(SOCKET socket, fn_t Await, bool isServer);
+	SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, bool isServer);
 	SecureFibrousTcpSocket() = delete;
 	SecureFibrousTcpSocket(SecureFibrousTcpSocket const&) = delete;
 	SecureFibrousTcpSocket(SecureFibrousTcpSocket&&) = default;

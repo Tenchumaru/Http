@@ -107,8 +107,8 @@ BIO_METHOD* SecureFibrousTcpSocket::bioMethod = [] {
 	return rv;
 }();
 
-SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t Await, bool isServer) :
-	FibrousTcpSocket(socket, Await),
+SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, bool isServer) :
+	FibrousTcpSocket(socket, awaitFn),
 	ssl(SSL_new(sslContext)) {
 	if(!ssl) {
 		perror("Cannot create SSL");

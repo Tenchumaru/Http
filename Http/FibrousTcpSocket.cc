@@ -21,7 +21,7 @@ bool FibrousTcpSocket::IsAwaiting(int result, short pollValue) {
 	if(result < 0) {
 		auto v = errno;
 		if(v == EALREADY || v == EWOULDBLOCK) {
-			Await(socket, pollValue);
+			awaitFn(socket, pollValue);
 			return true;
 		}
 	}
