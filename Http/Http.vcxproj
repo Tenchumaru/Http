@@ -95,6 +95,9 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalOptions>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libcrypto.lib $(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libssl.lib %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -109,6 +112,9 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalOptions>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libcrypto.lib $(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libssl.lib %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -127,6 +133,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalOptions>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libcrypto.lib $(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libssl.lib %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -145,6 +154,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalOptions>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libcrypto.lib $(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libssl.lib %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Body.h" />
@@ -200,12 +212,12 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\openssl-vc140-vc141-x86_64.1.1.5\build\native\openssl-vc140-vc141-x86_64.targets" Condition="Exists('..\packages\openssl-vc140-vc141-x86_64.1.1.5\build\native\openssl-vc140-vc141-x86_64.targets')" />
+    <Import Project="..\packages\openssl-vc140-static-32_64.1.1.1.1\build\native\openssl-vc140-static-32_64.targets" Condition="Exists('..\packages\openssl-vc140-static-32_64.1.1.1.1\build\native\openssl-vc140-static-32_64.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\openssl-vc140-vc141-x86_64.1.1.5\build\native\openssl-vc140-vc141-x86_64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\openssl-vc140-vc141-x86_64.1.1.5\build\native\openssl-vc140-vc141-x86_64.targets'))" />
+    <Error Condition="!Exists('..\packages\openssl-vc140-static-32_64.1.1.1.1\build\native\openssl-vc140-static-32_64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\openssl-vc140-static-32_64.1.1.1.1\build\native\openssl-vc140-static-32_64.targets'))" />
   </Target>
 </Project>
