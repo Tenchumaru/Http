@@ -79,8 +79,20 @@ void GET_text(Header_origin&& headers, Response& response) {
 #define DISPATCH
 #include "App.inl"
 
-int main() {
+int main(int argc, char* argv[]) {
+	char const* prog = strrchr(argv[0], '\\');
+	if(prog) {
+		++prog;
+	} else {
+		prog = argv[0];
+	}
 	HttpServer server;
+	if(argc == 3) {
+		server.ConfigureSecurity(argv[1], argv[2]);
+	} else if(argc != 1) {
+		std::cout << "usage: " << prog << " [certificateChainFile privateKeyFile]" << std::endl;
+		return 2;
+	}
 	server.Listen(6006);
 	return 0;
 }

@@ -12,6 +12,7 @@
 
 #include <array>
 #include <functional>
+#include <iostream>
 #include <locale>
 #include <map>
 #include <sstream>
