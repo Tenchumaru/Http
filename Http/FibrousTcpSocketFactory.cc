@@ -48,22 +48,22 @@ void FibrousTcpSocketFactory::ConfigureSecurity(char const* certificateChainFile
 	OpenSSL_add_ssl_algorithms();
 
 	// Create the SSL context.
-	sslContext = SSL_CTX_new(TLS_server_method());
+	sslContext.reset(SSL_CTX_new(TLS_server_method()));
 	if(!sslContext) {
 		perror("Cannot create SSL context");
 		ERR_print_errors_fp(stderr);
 		throw std::runtime_error("FibrousTcpSocketFactory::ConfigureSecurity.SSL_CTX_new");
 	}
-	if(SSL_CTX_use_certificate_chain_file(sslContext, certificateChainFile) <= 0) {
+	if(SSL_CTX_use_certificate_chain_file(sslContext.get(), certificateChainFile) <= 0) {
 		ERR_print_errors_fp(stderr);
 		throw std::runtime_error("FibrousTcpSocketFactory::ConfigureSecurity.SSL_CTX_use_certificate_chain_file");
 	}
-	if(SSL_CTX_use_PrivateKey_file(sslContext, privateKeyFile, SSL_FILETYPE_PEM) <= 0) {
+	if(SSL_CTX_use_PrivateKey_file(sslContext.get(), privateKeyFile, SSL_FILETYPE_PEM) <= 0) {
 		ERR_print_errors_fp(stderr);
 		throw std::runtime_error("FibrousTcpSocketFactory::ConfigureSecurity.SSL_CTX_use_PrivateKey_file");
 	}
 
-	// Set the connection invocation function.
+	// Set the connection invocation function to the secure version.
 	invokeOnConnectFn = &FibrousTcpSocketFactory::InvokeSecureOnConnect;
 }
 
@@ -158,5 +158,5 @@ void FibrousTcpSocketFactory::InvokeOnConnect(void* parameter) {
 
 void FibrousTcpSocketFactory::InvokeSecureOnConnect(void* parameter) {
 	auto* p = reinterpret_cast<FibrousTcpSocketFactory*>(parameter);
-	p->InvokeOnConnect(SecureFibrousTcpSocket(p->client, p->awaitFn, p->sslContext, true));
+	p->InvokeOnConnect(SecureFibrousTcpSocket(p->client, p->awaitFn, p->sslContext.get(), true));
 }

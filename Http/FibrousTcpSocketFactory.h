@@ -19,13 +19,16 @@ private:
 #else
 	using InvokeFn = void(*)(void*);
 #endif
+	struct SslContextDeleter {
+		void operator()(SSL_CTX* p) const { SSL_CTX_free(p); };
+	};
 
 	std::vector<void*> availableFibers;
 	std::function<void(SOCKET, short)> awaitFn;
 	InvokeFn invokeOnConnectFn = &FibrousTcpSocketFactory::InvokeOnConnect;
 	fn_t onConnect;
 	void* mainFiber;
-	SSL_CTX* sslContext = nullptr;
+	std::unique_ptr<SSL_CTX, SslContextDeleter> sslContext;
 	SOCKET client;
 
 	void Accept(SOCKET server, socklen_t sock_addr_size, fn_t onConnect) override;
