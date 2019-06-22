@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "../Json/Json.h"
 #include "../Http/Http.h"
-#include "../Http/HttpServer.h"
+#include "../Http/StaticHttpServer.h"
 #include "../Http/ClosableResponse.h"
 
 // First, include it for the classes.
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 	} else {
 		prog = argv[0];
 	}
-	HttpServer server;
+	StaticHttpServer server;
 	if(argc == 3) {
 		server.ConfigureSecurity(argv[1], argv[2]);
 	} else if(argc != 1) {

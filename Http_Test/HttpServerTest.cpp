@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Sockets.h"
 #include "../Http/Http.h"
-#include "../Http/HttpServer.h"
+#include "../Http/StaticHttpServer.h"
 #include "Dispatch.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -15,7 +15,7 @@ public:
 		Sockets::Initialize();
 	}
 
-	TEST_METHOD(HttpServerListen) {
+	TEST_METHOD(StaticHttpServerListen) {
 		// Arrange
 		static char const request[] = "GET /f/15 HTTP/1.1\r\n"
 			"Host: localhost:6006\r\n"
@@ -65,7 +65,7 @@ public:
 		Dispatch::OnDispatch = [&actualRequest](ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket& client) {
 			actualRequest.assign(begin, body);
 		};
-		HttpServer server;
+		StaticHttpServer server;
 
 		// Act
 		server.Listen(6006);
