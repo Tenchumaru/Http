@@ -162,6 +162,7 @@
     <ClInclude Include="Body.h" />
     <ClInclude Include="ClosableResponse.h" />
     <ClInclude Include="DispatchParser.h" />
+    <ClInclude Include="DynamicHttpServer.h" />
     <ClInclude Include="FibrousTcpSocket.h" />
     <ClInclude Include="FibrousTcpSocketFactory.h" />
     <ClInclude Include="HeaderBase.h" />
@@ -187,6 +188,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DispatchParser.cc" />
+    <ClCompile Include="DynamicHttpServer.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />
     <ClCompile Include="FibrousTcpSocketFactory.cc" />
     <ClCompile Include="Http.cc" />

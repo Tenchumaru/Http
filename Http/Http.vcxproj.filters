@@ -90,6 +90,21 @@
     <ClInclude Include="StaticHttpServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DynamicHttpServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Request.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RequestParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -141,6 +156,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StaticHttpServer.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DynamicHttpServer.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpParser.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RequestParser.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
