@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{D5DC9BB2-F163-4B44-96FD-35B6F72C435E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>App</RootNamespace>
+    <RootNamespace>StaticApp</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -87,7 +87,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)App.txt" "$(ProjectDir)App.inl"</Command>
+      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)StaticApp.txt" "$(ProjectDir)StaticApp.inl"</Command>
       <Message>Creating query and header classes...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -104,7 +104,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)App.txt" "$(ProjectDir)App.inl"</Command>
+      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)StaticApp.txt" "$(ProjectDir)StaticApp.inl"</Command>
       <Message>Creating query and header classes...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -124,7 +124,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)App.txt" "$(ProjectDir)App.inl"</Command>
+      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)StaticApp.txt" "$(ProjectDir)StaticApp.inl"</Command>
       <Message>Creating query and header classes...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -144,7 +144,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)App.txt" "$(ProjectDir)App.inl"</Command>
+      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)StaticApp.txt" "$(ProjectDir)StaticApp.inl"</Command>
       <Message>Creating query and header classes...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -153,7 +153,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="App.cc" />
+    <ClCompile Include="StaticApp.cc" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -170,10 +170,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="App.txt" />
+    <Text Include="StaticApp.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.inl" />
+    <None Include="StaticApp.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Http", "Http\Http.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Http_Test", "Http_Test\Http_Test.vcxproj", "{1B509246-CCE1-4E95-A568-D555674200B0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App", "App\App.vcxproj", "{D5DC9BB2-F163-4B44-96FD-35B6F72C435E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StaticApp", "StaticApp\StaticApp.vcxproj", "{D5DC9BB2-F163-4B44-96FD-35B6F72C435E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9DCEF751-5961-4431-9A93-5ABA9F1532DA} = {9DCEF751-5961-4431-9A93-5ABA9F1532DA}
 	EndProjectSection

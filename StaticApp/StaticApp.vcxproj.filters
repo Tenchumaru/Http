@@ -26,15 +26,15 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="App.cc">
+    <ClCompile Include="StaticApp.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="App.txt" />
+    <Text Include="StaticApp.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.inl">
+    <None Include="StaticApp.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

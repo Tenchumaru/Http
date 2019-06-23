@@ -5,7 +5,7 @@
 #include "../Http/ClosableResponse.h"
 
 // First, include it for the classes.
-#include "App.inl"
+#include "StaticApp.inl"
 
 void GET_helix_users(Query_id_login&& queries, Header_authorization&& headers, Response& response) {
 	queries, headers;
@@ -77,7 +77,7 @@ void GET_text(Header_origin&& headers, Response& response) {
 
 // Then, include it for the Dispatch function.
 #define DISPATCH
-#include "App.inl"
+#include "StaticApp.inl"
 
 int main(int argc, char* argv[]) {
 	char const* prog = strrchr(argv[0], '\\');
