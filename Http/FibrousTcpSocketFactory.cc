@@ -64,7 +64,7 @@ void FibrousTcpSocketFactory::ConfigureSecurity(char const* certificateChainFile
 	}
 
 	// Set the connection invocation function to the secure version.
-	invokeOnConnectFn = &FibrousTcpSocketFactory::InvokeSecureOnConnect;
+	invokeOnConnectFn = [this] { return onConnect(SecureFibrousTcpSocket(client, awaitFn, sslContext.get(), true)); };
 }
 
 void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConnect_) {
@@ -121,7 +121,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 				// Create a fiber and invoke the handler on it.
 				void* fiber;
 				if(availableFibers.empty()) {
-					fiber = CreateFiber(stackSize, invokeOnConnectFn, this);
+					fiber = CreateFiber(stackSize, &FibrousTcpSocketFactory::InvokeOnConnect, this);
 				} else {
 					fiber = availableFibers.back();
 					availableFibers.pop_back();
@@ -153,10 +153,13 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 
 void FibrousTcpSocketFactory::InvokeOnConnect(void* parameter) {
 	auto* p = reinterpret_cast<FibrousTcpSocketFactory*>(parameter);
-	p->InvokeOnConnect(FibrousTcpSocket(p->client, p->awaitFn));
-}
-
-void FibrousTcpSocketFactory::InvokeSecureOnConnect(void* parameter) {
-	auto* p = reinterpret_cast<FibrousTcpSocketFactory*>(parameter);
-	p->InvokeOnConnect(SecureFibrousTcpSocket(p->client, p->awaitFn, p->sslContext.get(), true));
+	for(;;) {
+		try {
+			p->invokeOnConnectFn();
+		} catch(std::exception const& ex) {
+			std::cout << "FibrousTcpSocketFactory::InvokeOnConnect:  " << ex.what() << std::endl;
+		}
+		p->availableFibers.push_back(GetCurrentFiber());
+		SwitchToFiber(p->mainFiber);
+	}
 }

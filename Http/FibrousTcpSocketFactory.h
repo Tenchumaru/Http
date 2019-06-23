@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TcpSocketFactory.h"
+#include "FibrousTcpSocket.h"
 
 class FibrousTcpSocketFactory : public TcpSocketFactory {
 public:
@@ -14,18 +15,14 @@ public:
 	void ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile);
 
 private:
-#ifdef _WIN32
-	using InvokeFn = LPFIBER_START_ROUTINE;
-#else
-	using InvokeFn = void(*)(void*);
-#endif
+	using InvokeFn = std::function<void()>;
 	struct SslContextDeleter {
 		void operator()(SSL_CTX* p) const { SSL_CTX_free(p); };
 	};
 
 	std::vector<void*> availableFibers;
 	std::function<void(SOCKET, short)> awaitFn;
-	InvokeFn invokeOnConnectFn = &FibrousTcpSocketFactory::InvokeOnConnect;
+	InvokeFn invokeOnConnectFn = [this] { return onConnect(FibrousTcpSocket(client, awaitFn)); };
 	fn_t onConnect;
 	void* mainFiber;
 	std::unique_ptr<SSL_CTX, SslContextDeleter> sslContext;
@@ -33,13 +30,4 @@ private:
 
 	void Accept(SOCKET server, socklen_t sock_addr_size, fn_t onConnect) override;
 	static void InvokeOnConnect(void* parameter);
-	static void InvokeSecureOnConnect(void* parameter);
-
-	void InvokeOnConnect(TcpSocket&& tcpSocket) {
-		for(;;) {
-			onConnect(std::move(tcpSocket));
-			availableFibers.push_back(GetCurrentFiber());
-			SwitchToFiber(mainFiber);
-		}
-	}
 };
