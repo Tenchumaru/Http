@@ -35,10 +35,16 @@ public:
 		TcpSocketFactory factory;
 
 		// Act
-		auto fn= [&] { factory.CreateServer("http", onConnect); };
+		factory.CreateServer("http", onConnect);
 
 		// Assert
-		Assert::ExpectException<std::runtime_error, decltype(fn)>(fn);
+		Assert::IsTrue(invoked);
+		Assert::AreNotEqual(expectedSocket, INVALID_SOCKET);
+		Assert::AreEqual(2ull, closedSockets.size());
+		if (!closedSockets.empty()) {
+			Assert::AreEqual(expectedSocket | 0x10000, closedSockets.front());
+			Assert::AreEqual(expectedSocket, closedSockets.back());
+		}
 	}
 
 	TEST_METHOD(TcpSocketFactoryCreateServerWithPort) {
