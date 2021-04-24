@@ -25,12 +25,15 @@
 #include <algorithm>
 #include <array>
 #include <codecvt>
+#include <coroutine>
 #include <functional>
 #include <iostream>
 #include <iterator>
 #include <locale>
 #include <map>
 #include <memory>
+#include <optional>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <unordered_map>

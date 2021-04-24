@@ -33,16 +33,25 @@
     <ClInclude Include="Response.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Waiter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Uri.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Socket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TcpSocketFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="TcpSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FibrousTcpSocket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FibrousTcpSocketFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HeaderMap.h">
@@ -93,13 +102,7 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SocketServer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FibrousSocketServer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SecureFibrousSocketServer.h">
+    <ClInclude Include="AsyncSocketServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -116,16 +119,25 @@
     <ClCompile Include="Response.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Waiter.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Uri.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Socket.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TcpSocketFactory.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="TcpSocket.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FibrousTcpSocket.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FibrousTcpSocketFactory.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Http.cc">
@@ -152,13 +164,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SocketServer.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FibrousSocketServer.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SecureFibrousSocketServer.cc">
+    <ClCompile Include="AsyncSocketServer.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

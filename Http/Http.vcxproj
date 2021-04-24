@@ -56,7 +56,7 @@
       <PreprocessorDefinitions>_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -89,7 +89,7 @@
       <PreprocessorDefinitions>_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -114,6 +114,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AsyncSocketServer.h" />
     <ClInclude Include="Body.h" />
     <ClInclude Include="ClosableResponse.h" />
     <ClInclude Include="DynamicHttpServer.h" />
@@ -141,6 +142,7 @@
     <ClInclude Include="xtypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AsyncSocketServer.cc" />
     <ClCompile Include="DynamicHttpServer.cc" />
     <ClCompile Include="FibrousSocketServer.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />
