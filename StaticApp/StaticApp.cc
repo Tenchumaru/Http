@@ -81,18 +81,18 @@ void GET_text(Header_origin&& headers, Response& response) {
 
 int main(int argc, char* argv[]) {
 	char const* prog = strrchr(argv[0], '\\');
-	if(prog) {
+	if (prog) {
 		++prog;
 	} else {
 		prog = argv[0];
 	}
 	StaticHttpServer server;
-	if(argc == 3) {
+	if (argc == 3) {
 		server.ConfigureSecurity(argv[1], argv[2]);
-	} else if(argc != 1) {
+	} else if (argc != 1) {
 		std::cout << "usage: " << prog << " [certificateChainFile privateKeyFile]" << std::endl;
 		return 2;
 	}
-	server.Listen(6006);
+	server.Run(6006);
 	return 0;
 }

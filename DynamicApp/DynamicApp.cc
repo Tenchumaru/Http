@@ -10,7 +10,7 @@ void HandleJson(Request const& request, Response& response) {
 	WriteJson(ss, object);
 	response.WriteStatus(StatusLines::OK);
 	auto it = request.Headers.find("origin");
-	if(it != request.Headers.cend()) {
+	if (it != request.Headers.cend()) {
 		response.WriteHeader("Access-Control-Allow-Credentials", "true");
 		response.WriteHeader("Access-Control-Allow-Origin", it->second);
 	}
@@ -20,7 +20,7 @@ void HandleJson(Request const& request, Response& response) {
 
 void HandlePlainText(Request const& request, Response& response) {
 	auto it = request.Headers.find("origin");
-	if(it != request.Headers.cend()) {
+	if (it != request.Headers.cend()) {
 		response.WriteHeader("Access-Control-Allow-Credentials", "true");
 		response.WriteHeader("Access-Control-Allow-Origin", it->second);
 	}
@@ -30,20 +30,20 @@ void HandlePlainText(Request const& request, Response& response) {
 
 int main(int argc, char* argv[]) {
 	char const* prog = strrchr(argv[0], '\\');
-	if(prog) {
+	if (prog) {
 		++prog;
 	} else {
 		prog = argv[0];
 	}
 	DynamicHttpServer server;
-	if(argc == 3) {
+	if (argc == 3) {
 		server.ConfigureSecurity(argv[1], argv[2]);
-	} else if(argc != 1) {
+	} else if (argc != 1) {
 		std::cout << "usage: " << prog << " [certificateChainFile privateKeyFile]" << std::endl;
 		return 2;
 	}
 	server.Add("/json", HandleJson);
 	server.Add("/plaintext", HandlePlainText);
-	server.Listen(6006);
+	server.Run(6006);
 	return 0;
 }

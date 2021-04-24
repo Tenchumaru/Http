@@ -13,7 +13,7 @@
 
 void HttpServer::ConfigureSecurity(char const* certificateChainFile_, char const* privateKeyFile_) {
 	// Validate parameters.
-	if(!certificateChainFile_ || !privateKeyFile_) {
+	if (!certificateChainFile_ || !privateKeyFile_) {
 		throw std::runtime_error("HttpServer::ConfigureSecurity null arguments");
 	}
 
@@ -22,9 +22,9 @@ void HttpServer::ConfigureSecurity(char const* certificateChainFile_, char const
 	privateKeyFile = privateKeyFile_;
 }
 
-void HttpServer::Listen(unsigned short port) {
+void HttpServer::Run(unsigned short port) {
 	FibrousTcpSocketFactory server;
-	if(!certificateChainFile.empty()) {
+	if (!certificateChainFile.empty()) {
 		server.ConfigureSecurity(certificateChainFile.c_str(), privateKeyFile.c_str());
 	}
 	server.CreateServer(port, GetConnectFn());

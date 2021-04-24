@@ -15,7 +15,7 @@ public:
 		Sockets::Initialize();
 	}
 
-	TEST_METHOD(StaticHttpServerListen) {
+	TEST_METHOD(StaticHttpServerRun) {
 		// Arrange
 		static char const request[] = "GET /f/15 HTTP/1.1\r\n"
 			"Host: localhost:6006\r\n"
@@ -28,7 +28,7 @@ public:
 			"Upgrade-Insecure-Requests: 1\r\n"
 			"\r\n";
 		Sockets::OnPoll = [&](_Inout_ LPWSAPOLLFD fdArray, _In_ size_t fds, _In_ INT timeout) {
-			if(fds == 1) {
+			if (fds == 1) {
 				fdArray->revents = fdArray->events & (POLLIN | POLLOUT);
 				return 0;
 			}
@@ -36,10 +36,10 @@ public:
 		};
 		SOCKET expectedSocket = INVALID_SOCKET;
 		Sockets::OnAccept = [&](SOCKET s, sockaddr* addr, int* addrlen) {
-			if(addr == nullptr || addrlen == nullptr) {
+			if (addr == nullptr || addrlen == nullptr) {
 				return INVALID_SOCKET;
 			}
-			if(expectedSocket != INVALID_SOCKET) {
+			if (expectedSocket != INVALID_SOCKET) {
 				throw std::runtime_error("exit");
 			}
 			expectedSocket = s | 0x10000;
@@ -47,14 +47,14 @@ public:
 		};
 		bool invoked = false;
 		Sockets::OnReceive = [&](SOCKET s, char* buf, int len, int flags) {
-			if(expectedSocket != s || flags != 0) {
+			if (expectedSocket != s || flags != 0) {
 				return -1;
 			}
-			if(invoked) {
+			if (invoked) {
 				return 0;
 			}
 			constexpr int size = _countof(request) - 1;
-			if(len < size) {
+			if (len < size) {
 				return -1;
 			}
 			invoked = true;
@@ -68,7 +68,7 @@ public:
 		StaticHttpServer server;
 
 		// Act
-		server.Listen(6006);
+		server.Run(6006);
 
 		// Assert
 		Assert::AreEqual(std::string(request), actualRequest);

@@ -12,7 +12,7 @@ public:
 	virtual ~HttpServer() = default;
 
 	void ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile);
-	void Listen(unsigned short port);
+	void Run(unsigned short port);
 
 private:
 	std::string certificateChainFile;
