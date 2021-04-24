@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "RequestParser.h"
 
 bool RequestParser::ValidateNext(std::string const& s) {

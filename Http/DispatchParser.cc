@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "DispatchParser.h"
 
 using ptr_t = char const*;
@@ -17,18 +17,18 @@ DispatchParser::DispatchParser(TcpSocket& client) : client(client) {
 	auto const end = reinterpret_cast<char*>(buffer.data() + buffer.size());
 
 	buffer[0] = 0;
-	for(;;) {
+	for (;;) {
 		auto m = client.Receive(begin, end - begin);
-		if(m == 0) {
+		if (m == 0) {
 			// There are no more data.
 			return;
 		}
-		if(m < 0) {
+		if (m < 0) {
 			throw std::runtime_error("receive error"); // TODO
 		}
 		auto next = begin + m;
 		auto body = std::search(begin, next, searcher);
-		if(body != next) {
+		if (body != next) {
 			body += pattern.size();
 		} else {
 			// Read at least the start line and headers.
@@ -36,18 +36,18 @@ DispatchParser::DispatchParser(TcpSocket& client) : client(client) {
 			auto p = begin;
 			do {
 				auto n = client.Receive(next, end - next);
-				if(n <= 0) {
+				if (n <= 0) {
 					throw std::runtime_error("insufficient data"); // TODO
 				}
 				next += n;
 				auto it = std::search(p, next, searcher);
-				if(it != next) {
+				if (it != next) {
 					body = it + pattern.size();
 					break;
 				}
 				p = next - (pattern.size() - 1);
-			} while(next < end);
-			if(body == nullptr) {
+			} while (next < end);
+			if (body == nullptr) {
 				throw std::runtime_error("overflow"); // TODO
 			}
 		}

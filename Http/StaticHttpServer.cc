@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "TcpSocket.h"
 #include "DispatchParser.h"
 #include "ClosableResponse.h"
@@ -9,7 +9,7 @@ TcpSocketFactory::fn_t StaticHttpServer::GetConnectFn() const {
 		// Give it to the dispatch parser.
 		try {
 			DispatchParser::DispatchParser(client);
-		} catch(std::exception const& /*ex*/) {
+		} catch (std::exception const& /*ex*/) {
 			// Send a 500 Internal Server Error status code.
 			char buffer[512];
 			ClosableResponse response(client, buffer, buffer + _countof(buffer));

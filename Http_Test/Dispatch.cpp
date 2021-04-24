@@ -1,10 +1,10 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "../Http/Http.h"
 #include "Dispatch.h"
 
 using namespace Http_Test::Dispatch;
 
-namespace  {
+namespace {
 	auto onDispatch = [](ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket& client) {};
 }
 

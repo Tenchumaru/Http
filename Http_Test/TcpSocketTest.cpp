@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Sockets.h"
 #include "../Http/TcpSocket.h"
 
@@ -14,22 +14,22 @@ public:
 
 	TEST_METHOD(TcpSocketReceive) {
 		// Arrange
-		SOCKET actualSocket= INVALID_SOCKET;
-		char* actualBuf= nullptr;
-		int actualLen= 0;
-		int actualFlags= 0;
-		Sockets::OnReceive= [&](SOCKET s, char* buf, int len, int flags) {
-			actualSocket= s;
-			actualBuf= buf;
-			actualLen= len;
-			actualFlags= flags;
+		SOCKET actualSocket = INVALID_SOCKET;
+		char* actualBuf = nullptr;
+		int actualLen = 0;
+		int actualFlags = 0;
+		Sockets::OnReceive = [&](SOCKET s, char* buf, int len, int flags) {
+			actualSocket = s;
+			actualBuf = buf;
+			actualLen = len;
+			actualFlags = flags;
 			return 0;
 		};
 		TcpSocket s(expectedSocket);
 		char buf[217];
 
 		// Act
-		int result= s.Receive(buf, sizeof(buf));
+		int result = s.Receive(buf, sizeof(buf));
 
 		// Assert
 		Assert::AreEqual(0, result);
@@ -41,22 +41,22 @@ public:
 
 	TEST_METHOD(TcpSocketSend) {
 		// Arrange
-		SOCKET actualSocket= INVALID_SOCKET;
-		char const* actualBuf= nullptr;
-		int actualLen= 0;
-		int actualFlags= 0;
-		Sockets::OnSend= [&](SOCKET s, char const* buf, int len, int flags) {
-			actualSocket= s;
-			actualBuf= buf;
-			actualLen= len;
-			actualFlags= flags;
+		SOCKET actualSocket = INVALID_SOCKET;
+		char const* actualBuf = nullptr;
+		int actualLen = 0;
+		int actualFlags = 0;
+		Sockets::OnSend = [&](SOCKET s, char const* buf, int len, int flags) {
+			actualSocket = s;
+			actualBuf = buf;
+			actualLen = len;
+			actualFlags = flags;
 			return 0;
 		};
 		TcpSocket s(expectedSocket);
 		char buf[139];
 
 		// Act
-		int result= s.Send(buf, sizeof(buf));
+		int result = s.Send(buf, sizeof(buf));
 
 		// Assert
 		Assert::AreEqual(0, result);
@@ -67,6 +67,6 @@ public:
 	}
 
 private:
-	SOCKET expectedSocket= 230;
+	SOCKET expectedSocket = 230;
 	};
 }

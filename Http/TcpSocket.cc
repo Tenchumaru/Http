@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "TcpSocket.h"
 
 int TcpSocket::Receive(char* buffer, size_t bufferSize) {

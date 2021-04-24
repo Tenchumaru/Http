@@ -57,6 +57,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -76,6 +77,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -99,6 +101,7 @@
     <ClInclude Include="Http.h" />
     <ClInclude Include="HttpParser.h" />
     <ClInclude Include="HttpServer.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="QueryBase.h" />
     <ClInclude Include="Request.h" />
     <ClInclude Include="RequestParser.h" />
@@ -107,7 +110,6 @@
     <ClInclude Include="Socket.h" />
     <ClInclude Include="StaticHttpServer.h" />
     <ClInclude Include="StatusLines.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TcpSocket.h" />
     <ClInclude Include="TcpSocketFactory.h" />
@@ -123,16 +125,16 @@
     <ClCompile Include="Http.cc" />
     <ClCompile Include="HttpParser.cc" />
     <ClCompile Include="HttpServer.cc" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="RequestParser.cc" />
     <ClCompile Include="Response.cc" />
     <ClCompile Include="SecureFibrousTcpSocket.cc" />
     <ClCompile Include="Socket.cc" />
     <ClCompile Include="StaticHttpServer.cc" />
     <ClCompile Include="StatusLines.cc" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="TcpSocket.cc" />
     <ClCompile Include="TcpSocketFactory.cc" />
     <ClCompile Include="Uri.cc" />

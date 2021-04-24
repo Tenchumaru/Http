@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "CppUnitTest.h"
+#include "pch.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -88,10 +87,10 @@ namespace {
 	bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*& qn) {
 		++CollectParameter_invocationCount;
 		pn = qn = p + index;
-		while(*qn != '?' && *qn != '/' && *qn != '#' && *qn != ' ' && *qn != '\r' && *qn != '\n') {
+		while (*qn != '?' && *qn != '/' && *qn != '#' && *qn != ' ' && *qn != '\r' && *qn != '\n') {
 			++qn;
 		}
-		if(pn == qn) {
+		if (pn == qn) {
 			return false;
 		}
 		p = qn - index - 1;
@@ -101,7 +100,7 @@ namespace {
 	char const* CollectParameter(char const*& p, size_t index) {
 		++CollectParameter_invocationCount;
 		char const* q = p + index;
-		while(*q != '?' && *q != '/' && *q != '#' && *q != ' ' && *q != '\r' && *q != '\n') {
+		while (*q != '?' && *q != '/' && *q != '#' && *q != ' ' && *q != '\r' && *q != '\n') {
 			++q;
 		}
 		p = q - index;

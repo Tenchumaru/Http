@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "TcpSocketFactory.h"
 
 void TcpSocketFactory::CreateServer(unsigned short port, fn_t onConnect) {
@@ -13,7 +13,7 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 	static bool isInitialized = [] {
 		WSADATA wsaData;
 		auto result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-		if(result) {
+		if (result) {
 			std::cerr << "WSAStartup error " << result << std::endl;
 			throw std::runtime_error("TcpSocketFactory::CreateServer.WSAStartup");
 		}
@@ -27,28 +27,28 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE; // Use INADDR_ANY for the resulting addresses.
 	addrinfo* addresses;
-	if(getaddrinfo(nullptr, service, &hints, &addresses)) {
+	if (getaddrinfo(nullptr, service, &hints, &addresses)) {
 		throw std::runtime_error("TcpSocketFactory::CreateServer.getaddrinfo");
 	}
 	SOCKET server = INVALID_SOCKET;
 	socklen_t addressSize = 0;
 	try {
-		for(auto const* rp = addresses; rp != nullptr; rp = rp->ai_next) {
+		for (auto const* rp = addresses; rp != nullptr; rp = rp->ai_next) {
 			server = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-			if(server == INVALID_SOCKET) {
+			if (server == INVALID_SOCKET) {
 				continue;
 			}
 			int reuse = 1;
-			if(setsockopt(server, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char const*>(&reuse), sizeof(reuse)) < 0) {
+			if (setsockopt(server, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char const*>(&reuse), sizeof(reuse)) < 0) {
 				throw std::runtime_error("TcpSocketFactory::CreateServer.setsockopt(SO_REUSEADDR)");
 			}
 #ifdef SO_REUSEPORT
-			if(setsockopt(server, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
+			if (setsockopt(server, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
 				throw std::runtime_error("TcpSocketFactory::CreateServer.setsockopt(SO_REUSEPORT)");
 			}
 #endif
 			addressSize = static_cast<int>(rp->ai_addrlen);
-			if(bind(server, rp->ai_addr, addressSize) == 0) {
+			if (bind(server, rp->ai_addr, addressSize) == 0) {
 				break;
 			}
 #ifdef _DEBUG
@@ -58,11 +58,11 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 			server = INVALID_SOCKET;
 		}
 		freeaddrinfo(addresses);
-	} catch(std::exception const&) {
+	} catch (std::exception const&) {
 		freeaddrinfo(addresses);
 		throw;
 	}
-	if(server == INVALID_SOCKET) {
+	if (server == INVALID_SOCKET) {
 		throw std::runtime_error("TcpSocketFactory::CreateServer.socket");
 	}
 
@@ -76,9 +76,9 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConne
 		// Await connections and requests.
 		SOCKADDR_STORAGE address;
 		auto* p = reinterpret_cast<sockaddr*>(&address);
-		for(;;) {
+		for (;;) {
 			SOCKET client = accept(server, p, &addressSize);
-			if(client == INVALID_SOCKET) {
+			if (client == INVALID_SOCKET) {
 				// Assume the failure is due to the network infrastructure
 				// rejecting the connection.
 				std::cout << "failed connection: " << errno << std::endl;
@@ -86,7 +86,7 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConne
 			}
 #ifdef _DEBUG
 			char node[NI_MAXHOST], service[NI_MAXSERV];
-			if(getnameinfo(p, addressSize, node, sizeof(node), service, sizeof(service), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+			if (getnameinfo(p, addressSize, node, sizeof(node), service, sizeof(service), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
 				std::cout << "new connection: " << client << '@' << node << ':' << service << std::endl;
 			} else {
 				std::cerr << "cannot get name information for accepted socket of family " << address.ss_family << std::endl;
@@ -96,7 +96,7 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConne
 			// This is a new client connection.  Handle it.
 			onConnect(TcpSocket(client));
 		}
-	} catch(std::exception& ex) {
+	} catch (std::exception& ex) {
 		std::cout << "exception: " << ex.what() << std::endl;
 	}
 

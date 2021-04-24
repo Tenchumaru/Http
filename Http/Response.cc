@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Response.h"
 
 namespace {
@@ -33,27 +33,27 @@ Response::Response(TcpSocket& client, char* begin, char* end) :
 	wroteContentLength(false),
 	wroteServer(false),
 	inBody(false) {
-	if(end - begin < minimumHeaderBufferSize) {
+	if (end - begin < minimumHeaderBufferSize) {
 		throw std::runtime_error("minimumHeaderBufferSize");
 	}
 }
 
 void Response::WriteHeader(xstring const& name, xstring const& value) {
-	if(next == begin) {
+	if (next == begin) {
 		WriteStatus(StatusLines::OK);
 	}
 	auto nameSize = name.second - name.first;
 	auto valueSize = value.second - value.first;
-	if(nameSize + valueSize + 4 >= end - next) {
+	if (nameSize + valueSize + 4 >= end - next) {
 		throw std::runtime_error("Response::WriteHeader");
 	}
-	if(contentLengthKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, contentLengthKey.c_str()) == 0) {
-		if(wroteContentLength) {
+	if (contentLengthKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, contentLengthKey.c_str()) == 0) {
+		if (wroteContentLength) {
 			throw std::logic_error("wroteContentLength");
 		}
 		wroteContentLength = true;
-	} else if(serverKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, serverKey.c_str()) == 0) {
-		if(wroteServer) {
+	} else if (serverKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, serverKey.c_str()) == 0) {
+		if (wroteServer) {
 			throw std::logic_error("wroteServer");
 		}
 		wroteServer = true;
@@ -67,8 +67,8 @@ void Response::WriteHeader(xstring const& name, xstring const& value) {
 }
 
 void Response::Close() {
-	if(!inBody && next != begin) {
-		if(!wroteContentLength) {
+	if (!inBody && next != begin) {
+		if (!wroteContentLength) {
 			static constexpr char zero[] = "0";
 			WriteHeader(contentLengthKey, xstring{ zero, zero + sizeof(zero) - 1 });
 		}
@@ -79,11 +79,11 @@ void Response::Close() {
 bool Response::CompleteHeaders() {
 	// Write the required headers.
 	WriteHeader("Date", GetTime());
-	if(!wroteServer) {
+	if (!wroteServer) {
 		WriteHeader("Server", "C++");
 	}
 	bool isChunked = !wroteContentLength;
-	if(isChunked) {
+	if (isChunked) {
 		WriteHeader("Transfer-Encoding", "chunked");
 	}
 
@@ -116,7 +116,7 @@ std::streamsize Response::nstreambuf::xsputn(char_type const* s, std::streamsize
 }
 
 int Response::nstreambuf::overflow(int c) {
-	if(c != traits_type::eof()) {
+	if (c != traits_type::eof()) {
 		char_type ch = traits_type::to_char_type(c);
 		xsputn(&ch, 1);
 	}
@@ -135,7 +135,7 @@ void Response::nstreambuf::InitialSend(char_type const* s, std::streamsize n) {
 	next = begin;
 
 	// If this is a chunked response, switch to ChunkedSend and ChunkedClose.
-	if(isChunked) {
+	if (isChunked) {
 		closeFn = &nstreambuf::ChunkedClose;
 		internalSendBufferFn = &nstreambuf::InternalSendBufferChunk;
 		internalSendFn = &nstreambuf::InternalSendChunk;
@@ -148,7 +148,7 @@ void Response::nstreambuf::InitialSend(char_type const* s, std::streamsize n) {
 void Response::nstreambuf::Send(char_type const* s, std::streamsize n) {
 	// If the buffer can hold the provided data, copy it in.  Otherwise, send
 	// the buffer.
-	if(end - next >= n) {
+	if (end - next >= n) {
 		memcpy(next, s, n);
 		next += n;
 	} else {
@@ -156,7 +156,7 @@ void Response::nstreambuf::Send(char_type const* s, std::streamsize n) {
 
 		// If the buffer can hold the provided data, copy it in.  Otherwise,
 		// send the data.
-		if(end - begin >= n) {
+		if (end - begin >= n) {
 			memcpy(next, s, n);
 			next += n;
 		} else {
@@ -175,10 +175,10 @@ void Response::nstreambuf::ChunkedClose() {
 
 void Response::nstreambuf::SimpleClose() {
 	// If there are no data in the response, do nothing.
-	if(response.next != begin) {
+	if (response.next != begin) {
 		// If there are data but none has been sent, the headers have not yet
 		// been completed.
-		if(sendFn == &nstreambuf::InitialSend) {
+		if (sendFn == &nstreambuf::InitialSend) {
 			response.CompleteHeaders();
 			next = response.next;
 		}
@@ -194,9 +194,9 @@ void Response::nstreambuf::InternalSendBuffer() {
 }
 
 void Response::nstreambuf::InternalSend(char_type const* s, std::streamsize n) {
-	for(decltype(n) i = 0; i < n;) {
+	for (decltype(n) i = 0; i < n;) {
 		auto v = client.Send(s + i, n - i);
-		if(v > 0) {
+		if (v > 0) {
 			i += v;
 		} else {
 			throw std::runtime_error("Response::nstreambuf::InternalSend");
@@ -210,7 +210,7 @@ void Response::nstreambuf::InternalSendBufferChunk() {
 }
 
 void Response::nstreambuf::InternalSendChunk(char_type const* s, std::streamsize n) {
-	if(n > 0) {
+	if (n > 0) {
 		char chunkSize[16];
 		unsigned count = snprintf(chunkSize, _countof(chunkSize), "%llx\r\n", n);
 		InternalSend(chunkSize, count);

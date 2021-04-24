@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "../Http/HeaderBase.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -20,7 +20,7 @@ public:
 			{ "Upgrade-Insecure-Requests", "1" },
 		};
 		std::string s = " HTTP/1.1\r\n";
-		for(auto const& header : expectedHeaders) {
+		for (auto const& header : expectedHeaders) {
 			s += header.first + ": " + header.second + "\r\n";
 		}
 		s += "\r\n";
@@ -42,7 +42,7 @@ public:
 			{ "Bad\nHeader", "1" },
 		};
 		std::string s;
-		for(auto const& header : expectedHeaders) {
+		for (auto const& header : expectedHeaders) {
 			s += header.first + ": " + header.second + "\r\n";
 		}
 		s += "\r\n";
@@ -63,7 +63,7 @@ public:
 			{ "Bad\rHeader", "1" },
 		};
 		std::string s;
-		for(auto const& header : expectedHeaders) {
+		for (auto const& header : expectedHeaders) {
 			s += header.first + ": " + header.second + "\r\n";
 		}
 		s += "\r\n";
@@ -84,7 +84,7 @@ public:
 			{ "Bad Header", "1" },
 		};
 		std::string s;
-		for(auto const& header : expectedHeaders) {
+		for (auto const& header : expectedHeaders) {
 			s += header.first + ": " + header.second + "\r\n";
 		}
 		s += "\r\n";

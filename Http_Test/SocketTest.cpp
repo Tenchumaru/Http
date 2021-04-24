@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Sockets.h"
 #include "../Http/Socket.h"
 
@@ -14,12 +14,12 @@ public:
 
 	TEST_METHOD(SocketClose) {
 		// Arrange
-		SOCKET closedSocket= INVALID_SOCKET;
-		Sockets::OnClose= [&closedSocket](SOCKET s) {
-			closedSocket= s;
+		SOCKET closedSocket = INVALID_SOCKET;
+		Sockets::OnClose = [&closedSocket](SOCKET s) {
+			closedSocket = s;
 			return 0;
-			Sockets::OnClose= [&closedSocket](SOCKET) {
-				closedSocket= INVALID_SOCKET;
+			Sockets::OnClose = [&closedSocket](SOCKET) {
+				closedSocket = INVALID_SOCKET;
 				return -1;
 			};
 		};
@@ -34,16 +34,16 @@ public:
 
 	TEST_METHOD(SocketDestructor) {
 		// Arrange
-		SOCKET closedSocket= INVALID_SOCKET;
-		Sockets::OnClose= [&closedSocket](SOCKET s) {
-			closedSocket= s;
+		SOCKET closedSocket = INVALID_SOCKET;
+		Sockets::OnClose = [&closedSocket](SOCKET s) {
+			closedSocket = s;
 			return 0;
-			Sockets::OnClose= [&closedSocket](SOCKET) {
-				closedSocket= INVALID_SOCKET;
+			Sockets::OnClose = [&closedSocket](SOCKET) {
+				closedSocket = INVALID_SOCKET;
 				return -1;
 			};
 		};
-		auto p= std::make_unique<Socket>(expectedSocket);
+		auto p = std::make_unique<Socket>(expectedSocket);
 
 		// Act
 		p.reset();
@@ -53,6 +53,6 @@ public:
 	}
 
 private:
-	SOCKET expectedSocket= 170;
+	SOCKET expectedSocket = 170;
 	};
 }

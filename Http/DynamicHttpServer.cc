@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "TcpSocketFactory.h"
 #include "Request.h"
 #include "RequestParser.h"
@@ -31,7 +31,7 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 			// header if there is no data and the method doesn't expect any so
 			// check the request verb.
 
-			if(it != handlers.cend()) {
+			if (it != handlers.cend()) {
 				// Invoke the handler.
 				it->second(request, response);
 			} else {
@@ -46,7 +46,7 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 			// header whose value is "Keep-Alive", close the socket.
 			bool wantsClose;
 			auto header = request.Headers.find("connection");
-			if(request.Version >= 0x11) {
+			if (request.Version >= 0x11) {
 				wantsClose = header != request.Headers.cend() && _stricmp(header->second.c_str(), "close") == 0;
 			} else {
 				wantsClose = header == request.Headers.cend() || _stricmp(header->second.c_str(), "keep-alive") != 0;
@@ -56,14 +56,14 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 
 		char buf[1024];
 		RequestParser parser(handlerFn);
-		for(;;) {
+		for (;;) {
 			// Read some data from the client.
 			auto n = client.Receive(buf, sizeof(buf));
-			if(n == 0) {
+			if (n == 0) {
 				break;
-			} else if(n < 0) {
+			} else if (n < 0) {
 				auto v = errno;
-				if(v == EALREADY || v == EWOULDBLOCK) {
+				if (v == EALREADY || v == EWOULDBLOCK) {
 					continue;
 				} else {
 					break;
@@ -72,10 +72,10 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 
 			// Give it to the response parser.
 			try {
-				if(parser.Add(buf, n)) {
+				if (parser.Add(buf, n)) {
 					break;
 				}
-			} catch(HttpParser::Exception const& ex) {
+			} catch (HttpParser::Exception const& ex) {
 				// Respond with the appropriate status code.
 				std::array<char, 0x400> buffer;
 				ClosableResponse response(client, buffer.data(), buffer.data() + buffer.size());
@@ -84,7 +84,7 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 
 				// Close the connection.
 				break;
-			} catch(std::exception const& /*ex*/) {
+			} catch (std::exception const& /*ex*/) {
 				// Send a 500 Internal Server Error status code.
 				std::array<char, 0x400> buffer;
 				ClosableResponse response(client, buffer.data(), buffer.data() + buffer.size());

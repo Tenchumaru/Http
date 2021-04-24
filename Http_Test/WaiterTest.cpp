@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Sockets.h"
 #include "../Http/Waiter.h"
 
@@ -27,21 +27,21 @@ public:
 
 	TEST_METHOD(WaiterWait) {
 		// Arrange
-		bool invoked= false;
-		Sockets::OnPoll= [&](LPWSAPOLLFD fdArray, ULONG fds, INT timeout) {
-			if(fdArray == nullptr || fds != 1) {
+		bool invoked = false;
+		Sockets::OnPoll = [&](LPWSAPOLLFD fdArray, ULONG fds, INT timeout) {
+			if (fdArray == nullptr || fds != 1) {
 				return -1;
 			}
-			invoked= true;
-			fdArray[0].fd= expectedSocket;
-			fdArray[0].revents= POLLIN;
+			invoked = true;
+			fdArray[0].fd = expectedSocket;
+			fdArray[0].revents = POLLIN;
 			return 0;
 		};
 		Waiter waiter;
 		waiter.Add(expectedSocket, POLLIN);
 
 		// Act
-		auto actualSocket= waiter.Wait();
+		auto actualSocket = waiter.Wait();
 
 		// Assert
 		Assert::IsTrue(invoked);
@@ -49,6 +49,6 @@ public:
 	}
 
 private:
-	SOCKET expectedSocket= 410;
+	SOCKET expectedSocket = 410;
 	};
 }

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Sockets.h"
 #include "../Http/Http.h"
 #include "../Http/TcpSocket.h"
@@ -21,7 +21,7 @@ public:
 		int actualFlags = -1;
 		std::string text;
 		Sockets::OnSend = [&](SOCKET s, char const* p, int len, int flags) {
-			if(p == nullptr) {
+			if (p == nullptr) {
 				return -1;
 			}
 			invoked = true;
@@ -45,7 +45,7 @@ public:
 		// Arrange
 		std::string text;
 		Sockets::OnSend = [&text](SOCKET s, char const* p, int len, int flags) {
-			if(p == nullptr) {
+			if (p == nullptr) {
 				return -1;
 			}
 			text.append(p, len);
@@ -69,7 +69,7 @@ public:
 		// Arrange
 		std::string text;
 		Sockets::OnSend = [&text](SOCKET s, char const* p, int len, int flags) {
-			if(p == nullptr) {
+			if (p == nullptr) {
 				return -1;
 			}
 			text.append(p, len);

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Json.h"
 
 Value::Value() noexcept : type(Type::Null) {}
@@ -10,7 +10,7 @@ Value::Value(Value&& that) noexcept {
 }
 
 Value::~Value() {
-	switch(type) {
+	switch (type) {
 	case Type::Array:
 		delete array;
 		break;
@@ -48,7 +48,7 @@ Value& Value::operator=(Value&& that) noexcept {
 }
 
 void Value::Write(std::ostream& os) const {
-	switch(type) {
+	switch (type) {
 	case Type::Null:
 		WriteJson(os, nullptr);
 		break;
@@ -60,9 +60,9 @@ void Value::Write(std::ostream& os) const {
 		break;
 	case Type::Array:
 		os << '[';
-		for(auto it= array->cbegin(), end= array->cend(); it != end; ) {
+		for (auto it = array->cbegin(), end = array->cend(); it != end; ) {
 			it->Write(os);
-			if(++it != end) {
+			if (++it != end) {
 				os << ',';
 			}
 		}
@@ -70,11 +70,11 @@ void Value::Write(std::ostream& os) const {
 		break;
 	case Type::Object:
 		os << '{';
-		for(auto it= object->cbegin(), end= object->cend(); it != end; ) {
+		for (auto it = object->cbegin(), end = object->cend(); it != end; ) {
 			WriteJson(os, it->first);
 			os << ':';
 			it->second.Write(os);
-			if(++it != end) {
+			if (++it != end) {
 				os << ',';
 			}
 		}
@@ -95,24 +95,24 @@ Parser::Parser(char const* text) noexcept : next(text), text(text) {}
 Value Parser::InternalParse() {
 	auto value = ParseValue();
 	SkipWhitespace();
-	if(*next) {
+	if (*next) {
 		throw std::runtime_error("extra input");
 	}
 	return value;
 }
 
 Parser::char_t Parser::Get(bool acceptWhitespace/*= false*/) noexcept {
-	if(!acceptWhitespace) {
+	if (!acceptWhitespace) {
 		SkipWhitespace();
 	}
-	if(*next) {
+	if (*next) {
 		return *next++;
 	}
 	return '\0';
 }
 
 Parser::char_t Parser::Next(bool acceptWhitespace/*= false*/) noexcept {
-	if(!acceptWhitespace) {
+	if (!acceptWhitespace) {
 		SkipWhitespace();
 	}
 	return *next;
@@ -120,15 +120,15 @@ Parser::char_t Parser::Next(bool acceptWhitespace/*= false*/) noexcept {
 
 Value Parser::ParseArray() {
 	Value rv;
-	rv.array= new std::vector<Value>;
-	auto ch= Next();
-	if(ch != ']') {
-		for(;;) {
+	rv.array = new std::vector<Value>;
+	auto ch = Next();
+	if (ch != ']') {
+		for (;;) {
 			rv.array->push_back(ParseValue());
-			ch= Get();
-			if(ch == ',') {
+			ch = Get();
+			if (ch == ',') {
 				continue;
-			} else if(ch == ']') {
+			} else if (ch == ']') {
 				break;
 			} else {
 				throw std::runtime_error("invalid array");
@@ -137,49 +137,49 @@ Value Parser::ParseArray() {
 	} else {
 		++next;
 	}
-	rv.type= Value::Type::Array;
+	rv.type = Value::Type::Array;
 	return rv;
 }
 
 double Parser::ParseNumber(char_t ch) {
 	std::string s;
-	if(ch == '-') {
+	if (ch == '-') {
 		s += '-';
-		ch= Get(true);
+		ch = Get(true);
 	}
-	if(ch == '0') {
+	if (ch == '0') {
 		s += '0';
-		ch= Get(true);
+		ch = Get(true);
 	} else {
-		while(isdigit(ch)) {
+		while (isdigit(ch)) {
 			s += ch;
-			ch= Get(true);
+			ch = Get(true);
 		}
 	}
-	if(ch == '.') {
+	if (ch == '.') {
 		s += '.';
-		while(ch= Get(true), isdigit(ch)) {
+		while (ch = Get(true), isdigit(ch)) {
 			s += ch;
 		}
 	}
-	if(tolower(ch) == 'e') {
+	if (tolower(ch) == 'e') {
 		s += 'e';
-		ch= Get(true);
-		if(ch == '-' || ch == '+') {
+		ch = Get(true);
+		if (ch == '-' || ch == '+') {
 			s += ch;
-			ch= Get(true);
+			ch = Get(true);
 		}
-		while(isdigit(ch)) {
+		while (isdigit(ch)) {
 			s += ch;
-			ch= Get(true);
+			ch = Get(true);
 		}
 	}
-	if(ch) {
+	if (ch) {
 		--next;
 	}
 	char* p;
-	double number= strtod(s.c_str(), &p);
-	if(*p) {
+	double number = strtod(s.c_str(), &p);
+	if (*p) {
 		throw std::runtime_error("invalid number");
 	}
 	return number;
@@ -187,22 +187,22 @@ double Parser::ParseNumber(char_t ch) {
 
 Value Parser::ParseObject() {
 	Value rv;
-	rv.object= new std::unordered_map<std::string, Value>;
-	auto ch= Next();
-	if(ch != '}') {
-		for(;;) {
-			if(Get() != '"') {
+	rv.object = new std::unordered_map<std::string, Value>;
+	auto ch = Next();
+	if (ch != '}') {
+		for (;;) {
+			if (Get() != '"') {
 				throw std::runtime_error("invalid object name");
 			}
-			auto const name= ParseString();
-			if(Get() != ':') {
+			auto const name = ParseString();
+			if (Get() != ':') {
 				throw std::runtime_error("invalid object separator");
 			}
-			(*rv.object)[name]= ParseValue();
-			ch= Get();
-			if(ch == ',') {
+			(*rv.object)[name] = ParseValue();
+			ch = Get();
+			if (ch == ',') {
 				continue;
-			} else if(ch == '}') {
+			} else if (ch == '}') {
 				break;
 			} else {
 				throw std::runtime_error("invalid object");
@@ -211,15 +211,15 @@ Value Parser::ParseObject() {
 	} else {
 		++next;
 	}
-	rv.type= Value::Type::Object;
+	rv.type = Value::Type::Object;
 	return rv;
 }
 
 char32_t Parser::ParseUnicodeEscape() {
-	char32_t ch= 0;
-	for(int i= 0; i < 4; ++i) {
-		char d= Get(true);
-		if(!isxdigit(d)) {
+	char32_t ch = 0;
+	for (int i = 0; i < 4; ++i) {
+		char d = Get(true);
+		if (!isxdigit(d)) {
 			throw std::runtime_error("invalid unicode escape");
 		}
 		ch <<= 4;
@@ -231,26 +231,26 @@ char32_t Parser::ParseUnicodeEscape() {
 void Parser::AddUnicode(std::string& s) {
 	// Parse the 16-bit unicode escape sequence.  If necessary, parse its
 	// surrogate pair.
-	char32_t ch= ParseUnicodeEscape();
-	if(ch >= 0xd800 && ch <= 0xdbff) {
-		if(Get(true) == '\\' && Get(true) == 'u') {
-			ch= 0x10000 + ((ch & 0x3ff) << 10) + (ParseUnicodeEscape() & 0x3ff);
+	char32_t ch = ParseUnicodeEscape();
+	if (ch >= 0xd800 && ch <= 0xdbff) {
+		if (Get(true) == '\\' && Get(true) == 'u') {
+			ch = 0x10000 + ((ch & 0x3ff) << 10) + (ParseUnicodeEscape() & 0x3ff);
 		} else {
 			throw std::runtime_error("unmatched surrogate pair");
 		}
 	}
 
 	// Convert from UTF-32 to UTF-8.
-	if(ch <= 0x7f) {
+	if (ch <= 0x7f) {
 		s += static_cast<char>(ch);
-	} else if(ch <= 0x7ff) {
+	} else if (ch <= 0x7ff) {
 		s += static_cast<char>(0xc0 | (0x1f & (ch >> 6)));
 		s += static_cast<char>(0x80 | (0x3f & ch));
-	} else if(ch <= 0xffff) {
+	} else if (ch <= 0xffff) {
 		s += static_cast<char>(0xe0 | (0x0f & (ch >> 12)));
 		s += static_cast<char>(0x80 | (0x3f & (ch >> 6)));
 		s += static_cast<char>(0x80 | (0x3f & ch));
-	} else if(ch <= 0x10ffff) {
+	} else if (ch <= 0x10ffff) {
 		s += static_cast<char>(0xf0 | (0x07 & (ch >> 18)));
 		s += static_cast<char>(0x80 | (0x3f & (ch >> 12)));
 		s += static_cast<char>(0x80 | (0x3f & (ch >> 6)));
@@ -260,9 +260,9 @@ void Parser::AddUnicode(std::string& s) {
 
 std::string Parser::ParseString() {
 	std::string rv;
-	for(char ch; ch= Get(true), ch != '"'; ) {
-		if(ch == '\\') {
-			switch(Get(true)) {
+	for (char ch; ch = Get(true), ch != '"'; ) {
+		if (ch == '\\') {
+			switch (Get(true)) {
 			case '"':
 				rv += '"';
 				break;
@@ -293,7 +293,7 @@ std::string Parser::ParseString() {
 			default:
 				throw std::runtime_error("invalid string");
 			}
-		} else if(static_cast<unsigned char>(ch) >= ' ') {
+		} else if (static_cast<unsigned char>(ch) >= ' ') {
 			rv += ch;
 		} else {
 			throw std::runtime_error("invalid string");
@@ -303,8 +303,8 @@ std::string Parser::ParseString() {
 }
 
 Value Parser::ParseValue() {
-	auto const ch= Get();
-	switch(ch) {
+	auto const ch = Get();
+	switch (ch) {
 	case '[': // begin array
 		return ParseArray();
 	case '{': // begin object
@@ -312,22 +312,22 @@ Value Parser::ParseValue() {
 	case '"': // begin string
 		return Value(ParseString());
 	case 'f': // check for false
-		if(Get(true) == 'a' && Get(true) == 'l' && Get(true) == 's' && Get(true) == 'e') {
+		if (Get(true) == 'a' && Get(true) == 'l' && Get(true) == 's' && Get(true) == 'e') {
 			return Value(false);
 		}
 		break;
 	case 'n': // check for null
-		if(Get(true) == 'u' && Get(true) == 'l' && Get(true) == 'l') {
+		if (Get(true) == 'u' && Get(true) == 'l' && Get(true) == 'l') {
 			return Value(nullptr);
 		}
 		break;
 	case 't': // check for true
-		if(Get(true) == 'r' && Get(true) == 'u' && Get(true) == 'e') {
+		if (Get(true) == 'r' && Get(true) == 'u' && Get(true) == 'e') {
 			return Value(true);
 		}
 		break;
 	default:
-		if(isdigit(ch) || ch == '-') {
+		if (isdigit(ch) || ch == '-') {
 			return Value(ParseNumber(ch));
 		}
 	}
@@ -335,13 +335,13 @@ Value Parser::ParseValue() {
 }
 
 void Parser::SkipWhitespace() noexcept {
-	while(*next && (*next == '\t' || *next == '\n' || *next == '\r' || *next == ' ')) {
+	while (*next && (*next == '\t' || *next == '\n' || *next == '\r' || *next == ' ')) {
 		++next;
 	}
 }
 
 void FromJson(Value const& json, bool& b) {
-	if(json.GetType() == Value::Type::Boolean) {
+	if (json.GetType() == Value::Type::Boolean) {
 		b = json.ToBoolean();
 	} else {
 		throw std::runtime_error("json not Boolean");
@@ -349,7 +349,7 @@ void FromJson(Value const& json, bool& b) {
 }
 
 void FromJson(Value const& json, double& d) {
-	if(json.GetType() == Value::Type::Number) {
+	if (json.GetType() == Value::Type::Number) {
 		d = json.ToNumber();
 	} else {
 		throw std::runtime_error("json not number");
@@ -357,7 +357,7 @@ void FromJson(Value const& json, double& d) {
 }
 
 void FromJson(Value const& json, std::string& s) {
-	if(json.GetType() == Value::Type::String) {
+	if (json.GetType() == Value::Type::String) {
 		s = json.ToString();
 	} else {
 		throw std::runtime_error("json not string");
@@ -365,7 +365,7 @@ void FromJson(Value const& json, std::string& s) {
 }
 
 void FromJson(Value const& json, void*& p) {
-	if(json.GetType() == Value::Type::Null) {
+	if (json.GetType() == Value::Type::Null) {
 		p = nullptr;
 	} else {
 		throw std::runtime_error("json not null");
@@ -373,10 +373,10 @@ void FromJson(Value const& json, void*& p) {
 }
 
 void WriteJson(std::ostream& os, double d) {
-	if(isinf(d)) {
+	if (isinf(d)) {
 		throw std::runtime_error("number is infinite");
 	}
-	std::streamsize precision= os.precision();
+	std::streamsize precision = os.precision();
 	// https://en.wikipedia.org/wiki/Double-precision_floating-point_format#IEEE_754_double-precision_binary_floating-point_format:_binary64
 	os << std::setprecision(15) << d << std::setprecision(precision);
 }
@@ -387,24 +387,24 @@ inline char AsHexDigit(int value) noexcept {
 }
 
 void WriteJson(std::ostream& os, char const* s) {
-	if(s != nullptr) {
+	if (s != nullptr) {
 		os << '"';
-		for(char ch; ch= *s, ch; ++s) {
-			if(static_cast<unsigned char>(ch) < ' ') {
-				if(ch == '\b') {
+		for (char ch; ch = *s, ch; ++s) {
+			if (static_cast<unsigned char>(ch) < ' ') {
+				if (ch == '\b') {
 					os << "\\b";
-				} else if(ch == '\f') {
+				} else if (ch == '\f') {
 					os << "\\f";
-				} else if(ch == '\n') {
+				} else if (ch == '\n') {
 					os << "\\n";
-				} else if(ch == '\r') {
+				} else if (ch == '\r') {
 					os << "\\r";
-				} else if(ch == '\t') {
+				} else if (ch == '\t') {
 					os << "\\t";
 				} else {
 					os << "\\u00" << AsHexDigit(ch >> 4) << AsHexDigit(ch);
 				}
-			} else if(ch == '"' || ch == '\\') {
+			} else if (ch == '"' || ch == '\\') {
 				os << '\\' << ch;
 			} else {
 				os << ch;
@@ -417,9 +417,9 @@ void WriteJson(std::ostream& os, char const* s) {
 }
 
 void WriteJson(std::ostream& os, wchar_t const* s) {
-	if(s != nullptr) {
+	if (s != nullptr) {
 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-		auto const result= converter.to_bytes(s);
+		auto const result = converter.to_bytes(s);
 		WriteJson(os, result);
 	} else {
 		WriteJson(os, nullptr);

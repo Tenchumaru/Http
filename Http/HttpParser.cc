@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "HttpParser.h"
 
 namespace {
@@ -13,7 +13,7 @@ namespace {
 
 bool HttpParser::Add(char const* p, size_t n) {
 	char const* const q = p + n;
-	while(p != nullptr && p != closeSignal && p < q) {
+	while (p != nullptr && p != closeSignal && p < q) {
 		p = (this->*fn)(p, q);
 	}
 	return p == closeSignal;
@@ -25,16 +25,16 @@ void HttpParser::Reset() {
 }
 
 char const* HttpParser::CollectFirst(char const* p, char const* const q) {
-	while(p < q) {
-		if(*p == ' ') {
+	while (p < q) {
+		if (*p == ' ') {
 			// Validate it and start collecting the next part.
-			if(!ValidateFirst(first)) {
+			if (!ValidateFirst(first)) {
 				throw Exception(StatusLines::MethodNotAllowed);
 			}
 			next.clear();
 			fn = &HttpParser::CollectNext;
 			return p + 1;
-		} else if(*p == '\r' || *p == '\n') {
+		} else if (*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
 			throw Exception(StatusLines::BadRequest);
 		}
@@ -45,16 +45,16 @@ char const* HttpParser::CollectFirst(char const* p, char const* const q) {
 }
 
 char const* HttpParser::CollectNext(char const* p, char const* const q) {
-	while(p < q) {
-		if(*p == ' ') {
+	while (p < q) {
+		if (*p == ' ') {
 			// Validate it and start collecting the last part.
-			if(!ValidateNext(next)) {
+			if (!ValidateNext(next)) {
 				throw Exception(StatusLines::BadRequest);
 			}
 			last.clear();
 			fn = &HttpParser::CollectLast;
 			return p + 1;
-		} else if(*p == '\r' || *p == '\n') {
+		} else if (*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
 			throw Exception(StatusLines::BadRequest);
 		}
@@ -65,12 +65,12 @@ char const* HttpParser::CollectNext(char const* p, char const* const q) {
 }
 
 char const* HttpParser::CollectLast(char const* p, char const* const q) {
-	while(p < q) {
-		if(*p == '\r') {
+	while (p < q) {
+		if (*p == '\r') {
 			// Skip it.
-		} else if(*p == '\n') {
+		} else if (*p == '\n') {
 			// Validate it and start collecting the first header name.
-			if(!ValidateLast(last)) {
+			if (!ValidateLast(last)) {
 				throw Exception(StatusLines::BadRequest);
 			}
 			name.clear();
@@ -86,15 +86,15 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 
 char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 	// Check for too many headers.
-	if(headers.size() > maxHeaders) {
+	if (headers.size() > maxHeaders) {
 		throw Exception(StatusLines::BadRequest);
 	}
 
 	// Look for the end of the name (a colon).
-	while(p < q) {
-		if(*p == ':') {
+	while (p < q) {
+		if (*p == ':') {
 			// Found it; validate the name.
-			if(name.empty()) {
+			if (name.empty()) {
 				throw Exception(StatusLines::BadRequest);
 			}
 
@@ -102,20 +102,20 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			value.clear();
 			fn = &HttpParser::CollectHeaderValue;
 			return p + 1;
-		} else if(*p == '\r') {
+		} else if (*p == '\r') {
 			// Skip it.
-		} else if(*p == '\n') {
+		} else if (*p == '\n') {
 			// Didn't find it.  If there is a name, it's an invalid message.
-			if(!name.empty()) {
+			if (!name.empty()) {
 				throw Exception(StatusLines::BadRequest);
 			}
 
 			// Get the content length, if any.
 			auto const it = headers.find("Content-Length");
 			contentLength = it == headers.cend() ? 0 : std::stoul(it->second);
-			if(contentLength == 0) {
+			if (contentLength == 0) {
 				// There isn't one or it's zero; assume there's no data.
-				if(HandleMessage()) {
+				if (HandleMessage()) {
 					return closeSignal;
 				}
 
@@ -123,7 +123,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 				Reset();
 				return p + 1;
 			}
-			if(contentLength > maxContentLength) {
+			if (contentLength > maxContentLength) {
 				// && .49999999999999
 				// : ]
 				throw Exception(StatusLines::PayloadTooLarge);
@@ -134,15 +134,15 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			data.clear();
 			fn = &HttpParser::CollectData;
 			return p + 1;
-		} else if(isspace(*p)) {
-			if(name.empty()) {
+		} else if (isspace(*p)) {
+			if (name.empty()) {
 				name += ' ';
-			} else if(name != " ") {
+			} else if (name != " ") {
 				throw Exception(StatusLines::BadRequest);
 			}
 		} else {
 			name += *p;
-			if(name.size() >= maxNameSize) {
+			if (name.size() >= maxNameSize) {
 				throw Exception(StatusLines::BadRequest);
 			}
 		}
@@ -152,10 +152,10 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 }
 
 char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
-	while(p < q) {
-		if(*p == '\n') {
+	while (p < q) {
+		if (*p == '\n') {
 			// Found it.
-			if(name[0] != ' ') {
+			if (name[0] != ' ') {
 				// Add it and the header name to the collection of headers.
 				headers.insert({ name, value });
 			}
@@ -164,11 +164,11 @@ char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 			name.clear();
 			fn = &HttpParser::CollectHeaderName;
 			return p + 1;
-		} else if(*p == '\r') {
+		} else if (*p == '\r') {
 			// Skip it.
-		} else if(!value.empty() || !isspace(*p)) {
+		} else if (!value.empty() || !isspace(*p)) {
 			value += *p;
-			if(value.size() >= maxValueSize) {
+			if (value.size() >= maxValueSize) {
 				throw Exception(StatusLines::BadRequest);
 			}
 		}
@@ -182,7 +182,7 @@ char const* HttpParser::CollectData(char const* p, char const* const q) {
 	auto const nRequired = contentLength - data.size();
 	decltype(nRequired) const nAvailable = q - p;
 
-	if(nAvailable >= nRequired) {
+	if (nAvailable >= nRequired) {
 		// Consume data necessary to complete the current message.
 		data.append(p, p + nRequired);
 		HandleMessage();
@@ -198,10 +198,10 @@ char const* HttpParser::CollectData(char const* p, char const* const q) {
 }
 
 bool HttpParser::ValidateVersion(std::string const& s) {
-	if(s.size() != versionSize || strncmp(s.c_str(), "HTTP/", 5) != 0) {
+	if (s.size() != versionSize || strncmp(s.c_str(), "HTTP/", 5) != 0) {
 		return false;
 	}
-	if(!isdigit(s[5]) || s[6] != '.' || !isdigit(s[7])) {
+	if (!isdigit(s[5]) || s[6] != '.' || !isdigit(s[7])) {
 		return false;
 	}
 	return true;

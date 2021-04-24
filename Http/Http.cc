@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Http.h"
 
 bool AtEndOfPath(char ch) {
@@ -7,7 +7,7 @@ bool AtEndOfPath(char ch) {
 
 bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*& qn) {
 	pn = qn = p + index;
-	while(*qn != '?' && *qn != '/' && *qn != ' ' && *qn != '\r' && *qn != '\n') {
+	while (*qn != '?' && *qn != '/' && *qn != ' ' && *qn != '\r' && *qn != '\n') {
 		++qn;
 	}
 	p = qn - index - 1;

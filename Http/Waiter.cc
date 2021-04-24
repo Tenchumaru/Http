@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Waiter.h"
 
 #ifdef _WIN32
@@ -12,11 +12,11 @@ void Waiter::Add(SOCKET s, short pollValue) {
 }
 
 SOCKET Waiter::Wait() {
-	for(;;) {
-		while(entry != current->cend()) {
+	for (;;) {
+		while (entry != current->cend()) {
 			auto currentEntry = entry;
 			++entry;
-			if(currentEntry->revents) {
+			if (currentEntry->revents) {
 				return currentEntry->fd;
 			} else {
 				next->push_back(*currentEntry);
@@ -24,7 +24,7 @@ SOCKET Waiter::Wait() {
 		}
 		std::swap(current, next);
 		next->clear();
-		if(current->empty()) {
+		if (current->empty()) {
 			throw std::logic_error("Waiter::Wait");
 		}
 		check(poll(current->data(), current->size(), -1));
@@ -33,12 +33,12 @@ SOCKET Waiter::Wait() {
 }
 
 void Waiter::Wait(fn_t onReady) {
-	for(;;) {
+	for (;;) {
 		std::swap(current, next);
 		next->clear();
 		check(poll(current->data(), current->size(), -1));
-		for(auto currentEntry = current->cbegin(); currentEntry != current->cend(); ++currentEntry) {
-			if(currentEntry->revents) {
+		for (auto currentEntry = current->cbegin(); currentEntry != current->cend(); ++currentEntry) {
+			if (currentEntry->revents) {
 				onReady(currentEntry->fd);
 			} else {
 				next->push_back(*currentEntry);
