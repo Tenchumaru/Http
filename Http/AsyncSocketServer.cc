@@ -114,7 +114,7 @@ void AsyncSocketServer::Run(char const* service) {
 	}
 }
 
-Task<std::pair<SOCKET, int>> AsyncSocketServer::Accept(SOCKET serverSocket, socklen_t addressSize) {
+Task<std::pair<std::unique_ptr<AsyncSocket>, int>> AsyncSocketServer::Accept(SOCKET serverSocket, socklen_t addressSize) {
 	auto fn = [serverSocket, addressSize] {
 		auto n = addressSize;
 		SOCKADDR_INET address;
@@ -144,10 +144,10 @@ Task<std::pair<SOCKET, int>> AsyncSocketServer::Accept(SOCKET serverSocket, sock
 			errorCode = co_await SocketAwaitable{ serverSocket, POLLIN };
 		}
 		if (errorCode) {
-			co_return{ INVALID_SOCKET, errorCode };
+			co_return{ std::unique_ptr<AsyncSocket>{}, errorCode };
 		}
 	}
-	co_return{ clientSocket, 0 };
+	co_return{ std::make_unique<AsyncSocket>(clientSocket), 0 };
 }
 
 Task<void> AsyncSocketServer::AcceptAndHandle(SOCKET serverSocket, socklen_t addressSize) {
@@ -156,7 +156,7 @@ Task<void> AsyncSocketServer::AcceptAndHandle(SOCKET serverSocket, socklen_t add
 		if (errorCode) {
 			std::cerr << "accept error " << errorCode << std::endl;
 		} else {
-			close(clientSocket);
+			AddPromise(Handle(std::move(clientSocket)).promise);
 		}
 	}
 }
@@ -210,22 +210,21 @@ Task<std::pair<size_t, int>> Send(SOCKET clientSocket, void const* p, size_t n) 
 	co_return{ static_cast<size_t>(n), 0 };
 }
 
-Task<void> AsyncSocketServer::Handle(SOCKET clientSocket) {
+Task<void> AsyncSocketServer::Handle(std::unique_ptr<AsyncSocket> clientSocket) {
 	// Echo until receving an empty line.
 	std::array<char, 99> buffer = { ' ' };
 	try {
 		while (buffer[0] >= ' ') {
-			auto [rn, rerr] = co_await Receive(clientSocket, buffer.data(), static_cast<int>(buffer.size()));
+			auto [rn, rerr] = co_await clientSocket->Receive(buffer.data(), static_cast<int>(buffer.size()));
 			if (rerr) {
 				std::cerr << "Receive error" << rerr << std::endl;
 				break;
 			}
-			auto [sn, serr] = co_await Send(clientSocket, buffer.data(), rn);
+			auto [sn, serr] = co_await clientSocket->Send(buffer.data(), rn);
 		}
 	} catch (std::exception const& ex) {
 		std::cerr << "exception:  " << ex.what() << std::endl;
 	}
-	close(clientSocket);
 }
 
 void AsyncSocketServer::ProcessPromise(base_promise_type* promise, std::unordered_map<SOCKET, base_promise_type*>& map, std::vector<pollfd>& sockets) {

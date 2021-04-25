@@ -33,8 +33,8 @@ void SecureAsyncSocketServer::ConfigureSecurity(char const* certificateChainFile
 	}
 }
 
-Task<std::pair<SOCKET, int>> SecureAsyncSocketServer::Accept(SOCKET serverSocket, socklen_t addressSize) {
+Task<std::pair<std::unique_ptr<AsyncSocket>, int>> SecureAsyncSocketServer::Accept(SOCKET serverSocket, socklen_t addressSize) {
 	auto [clientSocket, errorCode] = co_await AsyncSocketServer::Accept(serverSocket, addressSize);
 	// TODO
-	co_return{ clientSocket, errorCode };
+	co_return{ std::move(clientSocket), errorCode };
 }

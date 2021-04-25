@@ -77,8 +77,8 @@ struct Task {
 		Task<T> get_return_object() {
 			return Task<T>{ this };
 		}
-		void return_value(T value_) {
-			value = value_;
+		void return_value(T&& value_) {
+			value = std::move(value_);
 		}
 		void SetOuterAwaiterImpl() override;
 	};

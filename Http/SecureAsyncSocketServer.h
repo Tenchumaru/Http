@@ -9,7 +9,7 @@ public:
 	SecureAsyncSocketServer(SecureAsyncSocketServer&&) = default;
 	SecureAsyncSocketServer& operator=(SecureAsyncSocketServer const&) = delete;
 	SecureAsyncSocketServer& operator=(SecureAsyncSocketServer&&) = default;
-	virtual ~SecureAsyncSocketServer() = default;
+	~SecureAsyncSocketServer() = default;
 	void ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile);
 
 private:
@@ -19,5 +19,5 @@ private:
 
 	std::unique_ptr<SSL_CTX, SslContextDeleter> sslContext;
 
-	virtual Task<std::pair<SOCKET, int>> Accept(SOCKET serverSocket, socklen_t addressSize) override;
+	Task<std::pair<std::unique_ptr<AsyncSocket>, int>> Accept(SOCKET serverSocket, socklen_t addressSize) override;
 };

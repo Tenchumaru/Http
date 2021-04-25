@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AsyncSocket.h"
 #include "Task.h"
 
 class AsyncSocketServer {
@@ -13,14 +14,14 @@ public:
 	void Run(char const* service);
 
 protected:
-	virtual Task<std::pair<SOCKET, int>> Accept(SOCKET serverSocket, socklen_t addressSize);
+	virtual Task<std::pair<std::unique_ptr<AsyncSocket>, int>> Accept(SOCKET serverSocket, socklen_t addressSize);
 
 private:
 	std::vector<base_promise_type*> promises;
 
 	Task<void> AcceptAndHandle(SOCKET serverSocket, socklen_t addressSize);
 	void AddPromise(base_promise_type* promise);
-	Task<void> Handle(SOCKET clientSocket);
+	Task<void> Handle(std::unique_ptr<AsyncSocket> clientSocket);
 	static std::pair<SOCKET, socklen_t> Open(char const* service);
 	void ProcessPromise(base_promise_type* promise, std::unordered_map<SOCKET, base_promise_type*>& map, std::vector<pollfd>& sockets);
 
