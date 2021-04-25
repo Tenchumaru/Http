@@ -114,28 +114,51 @@ void AsyncSocketServer::Run(char const* service) {
 	}
 }
 
-Task<void> AsyncSocketServer::AcceptAndHandle(SOCKET serverSocket, socklen_t addressSize) {
+Task<std::pair<SOCKET, int>> AsyncSocketServer::Accept(SOCKET serverSocket, socklen_t addressSize) {
 	auto fn = [serverSocket, addressSize] {
 		auto n = addressSize;
 		SOCKADDR_INET address;
-		return accept(serverSocket, reinterpret_cast<sockaddr*>(&address), &n);
-	};
-	for (;;) {
-		auto clientConnection = fn();
-		if (clientConnection == INVALID_SOCKET) {
-			int errorCode = co_await SocketAwaitable{ serverSocket, POLLIN };
-			if (!errorCode) {
-				clientConnection = fn();
-				if (clientConnection == INVALID_SOCKET) {
-					std::cerr << "accept error " << errno << std::endl;
-				} else if (Socket::SetNonblocking(clientConnection)) {
-					AddPromise(Handle(clientConnection).promise);
+		auto rv = accept(serverSocket, reinterpret_cast<sockaddr*>(&address), &n);
+#ifdef _DEBUG
+		if (rv != INVALID_SOCKET) {
+			std::cout << "accepted socket " << rv << ", address family " << address.si_family << std::endl;
+			if (address.si_family == AF_INET || address.si_family == AF_INET6) {
+				char s[std::max(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
+				auto* p = inet_ntop(address.si_family, &address, s, sizeof(s));
+				if (p) {
+					std::cout << "\tIP address " << p << ", port " << address.Ipv4.sin_port << std::endl;
 				} else {
-					close(clientConnection);
+					std::cerr << "\tcannot determine address; error " << errno << std::endl;
 				}
 			} else {
-				std::cerr << "accept poll error " << errorCode << std::endl;
+				std::cout << "\tunknown address family" << std::endl;
 			}
+		}
+#endif
+		return rv;
+	};
+	SOCKET clientSocket;
+	while (clientSocket = fn(), clientSocket == INVALID_SOCKET) {
+		int errorCode = errno;
+		if (errorCode == EWOULDBLOCK) {
+			errorCode = co_await SocketAwaitable{ serverSocket, POLLIN };
+		}
+		if (errorCode) {
+			co_return{ INVALID_SOCKET, errorCode };
+		}
+	}
+	co_return{ clientSocket, 0 };
+}
+
+Task<void> AsyncSocketServer::AcceptAndHandle(SOCKET serverSocket, socklen_t addressSize) {
+	for (;;) {
+		auto [clientSocket, errorCode] = co_await Accept(serverSocket, addressSize);
+		if (errorCode) {
+			std::cerr << "accept error " << errorCode << std::endl;
+		} else if (Socket::SetNonblocking(clientSocket)) {
+			AddPromise(Handle(clientSocket).promise);
+		} else {
+			close(clientSocket);
 		}
 	}
 }

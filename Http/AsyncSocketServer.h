@@ -112,6 +112,9 @@ public:
 	virtual ~AsyncSocketServer() = default;
 	void Run(char const* service);
 
+protected:
+	virtual Task<std::pair<SOCKET, int>> Accept(SOCKET serverSocket, socklen_t addressSize);
+
 private:
 	std::vector<base_promise_type*> promises;
 
