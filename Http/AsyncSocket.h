@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Socket.h"
-#include "AsyncSocketServer.h"
+#include "Task.h"
 
 class AsyncSocket : public Socket {
 public:

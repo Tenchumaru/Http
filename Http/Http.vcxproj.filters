@@ -111,6 +111,9 @@
     <ClInclude Include="AsyncSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Task.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HttpParser.cc">
@@ -177,6 +180,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AsyncSocket.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Task.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

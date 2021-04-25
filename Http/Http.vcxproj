@@ -137,6 +137,7 @@
     <ClInclude Include="StaticHttpServer.h" />
     <ClInclude Include="StatusLines.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Task.h" />
     <ClInclude Include="TcpSocket.h" />
     <ClInclude Include="TcpSocketFactory.h" />
     <ClInclude Include="Uri.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="Socket.cc" />
     <ClCompile Include="StaticHttpServer.cc" />
     <ClCompile Include="StatusLines.cc" />
+    <ClCompile Include="Task.cc" />
     <ClCompile Include="TcpSocket.cc" />
     <ClCompile Include="TcpSocketFactory.cc" />
     <ClCompile Include="Uri.cc" />
