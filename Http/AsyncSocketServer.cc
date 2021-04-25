@@ -155,8 +155,6 @@ Task<void> AsyncSocketServer::AcceptAndHandle(SOCKET serverSocket, socklen_t add
 		auto [clientSocket, errorCode] = co_await Accept(serverSocket, addressSize);
 		if (errorCode) {
 			std::cerr << "accept error " << errorCode << std::endl;
-		} else if (Socket::SetNonblocking(clientSocket)) {
-			AddPromise(Handle(clientSocket).promise);
 		} else {
 			close(clientSocket);
 		}
