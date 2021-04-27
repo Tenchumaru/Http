@@ -114,6 +114,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AsyncResponse.h" />
     <ClInclude Include="AsyncSocket.h" />
     <ClInclude Include="AsyncSocketServer.h" />
     <ClInclude Include="Body.h" />
@@ -146,6 +147,7 @@
     <ClInclude Include="xtypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AsyncResponse.cc" />
     <ClCompile Include="AsyncSocket.cc" />
     <ClCompile Include="AsyncSocketServer.cc" />
     <ClCompile Include="DynamicHttpServer.cc" />
