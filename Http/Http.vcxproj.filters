@@ -120,6 +120,9 @@
     <ClInclude Include="AsyncResponse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ClosableAsyncResponse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HttpParser.cc">

@@ -118,6 +118,7 @@
     <ClInclude Include="AsyncSocket.h" />
     <ClInclude Include="AsyncSocketServer.h" />
     <ClInclude Include="Body.h" />
+    <ClInclude Include="ClosableAsyncResponse.h" />
     <ClInclude Include="ClosableResponse.h" />
     <ClInclude Include="DynamicHttpServer.h" />
     <ClInclude Include="FibrousTcpSocket.h" />
