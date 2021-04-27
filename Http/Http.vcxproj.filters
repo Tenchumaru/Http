@@ -170,5 +170,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Pre-build.cmd" />
   </ItemGroup>
 </Project>

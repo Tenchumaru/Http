@@ -66,6 +66,12 @@
     <Lib>
       <AdditionalOptions>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libcrypto.lib $(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libssl.lib %(AdditionalOptions)</AdditionalOptions>
     </Lib>
+    <PreBuildEvent>
+      <Command>"$(ProjectDir)Pre-Build.cmd" "$(SolutionDir)"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Creating self-signed certificate...</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -88,6 +94,10 @@
     <Lib>
       <AdditionalOptions>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libcrypto.lib $(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libssl.lib %(AdditionalOptions)</AdditionalOptions>
     </Lib>
+    <PreBuildEvent>
+      <Command>"$(ProjectDir)Pre-Build.cmd" "$(SolutionDir)"</Command>
+      <Message>Creating self-signed certificate...</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Body.h" />
@@ -142,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Pre-build.cmd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
