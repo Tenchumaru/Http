@@ -37,5 +37,7 @@
     <None Include="StaticApp.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="packages.config" />
+    <None Include="Pre-build.cmd" />
   </ItemGroup>
 </Project>

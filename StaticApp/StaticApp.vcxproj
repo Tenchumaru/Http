@@ -59,7 +59,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)StaticApp.txt" "$(ProjectDir)StaticApp.inl"</Command>
+      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
       <Message>Creating query and header classes...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -80,7 +80,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>"$(OutDir)mkapp" -s "$(ProjectDir)StaticApp.txt" "$(ProjectDir)StaticApp.inl"</Command>
+      <Command>"$(ProjectDir)Pre-build.cmd" "$(OutDir)"</Command>
       <Message>Creating query and header classes...</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -107,6 +107,8 @@
     <Text Include="StaticApp.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Pre-build.cmd" />
     <None Include="StaticApp.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
