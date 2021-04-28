@@ -3,7 +3,7 @@
 #include "../Http/Http.h"
 #include "../Http/DynamicHttpServer.h"
 
-void HandleJson(Request const& request, Response& response) {
+Task<void> HandleJson(Request const& request, AsyncResponse& response) {
 	std::stringstream ss;
 	std::unordered_map<std::string, std::string> object;
 	object.insert({ "message", "Hello, World!" });
@@ -15,17 +15,19 @@ void HandleJson(Request const& request, Response& response) {
 		response.WriteHeader("Access-Control-Allow-Origin", it->second);
 	}
 	response.WriteHeader("Content-Type", "application/json");
-	response << ss.str();
+	auto s = ss.str();
+	response.WriteHeader("Content-Length", std::to_string(s.size()));
+	return response.Write(s);
 }
 
-void HandlePlainText(Request const& request, Response& response) {
+Task<void> HandlePlainText(Request const& request, AsyncResponse& response) {
 	auto it = request.Headers.find("origin");
 	if (it != request.Headers.cend()) {
 		response.WriteHeader("Access-Control-Allow-Credentials", "true");
 		response.WriteHeader("Access-Control-Allow-Origin", it->second);
 	}
 	response.WriteHeader("Content-Type", "text/plain");
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
 int main(int argc, char* argv[]) {
