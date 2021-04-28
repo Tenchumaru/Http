@@ -3,7 +3,7 @@
 
 bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*& qn) {
 	pn = qn = p + index;
-	while(*qn != '?' && *qn != '/' && *qn != '\r' && *qn != '\n') {
+	while (*qn != '?' && *qn != '/' && *qn != '\r' && *qn != '\n') {
 		++qn;
 	}
 	p = qn - index - 1;
@@ -12,7 +12,7 @@ bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*
 
 char const* CollectParameter(char const*& p, size_t index) {
 	char const* q = p + index;
-	while(*q != '?' && *q != '/' && *q != '\r' && *q != '\n') {
+	while (*q != '?' && *q != '/' && *q != '\r' && *q != '\n') {
 		++q;
 	}
 	p = q - index;

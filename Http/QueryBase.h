@@ -12,10 +12,10 @@ public:
 	virtual ~QueryBase() = default;
 
 	virtual bool CollectQueryName(char const*& p, xstring*& q) {
-		while(*p != '=' && *p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
+		while (*p != '=' && *p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
 			++p;
 		}
-		if(*p == '=') {
+		if (*p == '=') {
 			++p;
 			q = nullptr;
 			return true;
@@ -25,11 +25,11 @@ public:
 
 	void CollectQueryValue(char const*& p, xstring& q) {
 		q.first = p;
-		while(*p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
+		while (*p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
 			++p;
 		}
 		q.second = p;
-		if(*p == '&') {
+		if (*p == '&') {
 			++p;
 		}
 	}
@@ -38,29 +38,29 @@ public:
 		p += offset;
 
 		// Check for early termination cases.
-		if(*p == '#') {
+		if (*p == '#') {
 			do {
 				++p;
-			} while(*p != ' ' && *p != '\r' && *p != '\n');
+			} while (*p != ' ' && *p != '\r' && *p != '\n');
 		}
-		if(*p == ' ') {
+		if (*p == ' ') {
 			return true;
 		}
-		if(*p != '?') {
+		if (*p != '?') {
 			return false;
 		}
 		++p;
 
 		// Loop, expecting name-value pairs.
 		xstring* q;
-		while(CollectQueryName(p, q)) {
-			if(q) {
+		while (CollectQueryName(p, q)) {
+			if (q) {
 				CollectQueryValue(p, *q);
 			} else {
-				while(*p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
+				while (*p != '&' && *p != ' ' && *p != '#' && *p != '\r' && *p != '\n') {
 					++p;
 				}
-				if(*p == '&') {
+				if (*p == '&') {
 					++p;
 				} else {
 					break;
@@ -69,10 +69,10 @@ public:
 		}
 
 		// Ignore any fragment.
-		if(*p == '#') {
+		if (*p == '#') {
 			do {
 				++p;
-			} while(*p != ' ' && *p != '\r' && *p != '\n');
+			} while (*p != ' ' && *p != '\r' && *p != '\n');
 		}
 		return *p == ' ';
 	}

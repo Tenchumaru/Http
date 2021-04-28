@@ -2,9 +2,9 @@
 
 #ifndef _WIN32
 inline int _stricmp(char const* a, char const* b) {
-	while(*a && *b) {
+	while (*a && *b) {
 		auto difference = tolower(*a) - tolower(*b);
-		if(difference) {
+		if (difference) {
 			return difference;
 		}
 		++a;

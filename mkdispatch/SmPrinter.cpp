@@ -18,19 +18,19 @@ namespace {
 			std::vector<NfaState> rv;
 			rv.emplace_back(NfaState{});
 			size_t next = 0;
-			for(Printer::Request const& request : requests) {
+			for (Printer::Request const& request : requests) {
 				size_t currentStateIndex = 0;
 				char currentParameterNumber = -0x80;
-				for(char ch : request.line) {
-					if(ch == '/') {
+				for (char ch : request.line) {
+					if (ch == '/') {
 						++currentParameterNumber;
-					} else if(ch == ':') {
+					} else if (ch == ':') {
 						ch = currentParameterNumber;
 					}
 					rv.emplace_back(NfaState{});
 					rv[currentStateIndex].transitions.push_back({ ch, ++next });
 					currentStateIndex = next;
-					if(ch == currentParameterNumber) {
+					if (ch == currentParameterNumber) {
 						rv[currentStateIndex].transitions.push_back({ ch, currentStateIndex });
 					}
 				}
@@ -49,20 +49,20 @@ namespace {
 		StateMachine(NfaState::vector const& nfaStates) : nfaStates(nfaStates) {
 			// p. 118
 			std::map<std::set<size_t>, std::pair<bool, size_t>> states({ { { 0 }, { false, 0 } } });
-			for(;;) {
+			for (;;) {
 				auto it = std::find_if(states.begin(), states.end(), [](auto const& pair) { return !pair.second.first; });
-				if(it == states.end()) {
+				if (it == states.end()) {
 					break;
 				}
 				auto const& t = it->first;
 				it->second.first = true;
 				auto symbols = CollectSymbols(t);
-				for(char a : symbols) {
+				for (char a : symbols) {
 					auto u = Move(t, a);
 					auto state = states.find(u);
-					if(state == states.cend()) {
+					if (state == states.cend()) {
 						auto p = states.insert({ u, { false, states.size() } });
-						if(!p.second) {
+						if (!p.second) {
 							throw std::logic_error("failed state insertion");
 						}
 						state = p.first;
@@ -72,21 +72,21 @@ namespace {
 			}
 
 			// Set the final states.
-			for(size_t i = 0, n = nfaStates.size(); i < n; ++i) {
+			for (size_t i = 0, n = nfaStates.size(); i < n; ++i) {
 				auto const& nfaState = nfaStates[i];
-				if(!nfaState.fn.empty()) {
+				if (!nfaState.fn.empty()) {
 					// Find the corresponding DFA state number for this NFA state.
 					auto it = std::find_if(states.cbegin(), states.cend(), [i](auto const& pair) {
 						return pair.first.size() == 1 && pair.first.find(i) != pair.first.cend();
 					});
-					if(it == states.cend()) {
+					if (it == states.cend()) {
 						// It's possible the grammar is ambiguous but can be
 						// resolved by giving non-any priority over any.
 						it = std::find_if(states.cbegin(), states.cend(), [i](auto const& pair) {
 							return pair.first.find(i) != pair.first.cend();
 						});
 						std::cerr << "Note:  ambiguity found between";
-						for(auto nfaStateNumber : it->first) {
+						for (auto nfaStateNumber : it->first) {
 							std::cerr << ' ' << nfaStates[nfaStateNumber].fn;
 						}
 						std::cerr << std::endl << "resolving in favor of " << nfaState.fn << std::endl;
@@ -96,10 +96,10 @@ namespace {
 			}
 
 			// Check for an ambiguous grammar.
-			if(states.size() != machine.size()) {
+			if (states.size() != machine.size()) {
 				std::cerr << "error:  ambiguous grammar: ";
 				auto it = std::find_if(states.cbegin(), states.cend(), [this](auto const& pair) { return machine.find(pair.second.second) == machine.cend(); });
-				for(auto nfaStateNumber : it->first) {
+				for (auto nfaStateNumber : it->first) {
 					auto const& nfaState = nfaStates[nfaStateNumber];
 					std::cerr << ' ' << nfaState.fn;
 				}
@@ -132,13 +132,13 @@ namespace {
 		map machine;
 
 		void CollectStarting(std::map<size_t, size_t>& rv, bool wantsConsuming, map::mapped_type::value_type const& transition) {
-			if(transition.first == '/') {
+			if (transition.first == '/') {
 				auto const& nexts = machine.find(transition.second);
-				for(auto const& next : nexts->second) {
-					if(IsParameter(next.first)) {
-						if(wantsConsuming && nexts->second.size() == 1) {
+				for (auto const& next : nexts->second) {
+					if (IsParameter(next.first)) {
+						if (wantsConsuming && nexts->second.size() == 1) {
 							rv.insert({ transition.second, next.first + 0x80 });
-						} else if(!wantsConsuming && nexts->second.size() > 1) {
+						} else if (!wantsConsuming && nexts->second.size() > 1) {
 							rv.insert({ transition.second, next.first + 0x80 });
 						}
 					}
@@ -147,14 +147,14 @@ namespace {
 		}
 
 		void CollectFinishing(std::map<size_t, size_t>& rv, bool wantsFinal, size_t state, map::mapped_type::value_type const& transition) {
-			if(transition.first) {
-				if(state == transition.second) {
-					if(!IsParameter(transition.first)) {
+			if (transition.first) {
+				if (state == transition.second) {
+					if (!IsParameter(transition.first)) {
 						throw std::logic_error("unexpected cirular state");
 					}
 					auto const& nexts = machine.find(transition.second);
-					for(auto const& next : nexts->second) {
-						if(next.first == (wantsFinal ? '\n' : '/')) {
+					for (auto const& next : nexts->second) {
+						if (next.first == (wantsFinal ? '\n' : '/')) {
 							rv.insert({ next.second, transition.first + 0x80 });
 						}
 					}
@@ -163,11 +163,11 @@ namespace {
 					auto parameter = std::find_if(transitions.cbegin(), transitions.cend(), [](auto const& pair) {
 						return IsParameter(pair.first);
 					});
-					if(parameter != transitions.cend()) {
+					if (parameter != transitions.cend()) {
 						auto it = std::find_if(transitions.cbegin(), transitions.cend(), [wantsFinal](auto const& pair) {
 							return pair.first == (wantsFinal ? '\n' : '/');
 						});
-						if(it != transitions.cend()) {
+						if (it != transitions.cend()) {
 							rv.insert({ it->second, parameter->first + 0x80 });
 						}
 					}
@@ -180,14 +180,14 @@ namespace {
 			std::set<size_t> visited;
 			std::vector<size_t> toVisit;
 			toVisit.push_back(0);
-			while(!toVisit.empty()) {
+			while (!toVisit.empty()) {
 				size_t state = toVisit[0];
 				toVisit.erase(toVisit.cbegin());
 				visited.insert(state);
 				auto const& transitions = machine.find(state);
-				for(auto const& transition : transitions->second) {
+				for (auto const& transition : transitions->second) {
 					fn(rv, state, transition);
-					if(transition.first && visited.find(transition.second) == visited.cend()) {
+					if (transition.first && visited.find(transition.second) == visited.cend()) {
 						toVisit.push_back(transition.second);
 					}
 				}
@@ -197,10 +197,10 @@ namespace {
 
 		std::set<size_t> Move(std::set<size_t> const& indices, char ch) {
 			std::set<size_t> rv;
-			for(size_t index : indices) {
+			for (size_t index : indices) {
 				auto const& nfaState = nfaStates[index];
-				for(auto const& pair : nfaState.transitions) {
-					if(pair.first == ch || (IsParameter(pair.first) && chars.find(ch) != std::string::npos)) {
+				for (auto const& pair : nfaState.transitions) {
+					if (pair.first == ch || (IsParameter(pair.first) && chars.find(ch) != std::string::npos)) {
 						rv.insert(pair.second);
 					}
 				}
@@ -210,8 +210,8 @@ namespace {
 
 		std::set<char> CollectSymbols(std::set<size_t> const& nfaStateIndices) {
 			std::set<char> rv;
-			for(size_t index : nfaStateIndices) {
-				for(auto const& transition : nfaStates[index].transitions) {
+			for (size_t index : nfaStateIndices) {
+				for (auto const& transition : nfaStates[index].transitions) {
 					rv.insert(transition.first);
 				}
 			}
@@ -221,7 +221,7 @@ namespace {
 
 	void PrintSpecialStateIndex_(std::vector<size_t> const& specialStateIndices, char const* name, std::ostream& out) {
 		out << "\tstatic state_t " << name << '[' << specialStateIndices.size() << "] = {" << std::endl << "\t\t";
-		for(size_t specialStateIndex : specialStateIndices) {
+		for (size_t specialStateIndex : specialStateIndices) {
 			out << specialStateIndex << ',';
 		}
 		out << std::endl << "\t};" << std::endl;
@@ -236,7 +236,7 @@ SmPrinter::~SmPrinter() {}
 void SmPrinter::InternalPrint(vector const& requests, Options const& options, std::ostream& out) {
 	// Determine the maximum index of a segment containing a parameter in a request.
 	ptrdiff_t nparameters = 0;
-	for(Printer::Request const& request : requests) {
+	for (Printer::Request const& request : requests) {
 		auto it = std::find(request.line.crbegin(), request.line.crend(), ':');
 		nparameters = std::max(nparameters, std::count(it, request.line.crend(), '/'));
 	}
@@ -255,7 +255,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 
 	// Collect the function indices.
 	std::map<std::string, size_t> fnIndices;
-	for(Request const& request : requests) {
+	for (Request const& request : requests) {
 		fnIndices.insert({ request.fn, fnIndices.size() });
 	}
 
@@ -271,15 +271,15 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 	out << "\tusing state_t = " << type << ';' << std::endl;
 	out << "\tconstexpr state_t specialStateFlag = -0x" << std::hex << specialStateFlag << std::dec << ';' << std::endl;
 	out << "\tstatic state_t states[" << machine.size() << "][256] = {" << std::endl;
-	for(auto const& dfaState : machine) {
+	for (auto const& dfaState : machine) {
 		out << "\t\t{";
 		std::vector<size_t> states(256, 0);
-		for(auto const& pair : dfaState.second) {
+		for (auto const& pair : dfaState.second) {
 			char ch = pair.first;
 			auto stateNumber = pair.second;
-			if(ch == '\0') {
+			if (ch == '\0') {
 				// Skip this.  It's handled in the next block.
-			} else if(ch == '\n') {
+			} else if (ch == '\n') {
 				states['\n'] = states['\r'] = states[' '] = states['?'] = specialStateFlag | functionIndices.size();
 				auto finalParameterFinishingState = finalParameterFinishingStates.find(stateNumber);
 				auto finalParameterFinishingIndex = finalParameterFinishingState == finalParameterFinishingStates.cend() ?
@@ -289,18 +289,18 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 				parameterStartingIndices.push_back(0);
 				parameterConsumingIndices.push_back(0);
 				nextStateIndices.push_back(0);
-			} else if(IsParameter(ch)) {
-				for(char any : chars) {
+			} else if (IsParameter(ch)) {
+				for (char any : chars) {
 					states[any] = stateNumber;
 				}
-			} else if(ch == '/') {
+			} else if (ch == '/') {
 				auto innerParameterFinishingState = innerParameterFinishingStates.find(stateNumber);
 				auto parameterConsumingState = parameterConsumingStates.find(stateNumber);
 				auto parameterStartingState = parameterStartingStates.find(stateNumber);
 				bool isNormal = innerParameterFinishingState == innerParameterFinishingStates.cend() &&
 					parameterConsumingState == parameterConsumingStates.cend() &&
 					parameterStartingState == parameterStartingStates.cend();
-				if(isNormal) {
+				if (isNormal) {
 					states['/'] = stateNumber;
 				} else {
 					states['/'] = specialStateFlag | functionIndices.size();
@@ -309,7 +309,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 					parameterFinishingIndices.push_back(innerParameterFinishingIndex);
 					functionIndices.push_back(0);
 					auto parameterConsumingIndex = parameterConsumingState == parameterConsumingStates.cend() ? 0 : parameterConsumingState->second;
-					if(parameterConsumingIndex) {
+					if (parameterConsumingIndex) {
 						parameterConsumingIndices.push_back(parameterConsumingIndex);
 						stateNumber = machine[stateNumber].cbegin()->second;
 						parameterStartingIndices.push_back(0);
@@ -326,8 +326,8 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 			}
 		}
 		states.erase(std::find_if(states.crbegin(), states.crend(), [](auto state) { return state != 0; }).base(), states.cend());
-		for(auto state : states) {
-			if(state & specialStateFlag) {
+		for (auto state : states) {
+			if (state & specialStateFlag) {
 				out << "specialStateFlag|";
 			}
 			out << (state & ~specialStateFlag) << ',';
@@ -349,13 +349,13 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 
 	// Collect the function invocations.
 	std::stringstream functionInvocations;
-	for(size_t i = 0, n = requests.size(); i < n; ++i) {
+	for (size_t i = 0, n = requests.size(); i < n; ++i) {
 		auto const& request = requests[i];
 		functionInvocations << "\t\t\tcase " << (i + 1) << ':' << std::endl;
-		functionInvocations << "\t\t\t\t" << request.fn << '(';
-		for(auto it = request.line.cbegin(); it = std::find(it, request.line.cend(), ':'), it != request.line.cend(); ++it) {
+		functionInvocations << "\t\t\t\treturn " << request.fn << '(';
+		for (auto it = request.line.cbegin(); it = std::find(it, request.line.cend(), ':'), it != request.line.cend(); ++it) {
 			auto parameterIndex = std::count(request.line.cbegin(), it, '/');
-			if(options.wantsStrings) {
+			if (options.wantsStrings) {
 				functionInvocations << "xstring(parametersBegin[" << parameterIndex << "], parametersEnd[" << parameterIndex << "])";
 			} else {
 				functionInvocations << "parametersBegin[" << parameterIndex << "], parametersEnd[" << parameterIndex << ']';
@@ -395,37 +395,37 @@ void MainLoop() {
 	char const* p = nullptr;
 	auto CollectQueries = [](char const*) { return false; };
 	// <<<
-	for(state_t state = 0;;) {
+	for (state_t state = 0;;) {
 		do {
 			char ch = *p++;
 			state = states[state][ch];
-		} while(state > 0);
-		if(state == 0) {
+		} while (state > 0);
+		if (state == 0) {
 			break;
 		}
 		int index = state & ~specialStateFlag;
 		auto parameterFinishingIndex = parameterFinishingIndices[index];
-		if(parameterFinishingIndex > 0) {
+		if (parameterFinishingIndex > 0) {
 			parametersEnd[parameterFinishingIndex] = p - 1;
 		}
 		auto parameterConsumingIndex = parameterConsumingIndices[index];
-		if(parameterConsumingIndex > 0) {
+		if (parameterConsumingIndex > 0) {
 			parametersBegin[parameterConsumingIndex] = p;
-			while(++p, *p != '/' && *p != '\n' && *p != '\r' && *p != ' ' && *p != '?') {
+			while (++p, *p != '/' && *p != '\n' && *p != '\r' && *p != ' ' && *p != '?') {
 				continue;
 			}
 		}
 		auto functionIndex = functionIndices[index];
-		if(functionIndex > 0) {
-			if(!CollectQueries(p - 1)) {
+		if (functionIndex > 0) {
+			if (!CollectQueries(p - 1)) {
 				break;
 			}
-			switch(functionIndex) {
+			switch (functionIndex) {
 			case 0: break; // |||
 			}
 		}
 		auto parameterStartingIndex = parameterStartingIndices[index];
-		if(parameterStartingIndex > 0) {
+		if (parameterStartingIndex > 0) {
 			parametersBegin[parameterStartingIndex] = p;
 		}
 		state = nextStateIndices[index];

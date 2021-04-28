@@ -9,11 +9,11 @@ namespace {
 	std::shared_ptr<Printer> printer;
 
 	bool SetPrinter(std::string const& name) {
-		if(name == "my") {
+		if (name == "my") {
 			printer = std::make_shared<MyPrinter>();
-		} else if(name == "seg" || name == "segment") {
+		} else if (name == "seg" || name == "segment") {
 			printer = std::make_shared<SegPrinter>();
-		} else if(name == "sm" || name == "state") {
+		} else if (name == "sm" || name == "state") {
 			printer = std::make_shared<SmPrinter>();
 		} else {
 			return false;
@@ -23,20 +23,20 @@ namespace {
 
 	bool GetOptions(char const* prog, int& argc, char**& argv) {
 		printer = std::make_shared<MyPrinter>();
-		while(argc > 1 && argv[1][0] == '-') {
-			switch(argv[1][1]) {
+		while (argc > 1 && argv[1][0] == '-') {
+			switch (argv[1][1]) {
 			case 'p':
-				switch(argv[1][2]) {
+				switch (argv[1][2]) {
 				case ':':
 				case '=':
-					if(!SetPrinter(argv[1] + 3)) {
+					if (!SetPrinter(argv[1] + 3)) {
 						return false;
 					}
 					break;
 				default:
 					--argc;
 					++argv;
-					if(argc < 2 || !SetPrinter(argv[1])) {
+					if (argc < 2 || !SetPrinter(argv[1])) {
 						return false;
 					}
 				}
@@ -57,10 +57,10 @@ namespace {
 	std::string RemoveParameterNames(std::string const& line) {
 		std::string processedLine;
 		std::string::size_type i = 0, j;
-		while(j = line.find(':', i), j != std::string::npos) {
+		while (j = line.find(':', i), j != std::string::npos) {
 			processedLine.append(line.cbegin() + i, line.cbegin() + j + 1);
 			i = line.find('/', j);
-			if(i == std::string::npos) {
+			if (i == std::string::npos) {
 				i = line.size();
 			}
 		}
@@ -73,16 +73,16 @@ int main(int argc, char* argv[]) {
 	char const* prog = strrchr(argv[0], '\\');
 	prog = prog ? ++prog : argv[0];
 
-	if(!GetOptions(prog, argc, argv)) {
+	if (!GetOptions(prog, argc, argv)) {
 		std::cerr << "usage: " << prog << " [-p printer] [-s]" << std::endl;
 		return 2;
 	}
 
 	// Read the requests.
 	std::ifstream fin;
-	if(argc > 1) {
+	if (argc > 1) {
 		fin.open(argv[1]);
-		if(!fin) {
+		if (!fin) {
 			std::cerr << prog << ": cannot open \"" << argv[1] << "\" for reading" << std::endl;
 			return 1;
 		}
@@ -90,9 +90,9 @@ int main(int argc, char* argv[]) {
 	std::istream& in = argc > 1 ? fin : std::cin;
 	std::string s;
 	Printer::vector requests;
-	while(std::getline(in, s)) {
+	while (std::getline(in, s)) {
 		auto it = s.find('\t');
-		if(it == s.npos) {
+		if (it == s.npos) {
 			std::cerr << prog << ": malformed input file" << std::endl;
 			return 1;
 		}

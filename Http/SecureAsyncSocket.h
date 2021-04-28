@@ -26,6 +26,6 @@ protected:
 	Task<int> InternalShutDown();
 
 private:
-	SSL *ssl;
+	SSL* ssl;
 };
 
