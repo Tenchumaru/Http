@@ -10,6 +10,9 @@
 # define SOCKET int
 #endif
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include <algorithm>
 #include <array>
 #include <coroutine>
