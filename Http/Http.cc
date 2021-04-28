@@ -23,3 +23,15 @@ void FourZeroFour(Response& response) {
 	response;
 	// TODO
 }
+
+Task<void> FourHundredAsync(AsyncResponse& response, char const* message) {
+	response, message;
+	// TODO
+	co_return;
+}
+
+Task<void> FourZeroFourAsync(AsyncResponse& response) {
+	response;
+	// TODO
+	co_return;
+}
