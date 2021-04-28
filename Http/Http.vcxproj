@@ -73,6 +73,12 @@
     <PreBuildEvent>
       <Message>Creating self-signed certificate...</Message>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>"$(ProjectDir)Post-build.cmd" "$(SolutionDir)" "$(Platform)" "$(Configuration)" "$(TargetDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copying OpenSSL PDB file...</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -100,6 +106,12 @@
       <Command>"$(ProjectDir)Pre-Build.cmd" "$(SolutionDir)"</Command>
       <Message>Creating self-signed certificate...</Message>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>"$(ProjectDir)Post-build.cmd" "$(SolutionDir)" "$(Platform)" "$(Configuration)" "$(TargetDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copying OpenSSL PDB file...</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Body.h" />
@@ -154,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Post-build.cmd" />
     <None Include="Pre-build.cmd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
