@@ -64,7 +64,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalOptions>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libcrypto.lib $(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libssl.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
       <Command>"$(ProjectDir)Pre-Build.cmd" "$(SolutionDir)"</Command>
@@ -92,7 +93,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalOptions>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libcrypto.lib $(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)\libssl.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
       <Command>"$(ProjectDir)Pre-Build.cmd" "$(SolutionDir)"</Command>
