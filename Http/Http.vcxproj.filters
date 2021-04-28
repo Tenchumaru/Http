@@ -126,6 +126,9 @@
     <ClInclude Include="ClosableAsyncResponse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AsyncBody.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HttpParser.cc">
