@@ -1,6 +1,7 @@
 #pragma once
 
 #ifdef _WIN32
+# define NOMINMAX
 # include "targetver.h"
 
 # include <WS2tcpip.h>
@@ -10,15 +11,14 @@
 # define SOCKET int
 #endif
 
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-
 #include <algorithm>
 #include <array>
+#include <coroutine>
 #include <functional>
 #include <iostream>
 #include <locale>
 #include <map>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <unordered_map>
