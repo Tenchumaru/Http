@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "MyPrinter.h"
 
+using namespace std::literals;
+
 namespace {
 	struct Group {
 		using vector = MyPrinter::vector;
@@ -67,30 +69,37 @@ namespace {
 				}
 			}
 			if (!fn.empty()) {
+				auto returnKeyword = options.wantsAsynchronous ? "co_await" : "return";
+				auto returnStatement = options.wantsAsynchronous ? indent + "\t\t\tco_return;\n" : "";
+				auto asyncSuffix = options.wantsAsynchronous ? "Async" : "";
 				out << indent << "\tif(AtEndOfPath(p[" << prefix.size() << "])) {" << std::endl;
 				out << indent << "\t\t" << (queriesFn.empty() ? "QueryBase" : queriesFn) << " queries;" << std::endl;
 				out << indent << "\t\tif(!queries.CollectQueries(p, " << prefix.size() << ")) {" << std::endl;
-				out << indent << "\t\t\tFourHundred(response, \"bad query string\");" << std::endl;
-				out << indent << "\t\t\treturn next;" << std::endl;
+				out << indent << "\t\t\t" << returnKeyword << " FourHundred" << asyncSuffix << "(response, \"bad query string\");" << std::endl;
+				out << returnStatement;
 				out << indent << "\t\t}" << std::endl;
 				out << indent << "\t\t" << (headersFn.empty() ? "HeaderBase" : headersFn) << " headers;" << std::endl;
 				out << indent << "\t\tif(!headers.CollectHeaders(p)) {" << std::endl;
-				out << indent << "\t\t\tFourHundred(response, \"bad headers\");" << std::endl;
-				out << indent << "\t\t\treturn next;" << std::endl;
+				out << indent << "\t\t\t" << returnKeyword << " FourHundred" << asyncSuffix << "(response, \"bad headers\");" << std::endl;
+				out << returnStatement;
 				out << indent << "\t\t}" << std::endl;
 				if (fn.back() == '+') {
 					out << indent << "\t\tif(!headers.ContentLength.first) {" << std::endl;
-					out << indent << "\t\t\tFourHundred(response, \"no content length header\");" << std::endl;
-					out << indent << "\t\t\treturn next;" << std::endl;
+					out << indent << "\t\t\t" << returnKeyword << " FourHundred" << asyncSuffix << "(response, \"no content length header\");" << std::endl;
+					out << returnStatement;
 					out << indent << "\t\t}" << std::endl;
 					out << indent << "\t\tchar* end_;" << std::endl;
 					out << indent << "\t\tauto size = std::strtol(headers.ContentLength.first, &end_, 10);" << std::endl;
 					out << indent << "\t\tif(size == LONG_MAX || size == LONG_MIN || end_ != headers.ContentLength.second) {" << std::endl;
-					out << indent << "\t\t\tFourHundred(response, \"bad content length header\");" << std::endl;
-					out << indent << "\t\t\treturn next;" << std::endl;
+					out << indent << "\t\t\t" << returnKeyword << " FourHundred" << asyncSuffix << "(response, \"bad content length header\");" << std::endl;
+					out << returnStatement;
 					out << indent << "\t\t}" << std::endl;
 				}
-				out << indent << "\t\t";
+				if (options.wantsAsynchronous) {
+					out << indent << "\t\tco_await ";
+				} else {
+					out << indent << "\t\treturn ";
+				}
 				std::vector<std::string> parameters;
 				for (decltype(parameterCount) i = 0; i < parameterCount; ++i) {
 					std::stringstream ss;
@@ -108,7 +117,7 @@ namespace {
 					parameters.push_back("std::move(headers)");
 				}
 				if (fn.back() == '+') {
-					parameters.push_back("Body(body, next, size, socket)");
+					parameters.push_back(asyncSuffix + "Body(body, next, size, socket)"s);
 				}
 				parameters.push_back("response");
 				out << (fn.back() == '+' ? fn.substr(0, fn.size() - 1) : fn);
@@ -123,7 +132,9 @@ namespace {
 					out << parameter;
 				}
 				out << ");" << std::endl;
-				out << indent << "\t\treturn next;" << std::endl;
+				if (options.wantsAsynchronous) {
+					out << indent << "\t\tco_return;" << std::endl;
+				}
 				out << indent << "\t}" << std::endl;
 			}
 			out << indent << '}' << std::endl;

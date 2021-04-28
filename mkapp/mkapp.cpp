@@ -44,7 +44,7 @@ std::string GetType(int count) {
 }
 
 namespace {
-	bool wantsStrings;
+	bool wantsAsynchronous, wantsStrings;
 
 	template<typename F>
 	F* Open(F& f, char const* filePath, char const* message) {
@@ -59,6 +59,9 @@ namespace {
 	bool GetOptions(char const* prog, int& argc, char**& argv) {
 		while (argc > 1 && argv[1][0] == '-') {
 			switch (argv[1][1]) {
+			case 'a':
+				wantsAsynchronous = true;
+				break;
 			case 's':
 				wantsStrings = true;
 				break;
@@ -174,7 +177,7 @@ int main(int argc, char* argv[]) {
 
 	// Print the Dispatcher class.
 	*pout << "#else" << std::endl;
-	Options options = { wantsStrings };
+	Options options = { wantsAsynchronous, wantsStrings };
 	MyPrinter().Print(requests, options, *pout);
 	*pout << "#endif" << std::endl;
 

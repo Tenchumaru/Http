@@ -172,7 +172,6 @@ namespace {
 			}
 			out << "response";
 			out << ");" << std::endl;
-			out << indent << "\treturn next;" << std::endl;
 		}
 
 		size_t PrintParameter(std::string const& indent, size_t& parameterCount, bool wantsSave = true) const {

@@ -364,7 +364,6 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 		}
 		functionInvocations << "response";
 		functionInvocations << ");" << std::endl;
-		functionInvocations << "\t\t\t\treturn next;" << std::endl;
 	}
 
 	// Print the main state machine loop.
