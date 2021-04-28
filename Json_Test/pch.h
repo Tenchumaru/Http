@@ -10,7 +10,10 @@
 // Headers for CppUnitTest
 #include "CppUnitTest.h"
 
-#include <codecvt>
+#include <algorithm>
+#ifndef _WIN32
+# include <codecvt>
+#endif
 #include <fstream>
 #include <iostream>
 #include <map>
