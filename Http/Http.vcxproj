@@ -120,6 +120,7 @@
     <ClInclude Include="Body.h" />
     <ClInclude Include="ClosableAsyncResponse.h" />
     <ClInclude Include="ClosableResponse.h" />
+    <ClInclude Include="DispatchParser.h" />
     <ClInclude Include="DynamicHttpServer.h" />
     <ClInclude Include="FibrousTcpSocket.h" />
     <ClInclude Include="FibrousTcpSocketFactory.h" />
@@ -151,6 +152,7 @@
     <ClCompile Include="AsyncResponse.cc" />
     <ClCompile Include="AsyncSocket.cc" />
     <ClCompile Include="AsyncSocketServer.cc" />
+    <ClCompile Include="DispatchParser.cc" />
     <ClCompile Include="DynamicHttpServer.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />
     <ClCompile Include="FibrousTcpSocketFactory.cc" />

@@ -41,7 +41,18 @@ struct Awaiter : public BaseAwaiter {
 	}
 	template<typename T>
 	void await_suspend(T) {}
-	T await_resume();
+	T await_resume() {
+		if (promise->awaiter != this) {
+			throw std::runtime_error("promise->awaiter != this");
+		} else if (promise->inner_promise) {
+			throw std::runtime_error("promise->inner_promise");
+		}
+		promise->awaiter = nullptr;
+		if (exception) {
+			std::rethrow_exception(*exception);
+		}
+		return std::move(rv);
+	}
 };
 
 template<>
@@ -52,7 +63,17 @@ struct Awaiter<void> : public BaseAwaiter {
 	}
 	template<typename T>
 	void await_suspend(T) {}
-	void await_resume();
+	void await_resume() {
+		if (promise->awaiter != this) {
+			throw std::runtime_error("promise->awaiter != this");
+		} else if (promise->inner_promise) {
+			throw std::runtime_error("promise->inner_promise");
+		}
+		promise->awaiter = nullptr;
+		if (exception) {
+			std::rethrow_exception(*exception);
+		}
+	}
 };
 
 struct SocketAwaitable {
@@ -71,9 +92,15 @@ struct Task {
 	struct promise_type : public base_promise_type {
 		T value{};
 
-		SocketAwaiter await_transform(SocketAwaitable&& awaitable);
-		template<typename T>
-		Awaiter<T> await_transform(Task<T>&& task);
+		SocketAwaiter await_transform(SocketAwaitable&& awaitable) {
+			return SocketAwaiter{ this, std::move(awaitable) };
+		}
+		template<typename U>
+		Awaiter<U> await_transform(Task<U>&& task) {
+			inner_promise = task.promise;
+			task.promise->outer_promise = this;
+			return Awaiter<U>{ this };
+		}
 		Task<T> get_return_object() {
 			return Task<T>{ this };
 		}
@@ -83,7 +110,15 @@ struct Task {
 		void return_value(T&& value_) {
 			value = std::move(value_);
 		}
-		void SetOuterAwaiterImpl() override;
+		void SetOuterAwaiterImpl() override {
+#ifdef _DEBUG
+			if (!dynamic_cast<Awaiter<T>*>(outer_promise->awaiter)) {
+				throw std::runtime_error("!dynamic_cast<Awaiter<T>*>(outer_promise->awaiter)");
+			}
+#endif
+			auto* const p = static_cast<Awaiter<T>*>(outer_promise->awaiter);
+			p->rv = std::move(value);
+		}
 	};
 
 	base_promise_type* promise{};
@@ -94,7 +129,11 @@ struct Task<void> {
 	struct promise_type : public base_promise_type {
 		SocketAwaiter await_transform(SocketAwaitable&& awaitable);
 		template<typename T>
-		Awaiter<T> await_transform(Task<T>&& task);
+		Awaiter<T> await_transform(Task<T>&& task) {
+			inner_promise = task.promise;
+			task.promise->outer_promise = this;
+			return Awaiter<T>{ this };
+		}
 		Task<void> get_return_object() {
 			return Task<void>{ this };
 		}

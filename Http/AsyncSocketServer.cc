@@ -85,33 +85,45 @@ void AsyncSocketServer::Run(char const* service) {
 	AddPromise(AcceptAndHandle(serverSocket, addressSize).promise);
 
 	// Start polling.
-	auto hasEvents = [](pollfd const& item) { return item.revents; };
 	decltype(promises) current_promises;
-	std::vector<pollfd> sockets;
+	decltype(sockets) current_sockets;
 	while (!promises.empty()) {
-		// Resolve all resolvable tasks.  Collect the promises and sockets of those that are not.
-		std::unordered_map<SOCKET, base_promise_type*> map;
+		// Clear and swap to process current data and collect next data.
 		current_promises.clear();
-		sockets.clear();
-		current_promises.swap(promises);
-		std::ranges::for_each(current_promises, [this, &map, &sockets](base_promise_type* promise) { ProcessPromise(promise, map, sockets); });
+		current_sockets.clear();
+		std::swap(current_promises, promises);
+		std::swap(current_sockets, sockets);
 
 		// Await socket poll.
-		check(poll(sockets.data(), sockets.size(), -1));
-		for (auto& pollResult : sockets | std::views::filter(hasEvents)) {
-			auto it = map.find(pollResult.fd);
-			if (it == map.cend()) {
-				throw std::runtime_error("did not find socket handle");
-			} else {
-				auto* const socketAwaiter = static_cast<SocketAwaiter*>(it->second->awaiter);
+		check(poll(current_sockets.data(), current_sockets.size(), -1));
+
+		// Resume coroutines for sockets that are ready.  Retain the promises and sockets of those that are not.
+		for (decltype(current_sockets.size()) i = 0, n = current_sockets.size(); i < n; ++i) {
+			auto const& pollResult = current_sockets[i];
+			if (pollResult.revents) {
+				auto* promise = current_promises[i];
+#ifdef _DEBUG
+				if (!dynamic_cast<SocketAwaiter*>(promise->awaiter)) {
+					throw std::runtime_error("!dynamic_cast<SocketAwaiter*>(promise->awaiter)");
+				}
+#endif
+				auto* const socketAwaiter = static_cast<SocketAwaiter*>(promise->awaiter);
 				int err = errno;
 				err = pollResult.events & pollResult.revents ? 0 : pollResult.revents & POLLHUP ? ECONNRESET : err ? err : EINVAL;
 				socketAwaiter->rv = err;
-				auto handle = std::coroutine_handle<base_promise_type>::from_promise(*it->second);
-				handle();
+				ProcessPromise(promise);
+			} else {
+				promises.push_back(current_promises[i]);
+				sockets.push_back(pollResult);
 			}
 		}
 	}
+}
+
+void AsyncSocketServer::Run(unsigned short port) {
+	char buf[6];
+	sprintf_s(buf, "%d", port);
+	Run(buf);
 }
 
 Task<std::pair<std::unique_ptr<AsyncSocket>, int>> AsyncSocketServer::Accept(SOCKET serverSocket, socklen_t addressSize) {
@@ -162,7 +174,15 @@ Task<void> AsyncSocketServer::AcceptAndHandle(SOCKET serverSocket, socklen_t add
 }
 
 void AsyncSocketServer::AddPromise(base_promise_type* promise) {
+	promise = GetInnermostPromise(promise);
+#ifdef _DEBUG
+	if (!dynamic_cast<SocketAwaiter*>(promise->awaiter)) {
+		throw std::runtime_error("!dynamic_cast<SocketAwaiter*>(promise->awaiter)");
+	}
+#endif
 	promises.push_back(promise);
+	auto* const socketAwaiter = static_cast<SocketAwaiter*>(promise->awaiter);
+	sockets.push_back({ socketAwaiter->awaitable.fd, socketAwaiter->awaitable.pollValue });
 }
 
 Task<std::pair<size_t, int>> Receive(SOCKET clientSocket, void* p, size_t n) {
@@ -228,26 +248,23 @@ Task<void> AsyncSocketServer::Handle(std::unique_ptr<AsyncSocket> clientSocket) 
 	}
 }
 
-void AsyncSocketServer::ProcessPromise(base_promise_type* promise, std::unordered_map<SOCKET, base_promise_type*>& map, std::vector<pollfd>& sockets) {
-	for (;;) {
-		promise = GetInnermostPromise(promise);
-		std::coroutine_handle<> handle;
-		while (handle = std::coroutine_handle<base_promise_type>::from_promise(*promise), handle.done()) {
-			promise->SetOuterAwaiter();
-			promise = promise->outer_promise;
-			handle.destroy();
-			if (!promise) {
-				return;
-			}
-			promise->inner_promise = nullptr;
-		}
-		auto* const socketAwaiter = dynamic_cast<SocketAwaiter*>(promise->awaiter);
-		if (socketAwaiter) {
-			map.insert({ socketAwaiter->awaitable.fd, promise });
-			promises.push_back(promise);
-			sockets.push_back({ socketAwaiter->awaitable.fd, socketAwaiter->awaitable.pollValue });
+void AsyncSocketServer::ProcessPromise(base_promise_type* promise) {
+	auto handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
+	handle();
+	while (handle.done()) {
+		promise->SetOuterAwaiter();
+		promise = promise->outer_promise;
+		handle.destroy();
+		if (!promise) {
 			return;
 		}
+		promise->inner_promise = nullptr;
+		handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
 		handle();
+		if (promise->inner_promise) {
+			promise = GetInnermostPromise(promise);
+			handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
+		}
 	}
+	AddPromise(promise);
 }

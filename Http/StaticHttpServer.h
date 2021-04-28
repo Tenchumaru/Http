@@ -1,8 +1,8 @@
 #pragma once
 
-#include "HttpServer.h"
+#include "SecureAsyncSocketServer.h"
 
-class StaticHttpServer : public HttpServer {
+class StaticHttpServer : public SecureAsyncSocketServer {
 public:
 	StaticHttpServer() = default;
 	StaticHttpServer(StaticHttpServer const&) = delete;
@@ -10,7 +10,5 @@ public:
 	StaticHttpServer& operator=(StaticHttpServer const&) = delete;
 	StaticHttpServer& operator=(StaticHttpServer&&) noexcept = default;
 	~StaticHttpServer() override = default;
-
-private:
-	char const* DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const override;
+	Task<void> Handle(std::unique_ptr<AsyncSocket> clientSocket) override;
 };

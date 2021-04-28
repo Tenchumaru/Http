@@ -18,19 +18,17 @@ public:
 		std::stringstream ss;
 		ss << t;
 		auto s = ss.str();
-		return Write(s);
+		return InternalWrite(s);
+	}
+	template<typename T>
+	Task<void> Write(std::vector<T> const& v) {
+		return InternalWrite(v);
 	}
 	template<>
 	Task<void> Write(std::string const& s) {
 		return InternalWrite(s);
 	}
-	void WriteStatus(StatusLines::StatusLine const& statusLine) {
-		if (next != begin) {
-			throw std::logic_error("WriteStatus");
-		}
-		memcpy(begin, statusLine.first, statusLine.second);
-		next = begin + statusLine.second;
-	}
+	void WriteStatus(StatusLines::StatusLine const& statusLine);
 	void WriteHeader(std::string const& name, std::string const& value) {
 		WriteHeader(name, xstring{ value.data(), value.data() + value.size() });
 	}
@@ -45,14 +43,14 @@ protected:
 	Task<void> Close();
 
 private:
-	struct Buffer {
-		Buffer(AsyncResponse& response, AsyncSocket& socket);
+	struct AsyncBuffer {
+		AsyncBuffer(AsyncResponse& response, AsyncSocket& socket);
 		Task<void> Close();
 		Task<void> Write(void const* s, size_t n);
 
 	private:
-		using Fn0 = Task<void>(Buffer::*)();
-		using Fn2 = Task<void>(Buffer::*)(void const* s, size_t n);
+		using Fn0 = Task<void>(AsyncBuffer::*)();
+		using Fn2 = Task<void>(AsyncBuffer::*)(void const* s, size_t n);
 
 		AsyncResponse& response;
 		AsyncSocket& socket;
@@ -77,11 +75,14 @@ private:
 	char* begin;
 	char* next;
 	char* end;
-	Buffer outputStreamBuffer;
+	AsyncBuffer buffer;
 	bool wroteContentLength;
 	bool wroteServer;
 	bool inBody;
 
 	bool CompleteHeaders();
-	Task<void> InternalWrite(std::string const& s);
+	template<typename T>
+	Task<void> InternalWrite(T const& s) {
+		return buffer.Write(s.data(), s.size());
+	}
 };

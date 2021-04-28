@@ -1,8 +1,19 @@
 #include "pch.h"
+#include "AsyncSocket.h"
+#include "DispatchParser.h"
+#include "ClosableAsyncResponse.h"
 #include "StaticHttpServer.h"
 
-extern char const* Dispatch(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response);
+Task<void> StaticHttpServer::Handle(std::unique_ptr<AsyncSocket> socket) {
+	try {
+		co_await DispatchParser::Async(*socket);
+		co_return;
+	} catch (std::exception const& /*ex*/) {
+		// Handle the exception below.
+	}
 
-char const* StaticHttpServer::DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const {
-	return Dispatch(begin, body, next, end, socket, response);
+	// Send a 500 Internal Server Error status code.
+	std::array<char, 4444> buffer;
+	ClosableAsyncResponse response(*socket, buffer.data(), buffer.data() + buffer.size());
+	co_await response.Close();
 }

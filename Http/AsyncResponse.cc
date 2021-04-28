@@ -4,19 +4,18 @@
 namespace {
 	std::string const contentLengthKey = "Content-Length";
 	std::string const serverKey = "Server";
-	char const defaultResponse[] = "HTTP/1.1 200 OK\r\n";
 	constexpr ptrdiff_t minimumHeaderBufferSize = 512;
 
 	// TODO:  consider creating a thread that runs once per second to update
 	// the time buffer.
 	std::string GetTime() {
-		time_t t = time(nullptr);
+		time_t const t = time(nullptr);
 #ifdef _WIN32
 		tm m_;
 		gmtime_s(&m_, &t);
-		tm* m = &m_;
+		tm* const m = &m_;
 #else
-		tm* m = gmtime(&t);
+		tm* const m = gmtime(&t);
 #endif
 		char buf[88];
 		strftime(buf, sizeof(buf), "%a, %d %b %Y %T GMT", m);
@@ -28,7 +27,7 @@ AsyncResponse::AsyncResponse(AsyncSocket& socket, char* begin, char* end) :
 	begin(begin),
 	next(begin),
 	end(end),
-	outputStreamBuffer(*this, socket),
+	buffer(*this, socket),
 	wroteContentLength(false),
 	wroteServer(false),
 	inBody(false) {
@@ -37,23 +36,31 @@ AsyncResponse::AsyncResponse(AsyncSocket& socket, char* begin, char* end) :
 	}
 }
 
+void AsyncResponse::WriteStatus(StatusLines::StatusLine const& statusLine) {
+	if (next != begin) {
+		throw std::logic_error("cannot write Status line more than once");
+	}
+	memcpy(begin, statusLine.first, statusLine.second);
+	next = begin + statusLine.second;
+}
+
 void AsyncResponse::WriteHeader(xstring const& name, xstring const& value) {
 	if (next == begin) {
 		WriteStatus(StatusLines::OK);
 	}
-	auto nameSize = name.second - name.first;
-	auto valueSize = value.second - value.first;
+	auto const nameSize = name.second - name.first;
+	auto const valueSize = value.second - value.first;
 	if (nameSize + valueSize + 4 >= end - next) {
 		throw std::runtime_error("AsyncResponse::WriteHeader");
 	}
 	if (contentLengthKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, contentLengthKey.c_str()) == 0) {
 		if (wroteContentLength) {
-			throw std::logic_error("wroteContentLength");
+			throw std::logic_error("cannot write Content-Length header more than once");
 		}
 		wroteContentLength = true;
 	} else if (serverKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, serverKey.c_str()) == 0) {
 		if (wroteServer) {
-			throw std::logic_error("wroteServer");
+			throw std::logic_error("cannot write Server header more than once");
 		}
 		wroteServer = true;
 	}
@@ -68,11 +75,11 @@ void AsyncResponse::WriteHeader(xstring const& name, xstring const& value) {
 Task<void> AsyncResponse::Close() {
 	if (!inBody && next != begin) {
 		if (!wroteContentLength) {
-			static constexpr char zero[] = "0";
-			WriteHeader(contentLengthKey, xstring{ zero, zero + sizeof(zero) - 1 });
+			static constexpr std::array<char, 1> zero{ '0' };
+			WriteHeader(contentLengthKey, xstring{ zero.data(), zero.data() + zero.size() });
 		}
 	}
-	return outputStreamBuffer.Close();
+	return buffer.Close();
 }
 
 bool AsyncResponse::CompleteHeaders() {
@@ -81,7 +88,7 @@ bool AsyncResponse::CompleteHeaders() {
 	if (!wroteServer) {
 		WriteHeader("Server", "C++");
 	}
-	bool isChunked = !wroteContentLength;
+	bool const isChunked = !wroteContentLength;
 	if (isChunked) {
 		WriteHeader("Transfer-Encoding", "chunked");
 	}
@@ -92,29 +99,29 @@ bool AsyncResponse::CompleteHeaders() {
 	return isChunked;
 }
 
-AsyncResponse::Buffer::Buffer(AsyncResponse& response, AsyncSocket& socket) :
+AsyncResponse::AsyncBuffer::AsyncBuffer(AsyncResponse& response, AsyncSocket& socket) :
 	response(response),
 	socket(socket),
-	closeFn(&Buffer::SimpleClose),
-	internalSendBufferFn(&Buffer::InternalSendBuffer),
-	internalSendFn(&Buffer::InternalSend),
-	sendFn(&Buffer::InitialSend),
+	closeFn(&AsyncBuffer::SimpleClose),
+	internalSendBufferFn(&AsyncBuffer::InternalSendBuffer),
+	internalSendFn(&AsyncBuffer::InternalSend),
+	sendFn(&AsyncBuffer::InitialSend),
 	begin(response.begin),
 	next(response.next),
 	end(response.end) {}
 
-Task<void> AsyncResponse::Buffer::Close() {
+Task<void> AsyncResponse::AsyncBuffer::Close() {
 	return (this->*closeFn)();
 }
 
-Task<void> AsyncResponse::Buffer::Write(void const* s, size_t n) {
+Task<void> AsyncResponse::AsyncBuffer::Write(void const* s, size_t n) {
 	return (this->*sendFn)(s, n);
 }
 
-Task<void> AsyncResponse::Buffer::InitialSend(void const* s, size_t n) {
+Task<void> AsyncResponse::AsyncBuffer::InitialSend(void const* s, size_t n) {
 	// Have the AsyncResponse object complete its headers.
-	sendFn = &Buffer::Send;
-	bool isChunked = response.CompleteHeaders();
+	sendFn = &AsyncBuffer::Send;
+	bool const isChunked = response.CompleteHeaders();
 
 	// Send the headers.
 	begin = response.begin;
@@ -124,19 +131,19 @@ Task<void> AsyncResponse::Buffer::InitialSend(void const* s, size_t n) {
 
 	// If this is a chunked response, switch to ChunkedSend and ChunkedClose.
 	if (isChunked) {
-		closeFn = &Buffer::ChunkedClose;
-		internalSendBufferFn = &Buffer::InternalSendBufferChunk;
-		internalSendFn = &Buffer::InternalSendChunk;
+		closeFn = &AsyncBuffer::ChunkedClose;
+		internalSendBufferFn = &AsyncBuffer::InternalSendBufferChunk;
+		internalSendFn = &AsyncBuffer::InternalSendChunk;
 	}
 
 	// Send the data provided in [s, s + n).
 	co_await Send(s, n);
 }
 
-Task<void> AsyncResponse::Buffer::Send(void const* s, size_t n) {
+Task<void> AsyncResponse::AsyncBuffer::Send(void const* s, size_t n) {
 	// If the buffer can hold the provided data, copy it in.  Otherwise, send
 	// the buffer.
-	auto d = static_cast<ptrdiff_t>(n);
+	auto const d = static_cast<ptrdiff_t>(n);
 	if (end - next >= d) {
 		memcpy(next, s, n);
 		next += n;
@@ -154,7 +161,7 @@ Task<void> AsyncResponse::Buffer::Send(void const* s, size_t n) {
 	}
 }
 
-Task<void> AsyncResponse::Buffer::ChunkedClose() {
+Task<void> AsyncResponse::AsyncBuffer::ChunkedClose() {
 	// Send any remaining data as a chunk.
 	co_await InternalSendBufferChunk();
 
@@ -162,12 +169,12 @@ Task<void> AsyncResponse::Buffer::ChunkedClose() {
 	co_await InternalSend("0\r\n\r\n", 5);
 }
 
-Task<void> AsyncResponse::Buffer::SimpleClose() {
+Task<void> AsyncResponse::AsyncBuffer::SimpleClose() {
 	// If there are no data in the response, do nothing.
 	if (response.next != begin) {
 		// If there are data but none has been sent, the headers have not yet
 		// been completed.
-		if (sendFn == &Buffer::InitialSend) {
+		if (sendFn == &AsyncBuffer::InitialSend) {
 			response.CompleteHeaders();
 			next = response.next;
 		}
@@ -177,31 +184,31 @@ Task<void> AsyncResponse::Buffer::SimpleClose() {
 	}
 }
 
-Task<void> AsyncResponse::Buffer::InternalSendBuffer() {
+Task<void> AsyncResponse::AsyncBuffer::InternalSendBuffer() {
 	co_await InternalSend(begin, next - begin);
 	next = begin;
 }
 
-Task<void> AsyncResponse::Buffer::InternalSend(void const* s, size_t n) {
+Task<void> AsyncResponse::AsyncBuffer::InternalSend(void const* s, size_t n) {
 	auto const* p = static_cast<std::uint8_t const*>(s);
 	for (decltype(n) i = 0; i < n;) {
 		auto [j, errorCode] = co_await socket.Send(p + i, n - i);
 		if (errorCode) {
-			throw std::runtime_error("AsyncResponse::Buffer::InternalSend");
+			throw std::runtime_error("AsyncResponse::AsyncBuffer::InternalSend");
 		}
 		i += j;
 	}
 }
 
-Task<void> AsyncResponse::Buffer::InternalSendBufferChunk() {
+Task<void> AsyncResponse::AsyncBuffer::InternalSendBufferChunk() {
 	co_await InternalSendChunk(begin, next - begin);
 	next = begin;
 }
 
-Task<void> AsyncResponse::Buffer::InternalSendChunk(void const* s, size_t n) {
+Task<void> AsyncResponse::AsyncBuffer::InternalSendChunk(void const* s, size_t n) {
 	if (n > 0) {
 		char chunkSize[16];
-		unsigned count = snprintf(chunkSize, _countof(chunkSize), "%llx\r\n", n);
+		unsigned const count = snprintf(chunkSize, _countof(chunkSize), "%llx\r\n", n);
 		co_await InternalSend(chunkSize, count);
 		co_await InternalSend(s, n);
 		co_await InternalSend("\r\n", 2);

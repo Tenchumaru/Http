@@ -1,13 +1,12 @@
 #pragma once
 
-#include "HttpServer.h"
+#include "SecureAsyncSocketServer.h"
 #include "Request.h"
-#include "RequestParser.h"
-#include "ClosableResponse.h"
+#include "AsyncResponse.h"
 
-class DynamicHttpServer : public HttpServer {
+class DynamicHttpServer : public SecureAsyncSocketServer {
 public:
-	using fn_t = std::function<void(Request const&, Response&)>;
+	using fn_t = std::function<Task<void>(Request const&, AsyncResponse&)>;
 
 	DynamicHttpServer() = default;
 	DynamicHttpServer(DynamicHttpServer const&) = delete;
@@ -16,12 +15,10 @@ public:
 	DynamicHttpServer& operator=(DynamicHttpServer&&) noexcept = default;
 	~DynamicHttpServer() = default;
 	void Add(char const* path, fn_t fn);
+	Task<void> Handle(std::unique_ptr<AsyncSocket> clientSocket) override;
 
 private:
 	std::vector<std::pair<std::string, fn_t>> handlers;
-	Request request;
-	RequestParser parser;
 
-	char const* DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const override;
-	bool InternalHandle(Response& response) const;
+	Task<bool> InternalHandle(Request const&, std::unique_ptr<AsyncSocket>& clientSocket) const;
 };
