@@ -36,7 +36,13 @@ Task<std::pair<std::unique_ptr<AsyncSocket>, int>> SecureAsyncSocketServer::Acce
 	// Accept the socket.
 	auto [clientSocket, errorCode] = co_await AsyncSocketServer::Accept(serverSocket, addressSize);
 
+	// Check for an acceptance error.
 	if (!errorCode) {
+		if (!sslContext) {
+			// This isn't a secure server.
+			co_return{ std::move(clientSocket), 0 };
+		}
+
 		// Transform it into a secure socket.
 		auto secureSocket = std::make_unique<SecureAsyncSocket>(std::move(*clientSocket), sslContext.get());
 
