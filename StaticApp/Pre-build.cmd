@@ -2,4 +2,4 @@
 SETLOCAL
 
 CD /D %~dp0
-"%~1mkapp" -s StaticApp.txt StaticApp.inl
+"%~1mkapp" -a -s StaticApp.txt StaticApp.inl

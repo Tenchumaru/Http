@@ -1,63 +1,64 @@
 #include "pch.h"
 #include "../Json/Json.h"
+#include "../Http/AsyncResponse.h"
 #include "../Http/Http.h"
 #include "../Http/StaticHttpServer.h"
-#include "../Http/ClosableResponse.h"
+#include "../Http/ClosableAsyncResponse.h"
 
 // First, include it for the classes.
 #include "StaticApp.inl"
 
-void GET_helix_users(Query_id_login&& queries, Header_authorization&& headers, Response& response) {
+Task<void> GET_helix_users(Query_id_login&& queries, Header_authorization&& headers, AsyncResponse& response) {
 	queries, headers;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void GET_helix_users_follows(Query_after_first_from_id_to_id&& queries, Header_clientXid&& headers, Response& response) {
+Task<void> GET_helix_users_follows(Query_after_first_from_id_to_id&& queries, Header_clientXid&& headers, AsyncResponse& response) {
 	queries, headers;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void PUT_helix_users(Header_authorization_contentXlength&& headers, Body&& body, Response& response) {
+Task<void> PUT_helix_users(Header_authorization_contentXlength&& headers, AsyncBody&& body, AsyncResponse& response) {
 	headers, body;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void GET_helix_users_extensions_list(Header_authorization&& headers, Response& response) {
+Task<void> GET_helix_users_extensions_list(Header_authorization&& headers, AsyncResponse& response) {
 	headers;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void GET_helix_users_extensions(Query_user_id&& queries, Header_authorization&& headers, Response& response) {
+Task<void> GET_helix_users_extensions(Query_user_id&& queries, Header_authorization&& headers, AsyncResponse& response) {
 	queries, headers;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void PUT_helix_users_extensions(Header_authorization_contentXlength&& headers, Body&& body, Response& response) {
+Task<void> PUT_helix_users_extensions(Header_authorization_contentXlength&& headers, AsyncBody&& body, AsyncResponse& response) {
 	headers, body;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void GET_helix_videos(Query_after_before_first_game_id_id_language_period_sort_type_user_id&& queries, Header_clientXid&& headers, Response& response) {
+Task<void> GET_helix_videos(Query_after_before_first_game_id_id_language_period_sort_type_user_id&& queries, Header_clientXid&& headers, AsyncResponse& response) {
 	queries, headers;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void POST_extensions__clientId_auth_secret(xstring&& clientId, Header_clientXid_contentXlength_contentXtype&& headers, Body&& body, Response& response) {
+Task<void> POST_extensions__clientId_auth_secret(xstring&& clientId, Header_clientXid_contentXlength_contentXtype&& headers, AsyncBody&& body, AsyncResponse& response) {
 	clientId, headers, body;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void GET_extensions__clientId_auth_secret(xstring&& clientId, Header_authorization_clientXid&& headers, Response& response) {
+Task<void> GET_extensions__clientId_auth_secret(xstring&& clientId, Header_authorization_clientXid&& headers, AsyncResponse& response) {
 	clientId, headers;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void DELETE_extensions__clientId_auth_secret(xstring&& clientId, Header_clientXid&& headers, Response& response) {
+Task<void> DELETE_extensions__clientId_auth_secret(xstring&& clientId, Header_clientXid&& headers, AsyncResponse& response) {
 	clientId, headers;
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
-void GET_json(Header_origin&& headers, Response& response) {
+Task<void> GET_json(Header_origin&& headers, AsyncResponse& response) {
 	std::stringstream ss;
 	std::unordered_map<std::string, std::string> object;
 	object.insert({ "message", "Hello, World!" });
@@ -65,14 +66,14 @@ void GET_json(Header_origin&& headers, Response& response) {
 	response.WriteHeader("Access-Control-Allow-Credentials", "true");
 	response.WriteHeader("Access-Control-Allow-Origin", headers.Origin);
 	response.WriteHeader("Content-Type", "application/json");
-	response << ss.str();
+	return response.Write(ss.str());
 }
 
-void GET_text(Header_origin&& headers, Response& response) {
+Task<void> GET_text(Header_origin&& headers, AsyncResponse& response) {
 	response.WriteHeader("Access-Control-Allow-Credentials", "true");
 	response.WriteHeader("Access-Control-Allow-Origin", headers.Origin);
 	response.WriteHeader("Content-Type", "text/plain");
-	response << "Hello, World!";
+	return response.Write("Hello, World!");
 }
 
 // Then, include it for the Dispatch function.
