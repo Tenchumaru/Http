@@ -5,7 +5,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "../Http/xtypes.h"
 #include "../Http/QueryBase.h"
 #include "../Http/HeaderBase.h"
-
+#include "../Http/AsyncSocket.h"
 #include "Basic.inl"
 
 namespace {

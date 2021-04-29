@@ -2,6 +2,15 @@
 
 using xstring = std::pair<char const*, char const*>;
 
+class AsyncSocket {
+public:
+};
+
+template<typename T>
+class Task {
+public:
+};
+
 class TcpSocket {
 public:
 };

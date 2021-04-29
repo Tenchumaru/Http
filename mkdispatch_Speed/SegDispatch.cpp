@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "Functions.h"
 #include "Utilities.h"
 namespace {
 #include "segDispatch.inl"

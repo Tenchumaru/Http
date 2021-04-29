@@ -5,10 +5,14 @@
 
 #pragma once
 
+#define NOMINMAX
 #include "targetver.h"
+#include <WS2tcpip.h>
 
 // Headers for CppUnitTest
 #include "CppUnitTest.h"
 
 #include <array>
+#include <coroutine>
 #include <locale>
+#include <optional>
