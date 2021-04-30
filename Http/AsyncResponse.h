@@ -17,16 +17,15 @@ public:
 		inBody = true;
 		std::stringstream ss;
 		ss << t;
-		auto s = ss.str();
-		return InternalWrite(s);
+		return InternalWrite(ss.str());
 	}
 	template<typename T>
-	Task<void> Write(std::vector<T> const& v) {
-		return InternalWrite(v);
+	Task<void> Write(std::vector<T>&& v) {
+		return InternalWrite(std::move(v));
 	}
 	template<>
-	Task<void> Write(std::string const& s) {
-		return InternalWrite(s);
+	Task<void> Write(std::string&& s) {
+		return InternalWrite(std::move(s));
 	}
 	void WriteStatus(StatusLines::StatusLine const& statusLine);
 	void WriteHeader(std::string const& name, std::string const& value) {
@@ -82,7 +81,7 @@ private:
 
 	bool CompleteHeaders();
 	template<typename T>
-	Task<void> InternalWrite(T const& s) {
-		return buffer.Write(s.data(), s.size());
+	Task<void> InternalWrite(T s) {
+		co_await buffer.Write(s.data(), s.size());
 	}
 };
