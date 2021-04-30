@@ -175,6 +175,22 @@ Task<void> AsyncSocketServer::AcceptAndHandle(SOCKET serverSocket, socklen_t add
 
 void AsyncSocketServer::AddPromise(base_promise_type* promise) {
 	promise = GetInnermostPromise(promise);
+	auto handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
+	while (handle.done()) {
+		promise->SetOuterAwaiter();
+		promise = promise->outer_promise;
+		handle.destroy();
+		if (!promise) {
+			return;
+		}
+		promise->inner_promise = nullptr;
+		handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
+		handle();
+		if (promise->inner_promise) {
+			promise = GetInnermostPromise(promise);
+			handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
+		}
+	}
 #ifdef _DEBUG
 	if (!dynamic_cast<SocketAwaiter*>(promise->awaiter)) {
 		throw std::runtime_error("!dynamic_cast<SocketAwaiter*>(promise->awaiter)");
@@ -251,20 +267,5 @@ Task<void> AsyncSocketServer::Handle(std::unique_ptr<AsyncSocket> clientSocket) 
 void AsyncSocketServer::ProcessPromise(base_promise_type* promise) {
 	auto handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
 	handle();
-	while (handle.done()) {
-		promise->SetOuterAwaiter();
-		promise = promise->outer_promise;
-		handle.destroy();
-		if (!promise) {
-			return;
-		}
-		promise->inner_promise = nullptr;
-		handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
-		handle();
-		if (promise->inner_promise) {
-			promise = GetInnermostPromise(promise);
-			handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
-		}
-	}
 	AddPromise(promise);
 }
