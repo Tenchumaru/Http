@@ -23,7 +23,7 @@ private:
 
 	Task<void> AcceptAndHandle(SOCKET serverSocket, socklen_t addressSize);
 	void AddPromise(base_promise_type* promise);
-	virtual Task<void> Handle(std::unique_ptr<AsyncSocket> clientSocket);
+	virtual Task<void> Handle(std::unique_ptr<AsyncSocket> clientSocket) = 0;
 	static std::pair<SOCKET, socklen_t> Open(char const* service);
 	void ProcessPromise(base_promise_type* promise);
 

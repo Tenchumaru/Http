@@ -246,24 +246,6 @@ Task<std::pair<size_t, int>> Send(SOCKET clientSocket, void const* p, size_t n) 
 	co_return{ static_cast<size_t>(n), 0 };
 }
 
-// TODO:  Remove this implementation and declare this method pure virtual.
-Task<void> AsyncSocketServer::Handle(std::unique_ptr<AsyncSocket> clientSocket) {
-	// Echo until receving an empty line.
-	std::array<char, 99> buffer = { ' ' };
-	try {
-		while (buffer[0] >= ' ') {
-			auto [rn, rerr] = co_await clientSocket->Receive(buffer.data(), static_cast<int>(buffer.size()));
-			if (rerr) {
-				std::cerr << "Receive error" << rerr << std::endl;
-				break;
-			}
-			auto [sn, serr] = co_await clientSocket->Send(buffer.data(), rn);
-		}
-	} catch (std::exception const& ex) {
-		std::cerr << "exception:  " << ex.what() << std::endl;
-	}
-}
-
 void AsyncSocketServer::ProcessPromise(base_promise_type* promise) {
 	auto handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
 	handle();
