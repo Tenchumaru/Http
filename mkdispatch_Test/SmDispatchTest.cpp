@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "../Http/AsyncSocket.h"
+#include "../Http/AsyncResponse.h"
 #include "Utils.inl"
 namespace {
 #include "smDispatch.inl"

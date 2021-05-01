@@ -15,6 +15,10 @@ class TcpSocket {
 public:
 };
 
+class AsyncResponse {
+public:
+};
+
 class Response {
 public:
 };

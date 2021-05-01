@@ -11,9 +11,4 @@ Task<void> StaticHttpServer::Handle(std::unique_ptr<AsyncSocket> socket) {
 	} catch (std::exception const& /*ex*/) {
 		// Handle the exception below.
 	}
-
-	// Send a 500 Internal Server Error status code.
-	std::array<char, 4444> buffer;
-	ClosableAsyncResponse response(*socket, buffer.data(), buffer.data() + buffer.size());
-	co_await response.Close();
 }

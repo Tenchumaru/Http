@@ -6,6 +6,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "../Http/QueryBase.h"
 #include "../Http/HeaderBase.h"
 #include "../Http/AsyncSocket.h"
+#include "../Http/AsyncResponse.h"
 #include "Basic.inl"
 
 namespace {
@@ -255,9 +256,9 @@ namespace mkapp_Test {
 public:
 	TEST_METHOD(FourZeroFour1) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /j HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsFalse(CollectQueries_succeeded);
@@ -267,9 +268,9 @@ public:
 
 	TEST_METHOD(FourZeroFour2) {
 		TcpSocket socket;
-		Response response;
 		std::string request("O /j HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsFalse(CollectQueries_succeeded);
@@ -279,9 +280,9 @@ public:
 
 	TEST_METHOD(root) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G / HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(root_invoked);
@@ -289,9 +290,9 @@ public:
 
 	TEST_METHOD(a_b) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /a/b HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(a_b_invoked);
@@ -299,9 +300,9 @@ public:
 
 	TEST_METHOD(a_bc) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /a/bc HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(a_bc_invoked);
@@ -309,9 +310,9 @@ public:
 
 	TEST_METHOD(x_y) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /x/y HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(x_y_invoked);
@@ -319,9 +320,9 @@ public:
 
 	TEST_METHOD(xy_z) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /xy/z HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(xy_z_invoked);
@@ -329,9 +330,9 @@ public:
 
 	TEST_METHOD(r___p) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /r/abc/p HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(r___p_p0, r___p_q0);
@@ -340,9 +341,9 @@ public:
 
 	TEST_METHOD(q____) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /q/abc/xyz HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 2ull);
 		std::string s(q_____p0, q_____q0);
@@ -353,9 +354,9 @@ public:
 
 	TEST_METHOD(q__) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /q/abc HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(q___p0, q___q0);
@@ -364,9 +365,9 @@ public:
 
 	TEST_METHOD(z____y) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /z/abc/xyz/y HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 2ull);
 		std::string s(z____y_p0, z____y_q0);
@@ -377,18 +378,18 @@ public:
 
 	TEST_METHOD(m_m_) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /m/m/ HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::IsTrue(m_m__invoked);
 	}
 
 	TEST_METHOD(m_m__) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /m/m/abc HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(m_m___p0, m_m___q0);
@@ -397,9 +398,9 @@ public:
 
 	TEST_METHOD(m_m___a) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /m/m/abc/a HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(m_m___a_p0, m_m___a_q0);
@@ -408,9 +409,9 @@ public:
 
 	TEST_METHOD(m_m___b) {
 		TcpSocket socket;
-		Response response;
 		std::string request("G /m/m/abc/b HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(m_m___b_p0, m_m___b_q0);
@@ -419,9 +420,9 @@ public:
 
 	TEST_METHOD(Pa_b) {
 		TcpSocket socket;
-		Response response;
 		std::string request("P /a/b HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p - 4, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(Pa_b_hasGoodBody);
@@ -430,9 +431,9 @@ public:
 
 	TEST_METHOD(Pa_b_c) {
 		TcpSocket socket;
-		Response response;
 		std::string request("P /a/b/c HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p - 4, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(Pa_b_c_hasGoodBody);
@@ -441,9 +442,9 @@ public:
 
 	TEST_METHOD(Px___y) {
 		TcpSocket socket;
-		Response response;
 		std::string request("P /x/y/y HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p - 4, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 2ull);
 		Assert::IsTrue(Px___y_hasGoodBody);
@@ -453,9 +454,9 @@ public:
 
 	TEST_METHOD(Px_y___z) {
 		TcpSocket socket;
-		Response response;
 		std::string request("P /x/y/y/z HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
+		Response response;
 		Dispatch(request.c_str(), p - 4, p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		Assert::IsTrue(Px_y___z_hasGoodBody);
