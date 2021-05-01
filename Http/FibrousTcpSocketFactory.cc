@@ -10,28 +10,6 @@ using FiberFn = LPFIBER_START_ROUTINE;
 
 namespace {
 	constexpr size_t stackSize = 0x10000;
-
-	bool set_nonblocking(SOCKET s) {
-#ifdef _WIN32
-		u_long value = 1;
-		auto const result = ioctlsocket(s, FIONBIO, &value);
-		if (result != 0) {
-			std::cout << "set_nonblocking ioctlsocket failure: " << errno << std::endl;
-			return false;
-		}
-#else
-		auto result = fcntl(s, F_GETFL, 0);
-		if (result >= 0) {
-			result |= O_NONBLOCK;
-			result = fcntl(s, F_SETFL, result);
-		}
-		if (result != 0) {
-			perror("set_nonblocking fcntl failure");
-			return false;
-		}
-#endif
-		return true;
-	}
 }
 
 void FibrousTcpSocketFactory::ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile) {
@@ -69,8 +47,8 @@ void FibrousTcpSocketFactory::ConfigureSecurity(char const* certificateChainFile
 
 void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConnect_) {
 	// Enable the server socket for asynchronous connections.
-	if (!set_nonblocking(server)) {
-		throw std::runtime_error("set_nonblocking");
+	if (!Socket::SetNonblocking(server)) {
+		throw std::runtime_error("FibrousTcpSocketFactory::Accept.Socket::SetNonblocking");
 	}
 	onConnect = onConnect_;
 	Waiter waiter;
@@ -113,7 +91,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 					std::cerr << "cannot get name information for accepted socket of family " << address.ss_family << std::endl;
 				}
 #endif
-				if (!set_nonblocking(socket)) {
+				if (!Socket::SetNonblocking(socket)) {
 					close(socket);
 					continue;
 				}

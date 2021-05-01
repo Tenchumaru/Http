@@ -9,8 +9,8 @@ public:
 	Socket& operator=(Socket const&) = delete;
 	Socket& operator=(Socket&&) = default;
 	virtual ~Socket();
-
 	void Close();
+	static bool SetNonblocking(SOCKET socket);
 
 protected:
 	SOCKET socket;
