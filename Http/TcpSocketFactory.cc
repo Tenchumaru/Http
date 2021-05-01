@@ -52,7 +52,7 @@ void TcpSocketFactory::CreateServer(char const* service, fn_t onConnect) {
 				break;
 			}
 #ifdef _DEBUG
-			std::cout << "bind failed: " << errno << std::endl;
+			std::cerr << "bind failed: " << errno << std::endl;
 #endif
 			close(server);
 			server = INVALID_SOCKET;
@@ -81,7 +81,7 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConne
 			if (socket == INVALID_SOCKET) {
 				// Assume the failure is due to the network infrastructure
 				// rejecting the connection.
-				std::cout << "failed connection: " << errno << std::endl;
+				std::cerr << "failed connection: " << errno << std::endl;
 				continue;
 			}
 #ifdef _DEBUG
@@ -97,7 +97,7 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConne
 			onConnect(TcpSocket(socket));
 		}
 	} catch (std::exception& ex) {
-		std::cout << "exception: " << ex.what() << std::endl;
+		std::cerr << "exception: " << ex.what() << std::endl;
 	}
 
 	// Close the server socket and exit.

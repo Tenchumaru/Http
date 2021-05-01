@@ -11,14 +11,14 @@ namespace {
 static void StartFiber(fiber_t* fiber) {
 	try {
 		fiber->fn(fiber->parameter);
-	} catch(std::exception const& ex) {
-		std::cout << "fiber function error: " << ex.what() << std::endl;
+	} catch (std::exception const& ex) {
+		std::cerr << "fiber function error: " << ex.what() << std::endl;
 	}
 	SwitchToFiber(&mainFiber);
 }
 
 void* ConvertThreadToFiber(void* parameter) {
-	if(currentFiber != nullptr) {
+	if (currentFiber != nullptr) {
 		return nullptr;
 	}
 	mainFiber.parameter = parameter;
@@ -27,7 +27,7 @@ void* ConvertThreadToFiber(void* parameter) {
 }
 
 bool ConvertFiberToThread() {
-	if(currentFiber == nullptr) {
+	if (currentFiber == nullptr) {
 		return false;
 	}
 	currentFiber = nullptr;
@@ -60,7 +60,7 @@ void* GetFiberData() {
 }
 
 void SwitchToFiber(void* fiber) {
-	if(initialize_fiber(currentFiber) == 0) {
+	if (initialize_fiber(currentFiber) == 0) {
 		currentFiber = reinterpret_cast<fiber_t*>(fiber);
 		switch_fiber(currentFiber, 1);
 	}

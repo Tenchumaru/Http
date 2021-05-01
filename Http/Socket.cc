@@ -15,7 +15,7 @@ bool Socket::SetNonblocking(SOCKET socket) {
 	u_long value = 1;
 	auto const result = ioctlsocket(socket, FIONBIO, &value);
 	if (result != 0) {
-		std::cout << "Socket::SetNonblocking ioctlsocket failure: " << errno << std::endl;
+		std::perror("Socket::SetNonblocking ioctlsocket failure");
 		return false;
 	}
 #else

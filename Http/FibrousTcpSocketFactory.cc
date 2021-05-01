@@ -80,7 +80,7 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 				if (socket == INVALID_SOCKET) {
 					// Assume the failure is due to the network infrastructure
 					// rejecting the connection.
-					std::cout << "failed connection: " << errno << std::endl;
+					std::cerr << "failed connection: " << errno << std::endl;
 					continue;
 				}
 #ifdef _DEBUG
@@ -113,12 +113,12 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 					fiberMap.erase(it);
 					SwitchToFiber(fiber);
 				} else {
-					std::cout << "warning: abandoned socket" << std::endl;
+					std::cerr << "warning: abandoned socket" << std::endl;
 				}
 			}
 		}
 	} catch (std::exception& ex) {
-		std::cout << "exception: " << ex.what() << std::endl;
+		std::cerr << "exception: " << ex.what() << std::endl;
 	}
 
 	// Destroy the fibers, close the server socket, and exit.

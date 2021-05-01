@@ -1,6 +1,7 @@
 #pragma once
 
 #ifdef _WIN32
+# define NOMINMAX
 # include "targetver.h"
 
 # include <WS2tcpip.h>
@@ -14,6 +15,7 @@
 # include <netdb.h>
 # include <cassert>
 #endif
+
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -42,6 +44,10 @@
 # define ioctl ioctlsocket
 # undef EALREADY
 # define EALREADY WSAEALREADY
+# undef ECONNRESET
+# define ECONNRESET WSAECONNRESET
+# undef EINVAL
+# define EINVAL WSAEINVAL
 # undef EWOULDBLOCK
 # define EWOULDBLOCK WSAEWOULDBLOCK
 #else
@@ -55,8 +61,8 @@ using nullptr_t = decltype(nullptr);
 
 template<typename T>
 auto check_(T result, char const* s) {
-	if(static_cast<int>(result) < 0) {
-		std::cout << s << " error " << errno << std::endl;
+	if (static_cast<int>(result) < 0) {
+		std::cerr << s << " error " << errno << std::endl;
 		throw std::runtime_error("an error occurred");
 	}
 	return result;
