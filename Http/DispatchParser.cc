@@ -9,8 +9,8 @@ std::array<char, 4> pattern = { '\r', '\n', '\r', '\n' };
 std::boyer_moore_searcher searcher(pattern.begin(), pattern.end());
 
 DispatchParser::DispatchParser(TcpSocket& socket) {
-	// Create a 16K buffer.
-	constexpr auto bufferSize = 16 * 1024;
+	// Create an 8K buffer to receive the request.
+	constexpr auto bufferSize = 8'000;
 	static_assert(bufferSize % sizeof(intptr_t) == 0);
 	std::array<intptr_t, bufferSize / sizeof(intptr_t)> buffer;
 	auto const begin = reinterpret_cast<char*>(buffer.data()) + pattern.size();

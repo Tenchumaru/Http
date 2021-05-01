@@ -22,7 +22,7 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 			// Create the response and send it to the client.
 			// TODO:  consider creating a flushable response to allow for
 			// content larger than this buffer.
-			std::array<char, 0x10000> buffer;
+			std::array<char, 16'000> buffer;
 			ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 
 			// TODO:  consider requiring the "Content-Length" header and
