@@ -11,7 +11,4 @@ public:
 	DispatchParser& operator=(DispatchParser const&) = delete;
 	DispatchParser& operator=(DispatchParser&&) = default;
 	~DispatchParser() = default;
-
-private:
-	TcpSocket& socket;
 };

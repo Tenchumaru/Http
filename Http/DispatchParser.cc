@@ -8,7 +8,7 @@ extern void Dispatch(ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket&
 std::array<char, 4> pattern = { '\r', '\n', '\r', '\n' };
 std::boyer_moore_searcher searcher(pattern.begin(), pattern.end());
 
-DispatchParser::DispatchParser(TcpSocket& socket) : socket(socket) {
+DispatchParser::DispatchParser(TcpSocket& socket) {
 	// Create a 16K buffer.
 	constexpr auto bufferSize = 16 * 1024;
 	static_assert(bufferSize % sizeof(intptr_t) == 0);
@@ -17,7 +17,7 @@ DispatchParser::DispatchParser(TcpSocket& socket) : socket(socket) {
 	auto const end = reinterpret_cast<char*>(buffer.data() + buffer.size());
 
 	buffer[0] = 0;
-	for(;;) {
+	for (;;) {
 		auto m = socket.Receive(begin, end - begin);
 		if (m == 0) {
 			// There are no more data.
