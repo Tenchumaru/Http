@@ -10,8 +10,8 @@ void DynamicHttpServer::Add(char const* path, fn_t fn) {
 }
 
 TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
-	return [this](TcpSocket&& client) {
-		auto handlerFn = [this, &client](Request const& request) {
+	return [this](TcpSocket&& socket) {
+		auto handlerFn = [this, &socket](Request const& request) {
 			auto const& path = request.Uri.Path;
 
 			// Determine which handler to invoke.
@@ -23,7 +23,7 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 			// TODO:  consider creating a flushable response to allow for
 			// content larger than this buffer.
 			std::array<char, 0x10000> buffer;
-			ClosableResponse response(client, buffer.data(), buffer.data() + buffer.size());
+			ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 
 			// TODO:  consider requiring the "Content-Length" header and
 			// responding with "411 Length Required" if it's missing.  However,
@@ -36,7 +36,7 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 				it->second(request, response);
 			} else {
 				// Return a 404.
-				response.WriteStatus(StatusLines::InternalServerError);
+				response.WriteStatus(StatusLines::NotFound);
 			}
 			response.Close();
 
@@ -58,7 +58,7 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 		RequestParser parser(handlerFn);
 		for (;;) {
 			// Read some data from the client.
-			auto n = client.Receive(buf, sizeof(buf));
+			auto n = socket.Receive(buf, sizeof(buf));
 			if (n == 0) {
 				break;
 			} else if (n < 0) {
@@ -78,7 +78,7 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 			} catch (HttpParser::Exception const& ex) {
 				// Respond with the appropriate status code.
 				std::array<char, 0x400> buffer;
-				ClosableResponse response(client, buffer.data(), buffer.data() + buffer.size());
+				ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 				response.WriteStatus(ex.StatusLine);
 				response.Close();
 
@@ -87,7 +87,7 @@ TcpSocketFactory::fn_t DynamicHttpServer::GetConnectFn() const {
 			} catch (std::exception const& /*ex*/) {
 				// Send a 500 Internal Server Error status code.
 				std::array<char, 0x400> buffer;
-				ClosableResponse response(client, buffer.data(), buffer.data() + buffer.size());
+				ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 				response.WriteStatus(StatusLines::InternalServerError);
 				response.Close();
 

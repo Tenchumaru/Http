@@ -22,11 +22,11 @@ private:
 
 	std::vector<void*> availableFibers;
 	std::function<void(SOCKET, short)> awaitFn;
-	InvokeFn invokeOnConnectFn = [this] { return onConnect(FibrousTcpSocket(client, awaitFn)); };
+	InvokeFn invokeOnConnectFn = [this] { return onConnect(FibrousTcpSocket(socket, awaitFn)); };
 	fn_t onConnect;
 	void* mainFiber;
 	std::unique_ptr<SSL_CTX, SslContextDeleter> sslContext;
-	SOCKET client;
+	SOCKET socket;
 
 	void Accept(SOCKET server, socklen_t sock_addr_size, fn_t onConnect) override;
 	static void InvokeOnConnect(void* parameter);

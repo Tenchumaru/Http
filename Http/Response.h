@@ -6,7 +6,7 @@
 
 class Response {
 public:
-	Response(TcpSocket& client, char* begin, char* end);
+	Response(TcpSocket& socket, char* begin, char* end);
 	Response() = delete;
 	Response(Response const&) = delete;
 	Response(Response&&) = default;
@@ -41,7 +41,7 @@ protected:
 
 private:
 	struct nstreambuf : public std::streambuf {
-		nstreambuf(Response& response, TcpSocket& client);
+		nstreambuf(Response& response, TcpSocket& socket);
 		void Close();
 		std::streamsize xsputn(char_type const* s, std::streamsize n) override;
 		int overflow(int c) override;
@@ -51,7 +51,7 @@ private:
 		using Fn2 = void(nstreambuf::*)(char_type const* s, std::streamsize n);
 
 		Response& response;
-		TcpSocket& client;
+		TcpSocket& socket;
 		Fn0 closeFn;
 		Fn0 internalSendBufferFn;
 		Fn2 internalSendFn;

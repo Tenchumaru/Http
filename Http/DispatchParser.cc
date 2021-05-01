@@ -3,12 +3,12 @@
 
 using ptr_t = char const*;
 
-extern void Dispatch(ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket& client);
+extern void Dispatch(ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket& socket);
 
 std::array<char, 4> pattern = { '\r', '\n', '\r', '\n' };
 std::boyer_moore_searcher searcher(pattern.begin(), pattern.end());
 
-DispatchParser::DispatchParser(TcpSocket& client) : client(client) {
+DispatchParser::DispatchParser(TcpSocket& socket) : socket(socket) {
 	// Create a 16K buffer.
 	constexpr auto bufferSize = 16 * 1024;
 	static_assert(bufferSize % sizeof(intptr_t) == 0);
@@ -17,8 +17,8 @@ DispatchParser::DispatchParser(TcpSocket& client) : client(client) {
 	auto const end = reinterpret_cast<char*>(buffer.data() + buffer.size());
 
 	buffer[0] = 0;
-	for (;;) {
-		auto m = client.Receive(begin, end - begin);
+	for(;;) {
+		auto m = socket.Receive(begin, end - begin);
 		if (m == 0) {
 			// There are no more data.
 			return;
@@ -35,7 +35,7 @@ DispatchParser::DispatchParser(TcpSocket& client) : client(client) {
 			body = nullptr;
 			auto p = begin;
 			do {
-				auto n = client.Receive(next, end - next);
+				auto n = socket.Receive(next, end - next);
 				if (n <= 0) {
 					throw std::runtime_error("insufficient data"); // TODO
 				}
@@ -53,6 +53,6 @@ DispatchParser::DispatchParser(TcpSocket& client) : client(client) {
 		}
 
 		// Dispatch to the handler.
-		Dispatch(begin, body, next, end, client);
+		Dispatch(begin, body, next, end, socket);
 	}
 }

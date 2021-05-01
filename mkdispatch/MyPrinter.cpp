@@ -104,7 +104,7 @@ namespace {
 					parameters.push_back("std::move(headers)");
 				}
 				if(fn.back() == '+') {
-					parameters.push_back("Body(body, next, size, client)");
+					parameters.push_back("Body(body, next, size, socket)");
 				}
 				parameters.push_back("response");
 				out << (fn.back() == '+' ? fn.substr(0, fn.size() - 1) : fn);

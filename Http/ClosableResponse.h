@@ -4,7 +4,7 @@
 
 class ClosableResponse : public Response {
 public:
-	ClosableResponse(TcpSocket& client, char* begin, char* end) : Response(client, begin, end) {}
+	ClosableResponse(TcpSocket& socket, char* begin, char* end) : Response(socket, begin, end) {}
 	ClosableResponse() = delete;
 	ClosableResponse(ClosableResponse const&) = delete;
 	ClosableResponse(ClosableResponse&&) = default;

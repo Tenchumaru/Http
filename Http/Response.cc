@@ -24,11 +24,11 @@ namespace {
 	}
 }
 
-Response::Response(TcpSocket& client, char* begin, char* end) :
+Response::Response(TcpSocket& socket, char* begin, char* end) :
 	begin(begin),
 	next(begin),
 	end(end),
-	outputStreamBuffer(*this, client),
+	outputStreamBuffer(*this, socket),
 	responseStream(&outputStreamBuffer),
 	wroteContentLength(false),
 	wroteServer(false),
@@ -93,9 +93,9 @@ bool Response::CompleteHeaders() {
 	return isChunked;
 }
 
-Response::nstreambuf::nstreambuf(Response& response, TcpSocket& client) :
+Response::nstreambuf::nstreambuf(Response& response, TcpSocket& socket) :
 	response(response),
-	client(client),
+	socket(socket),
 	closeFn(&nstreambuf::SimpleClose),
 	internalSendBufferFn(&nstreambuf::InternalSendBuffer),
 	internalSendFn(&nstreambuf::InternalSend),
@@ -195,7 +195,7 @@ void Response::nstreambuf::InternalSendBuffer() {
 
 void Response::nstreambuf::InternalSend(char_type const* s, std::streamsize n) {
 	for (decltype(n) i = 0; i < n;) {
-		auto v = client.Send(s + i, n - i);
+		auto v = socket.Send(s + i, n - i);
 		if (v > 0) {
 			i += v;
 		} else {

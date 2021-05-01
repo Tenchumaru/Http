@@ -4,7 +4,7 @@
 
 class Body {
 public:
-	Body(char const* begin, char*& next, int size, TcpSocket& client) : begin(begin), next(next), size(size), client(client) {}
+	Body(char const* begin, char*& next, int size, TcpSocket& socket) : begin(begin), next(next), size(size), socket(socket) {}
 	Body() = delete;
 	Body(Body const&) = delete;
 	Body(Body&&) = default;
@@ -16,5 +16,5 @@ private:
 	char const* begin;
 	char*& next;
 	int size;
-	TcpSocket& client;
+	TcpSocket& socket;
 };

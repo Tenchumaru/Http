@@ -12,7 +12,7 @@ public:
 
 class ClosableResponse : public Response {
 public:
-	ClosableResponse(TcpSocket& /*client*/, char* /*begin*/, char* /*end*/) {}
+	ClosableResponse(TcpSocket& /*socket*/, char* /*begin*/, char* /*end*/) {}
 };
 
 class QueryBase {

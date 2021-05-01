@@ -64,7 +64,7 @@ void FibrousTcpSocketFactory::ConfigureSecurity(char const* certificateChainFile
 	}
 
 	// Set the connection invocation function to the secure version.
-	invokeOnConnectFn = [this] { return onConnect(SecureFibrousTcpSocket(client, awaitFn, sslContext.get(), true)); };
+	invokeOnConnectFn = [this] { return onConnect(SecureFibrousTcpSocket(socket, awaitFn, sslContext.get(), true)); };
 }
 
 void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConnect_) {
@@ -98,8 +98,8 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 		for (;;) {
 			SOCKET ready = waiter.Wait();
 			if (ready == server) {
-				client = accept(server, p, &addressSize);
-				if (client == INVALID_SOCKET) {
+				socket = accept(server, p, &addressSize);
+				if (socket == INVALID_SOCKET) {
 					// Assume the failure is due to the network infrastructure
 					// rejecting the connection.
 					std::cout << "failed connection: " << errno << std::endl;
@@ -108,13 +108,13 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 #ifdef _DEBUG
 				char node[NI_MAXHOST], service[NI_MAXSERV];
 				if (getnameinfo(p, addressSize, node, sizeof(node), service, sizeof(service), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
-					std::cout << "new connection: " << client << '@' << node << ':' << service << std::endl;
+					std::cout << "new connection: " << socket << '@' << node << ':' << service << std::endl;
 				} else {
 					std::cerr << "cannot get name information for accepted socket of family " << address.ss_family << std::endl;
 				}
 #endif
-				if (!set_nonblocking(client)) {
-					close(client);
+				if (!set_nonblocking(socket)) {
+					close(socket);
 					continue;
 				}
 

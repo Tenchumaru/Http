@@ -43,9 +43,9 @@ namespace mkdispatch_Test {
 
 public:
 	TEST_METHOD(FourZeroFour1) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /j HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /j HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
@@ -59,9 +59,9 @@ public:
 	}
 
 	TEST_METHOD(FourZeroFour2) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("O /j HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("O /j HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
@@ -73,9 +73,9 @@ public:
 	}
 
 	TEST_METHOD(root) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G / HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G / HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
@@ -87,9 +87,9 @@ public:
 	}
 
 	TEST_METHOD(a_b) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /a/b HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /a/b HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
@@ -101,9 +101,9 @@ public:
 	}
 
 	TEST_METHOD(a_bc) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /a/bc HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /a/bc HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
@@ -115,9 +115,9 @@ public:
 	}
 
 	TEST_METHOD(x_y) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /x/y HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /x/y HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
@@ -129,9 +129,9 @@ public:
 	}
 
 	TEST_METHOD(xy_z) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /xy/z HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /xy/z HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
@@ -143,9 +143,9 @@ public:
 	}
 
 	TEST_METHOD(r___p) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /r/abc/p HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /r/abc/p HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		}
@@ -158,9 +158,9 @@ public:
 	}
 
 	TEST_METHOD(q____) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /q/abc/xyz HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /q/abc/xyz HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 2ull);
 		}
@@ -175,9 +175,9 @@ public:
 	}
 
 	TEST_METHOD(q__) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /q/abc HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /q/abc HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		}
@@ -190,9 +190,9 @@ public:
 	}
 
 	TEST_METHOD(z____y) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /z/abc/xyz/y HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /z/abc/xyz/y HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 2ull);
 		}
@@ -207,9 +207,9 @@ public:
 	}
 
 	TEST_METHOD(m_m_) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /m/m/ HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /m/m/ HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectQueries) {
 			Assert::IsTrue(CollectQueries_succeeded);
 			Assert::IsFalse(CollectQueries_failed);
@@ -218,9 +218,9 @@ public:
 	}
 
 	TEST_METHOD(m_m__) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /m/m/abc HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /m/m/abc HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		}
@@ -233,9 +233,9 @@ public:
 	}
 
 	TEST_METHOD(m_m___a) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /m/m/abc/a HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /m/m/abc/a HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		}
@@ -248,9 +248,9 @@ public:
 	}
 
 	TEST_METHOD(m_m___b) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("G /m/m/abc/b HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("G /m/m/abc/b HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		}
@@ -263,9 +263,9 @@ public:
 	}
 
 	TEST_METHOD(Pa_b) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("P /a/b HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("P /a/b HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
@@ -277,9 +277,9 @@ public:
 	}
 
 	TEST_METHOD(Pa_b_c) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("P /a/b/c HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("P /a/b/c HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		}
@@ -291,9 +291,9 @@ public:
 	}
 
 	TEST_METHOD(Px___y) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("P /x/y/y HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("P /x/y/y HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 2ull);
 		}
@@ -306,9 +306,9 @@ public:
 	}
 
 	TEST_METHOD(Px_y___z) {
-		TcpSocket client;
+		TcpSocket socket;
 		char* p = nullptr;
-		Dispatch("P /x/y/y/z HTTP/1.1\r\n\r\n", nullptr, p, nullptr, client);
+		Dispatch("P /x/y/y/z HTTP/1.1\r\n\r\n", nullptr, p, nullptr, socket);
 		if(callsCollectParameter) {
 			Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		}

@@ -77,8 +77,8 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConne
 		SOCKADDR_STORAGE address;
 		auto* p = reinterpret_cast<sockaddr*>(&address);
 		for (;;) {
-			SOCKET client = accept(server, p, &addressSize);
-			if (client == INVALID_SOCKET) {
+			SOCKET socket = accept(server, p, &addressSize);
+			if (socket == INVALID_SOCKET) {
 				// Assume the failure is due to the network infrastructure
 				// rejecting the connection.
 				std::cout << "failed connection: " << errno << std::endl;
@@ -87,14 +87,14 @@ void TcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t onConne
 #ifdef _DEBUG
 			char node[NI_MAXHOST], service[NI_MAXSERV];
 			if (getnameinfo(p, addressSize, node, sizeof(node), service, sizeof(service), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
-				std::cout << "new connection: " << client << '@' << node << ':' << service << std::endl;
+				std::cout << "new connection: " << socket << '@' << node << ':' << service << std::endl;
 			} else {
 				std::cerr << "cannot get name information for accepted socket of family " << address.ss_family << std::endl;
 			}
 #endif
 
-			// This is a new client connection.  Handle it.
-			onConnect(TcpSocket(client));
+			// This is a new socket connection.  Handle it.
+			onConnect(TcpSocket(socket));
 		}
 	} catch (std::exception& ex) {
 		std::cout << "exception: " << ex.what() << std::endl;

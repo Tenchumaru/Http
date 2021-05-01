@@ -62,7 +62,7 @@ public:
 			return size;
 		};
 		std::string actualRequest;
-		Dispatch::OnDispatch = [&actualRequest](ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket& client) {
+		Dispatch::OnDispatch = [&actualRequest](ptr_t begin, ptr_t body, char*& next, ptr_t end, TcpSocket& socket) {
 			actualRequest.assign(begin, body);
 		};
 		StaticHttpServer server;
