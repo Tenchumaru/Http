@@ -20,7 +20,7 @@ int FibrousTcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
 bool FibrousTcpSocket::IsAwaiting(int result, short pollValue) {
 	if (result < 0) {
 		auto v = errno;
-		if (v == EALREADY || v == EWOULDBLOCK) {
+		if (v == EALREADY || v == EINPROGRESS || v == EWOULDBLOCK) {
 			awaitFn(socket, pollValue);
 			return true;
 		}
