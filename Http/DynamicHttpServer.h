@@ -2,8 +2,8 @@
 
 #include "HttpServer.h"
 #include "Request.h"
-#include "Response.h"
-#include "TcpSocketFactory.h"
+#include "RequestParser.h"
+#include "ClosableResponse.h"
 
 class DynamicHttpServer : public HttpServer {
 public:
@@ -15,11 +15,14 @@ public:
 	DynamicHttpServer& operator=(DynamicHttpServer const&) = delete;
 	DynamicHttpServer& operator=(DynamicHttpServer&&) = default;
 	~DynamicHttpServer() = default;
-
 	void Add(char const* path, fn_t fn);
 
 private:
 	std::vector<std::pair<std::string, fn_t>> handlers;
+	Request request;
+	RequestParser parser;
 
-	TcpSocketFactory::fn_t GetConnectFn() const override;
+	bool Dispatch(TcpSocket& socket, ClosableResponse& response);
+	char const* DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const override;
+	bool InternalHandle(Response& response) const;
 };

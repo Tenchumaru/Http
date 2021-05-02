@@ -161,7 +161,7 @@ namespace {
 		}
 
 		void PrintFunctionReturn(std::string const& indent, size_t parameterCount, Options const& options) const {
-			out << indent << "\treturn " << fn << '(';
+			out << indent << '\t' << fn << '(';
 			for(decltype(parameterCount) i = 0; i < parameterCount; ++i) {
 				if(options.wantsStrings) {
 					out << "xstring(p" << i << ", " << 'q' << i << ')';
@@ -172,6 +172,7 @@ namespace {
 			}
 			out << "response";
 			out << ");" << std::endl;
+			out << indent << "\treturn next;" << std::endl;
 		}
 
 		size_t PrintParameter(std::string const& indent, size_t& parameterCount, bool wantsSave = true) const {

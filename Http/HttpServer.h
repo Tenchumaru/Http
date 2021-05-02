@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TcpSocketFactory.h"
+#include "Response.h"
 
 class HttpServer {
 public:
@@ -18,5 +19,7 @@ private:
 	std::string certificateChainFile;
 	std::string privateKeyFile;
 
-	virtual TcpSocketFactory::fn_t GetConnectFn() const = 0;
+	TcpSocketFactory::fn_t GetConnectFn() const;
+	char const* ProcessRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket) const;
+	virtual char const* DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const = 0;
 };

@@ -11,17 +11,14 @@ namespace {
 	char const* const closeSignal = reinterpret_cast<char const*>(8);
 }
 
-bool HttpParser::Add(char const* p, size_t n) {
-	char const* const q = p + n;
-	while (p != nullptr && p != closeSignal && p < q) {
-		p = (this->*fn)(p, q);
-	}
-	return p == closeSignal;
+char const* HttpParser::Add(char const* begin, char const* end) {
+	return (this->*fn)(begin, end);
 }
 
 void HttpParser::Reset() {
 	first.clear();
 	fn = &HttpParser::CollectFirst;
+	isComplete = false;
 }
 
 char const* HttpParser::CollectFirst(char const* p, char const* const q) {
@@ -86,12 +83,12 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 
 char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 	// Check for too many headers.
-	if (headers.size() > maxHeaders) {
+	if (headers.size() >= maxHeaders) {
 		throw Exception(StatusLines::BadRequest);
 	}
 
 	// Look for the end of the name (a colon).
-	while (p < q) {
+	for (; p < q; ++p) {
 		if (*p == ':') {
 			// Found it; validate the name.
 			if (name.empty()) {
@@ -115,12 +112,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			contentLength = it == headers.cend() ? 0 : std::stoul(it->second);
 			if (contentLength == 0) {
 				// There isn't one or it's zero; assume there's no data.
-				if (HandleMessage()) {
-					return closeSignal;
-				}
-
-				// Start collecting the next message.
-				Reset();
+				isComplete = true;
 				return p + 1;
 			}
 			if (contentLength > maxContentLength) {
@@ -146,7 +138,6 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 				throw Exception(StatusLines::BadRequest);
 			}
 		}
-		++p;
 	}
 	return p;
 }
@@ -185,10 +176,7 @@ char const* HttpParser::CollectData(char const* p, char const* const q) {
 	if (nAvailable >= nRequired) {
 		// Consume data necessary to complete the current message.
 		data.append(p, p + nRequired);
-		HandleMessage();
-
-		// Start collecting the next message.
-		Reset();
+		isComplete = true;
 		return p + nRequired;
 	} else {
 		// Consume all available data.
@@ -198,13 +186,11 @@ char const* HttpParser::CollectData(char const* p, char const* const q) {
 }
 
 bool HttpParser::ValidateVersion(std::string const& s) {
-	if (s.size() != versionSize || strncmp(s.c_str(), "HTTP/", 5) != 0) {
-		return false;
-	}
-	if (!isdigit(s[5]) || s[6] != '.' || !isdigit(s[7])) {
-		return false;
-	}
-	return true;
+	return s.size() == versionSize &&
+		s[6] == '.' &&
+		isdigit(s[5]) &&
+		isdigit(s[7]) &&
+		strncmp(s.c_str(), "HTTP/", 5) == 0;
 }
 
 bool HttpParser::ValidateFirst(std::string const& s) {

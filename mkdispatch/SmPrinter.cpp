@@ -352,7 +352,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 	for(size_t i = 0, n = requests.size(); i < n; ++i) {
 		auto const& request = requests[i];
 		functionInvocations << "\t\t\tcase " << (i + 1) << ':' << std::endl;
-		functionInvocations << "\t\t\t\treturn " << request.fn << '(';
+		functionInvocations << "\t\t\t\t" << request.fn << '(';
 		for(auto it = request.line.cbegin(); it = std::find(it, request.line.cend(), ':'), it != request.line.cend(); ++it) {
 			auto parameterIndex = std::count(request.line.cbegin(), it, '/');
 			if(options.wantsStrings) {
@@ -364,6 +364,7 @@ void SmPrinter::InternalPrint(vector const& requests, Options const& options, st
 		}
 		functionInvocations << "response";
 		functionInvocations << ");" << std::endl;
+		functionInvocations << "\t\t\t\treturn next;" << std::endl;
 	}
 
 	// Print the main state machine loop.

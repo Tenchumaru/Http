@@ -6,6 +6,8 @@
 
 class Response {
 public:
+	// TODO:  consider creating a flushable response to allow for
+	// content larger than the provided buffer.
 	Response(TcpSocket& socket, char* begin, char* end);
 	Response() = delete;
 	Response(Response const&) = delete;
@@ -27,6 +29,7 @@ public:
 		WriteHeader(xstring{ name.data(), name.data() + name.size() }, value);
 	}
 	void WriteHeader(xstring const& name, xstring const& value);
+	bool Reset();
 	template<typename T>
 	Response& operator<<(T t) {
 		inBody = true;
@@ -42,7 +45,14 @@ protected:
 private:
 	struct nstreambuf : public std::streambuf {
 		nstreambuf(Response& response, TcpSocket& socket);
+	nstreambuf() = delete;
+	nstreambuf(nstreambuf const&) = delete;
+	nstreambuf(nstreambuf&&) = default;
+	nstreambuf& operator=(nstreambuf const&) = delete;
+	nstreambuf& operator=(nstreambuf&&) = default;
 		void Close();
+		bool get_HasWritten() const { return hasWritten; }
+		__declspec(property(get = get_HasWritten)) bool const HasWritten;
 		std::streamsize xsputn(char_type const* s, std::streamsize n) override;
 		int overflow(int c) override;
 
@@ -59,6 +69,7 @@ private:
 		char* begin;
 		char* next;
 		char* end;
+		bool hasWritten{};
 
 		void InitialSend(char_type const* s, std::streamsize n);
 		void Send(char_type const* s, std::streamsize n);

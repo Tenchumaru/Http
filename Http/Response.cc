@@ -66,14 +66,24 @@ void Response::WriteHeader(xstring const& name, xstring const& value) {
 	*next++ = '\n';
 }
 
+bool Response::Reset() {
+	if (outputStreamBuffer.HasWritten) {
+		return false;
+	}
+	next = begin;
+	wroteContentLength = false;
+	wroteServer = false;
+	inBody = false;
+	return true;
+}
+
 void Response::Close() {
-	if (!inBody && next != begin) {
-		if (!wroteContentLength) {
-			static constexpr char zero[] = "0";
-			WriteHeader(contentLengthKey, xstring{ zero, zero + sizeof(zero) - 1 });
-		}
+	if (!inBody && next != begin && !wroteContentLength) {
+		static constexpr char zero = '0';
+		WriteHeader(contentLengthKey, xstring{ &zero, &zero + sizeof(zero) });
 	}
 	outputStreamBuffer.Close();
+	Reset();
 }
 
 bool Response::CompleteHeaders() {
@@ -108,6 +118,11 @@ Response::nstreambuf::nstreambuf(Response& response, TcpSocket& socket) :
 
 void Response::nstreambuf::Close() {
 	(this->*closeFn)();
+	closeFn = &nstreambuf::SimpleClose;
+	internalSendBufferFn = &nstreambuf::InternalSendBuffer;
+	internalSendFn = &nstreambuf::InternalSend;
+	sendFn = &nstreambuf::InitialSend;
+	hasWritten = false;
 }
 
 std::streamsize Response::nstreambuf::xsputn(char_type const* s, std::streamsize n) {
@@ -143,6 +158,7 @@ void Response::nstreambuf::InitialSend(char_type const* s, std::streamsize n) {
 
 	// Send the data provided in [s, s + n).
 	Send(s, n);
+	hasWritten = true;
 }
 
 void Response::nstreambuf::Send(char_type const* s, std::streamsize n) {

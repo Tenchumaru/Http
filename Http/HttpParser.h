@@ -2,7 +2,6 @@
 
 #include "StatusLines.h"
 #include "HeaderMap.h"
-#include "Uri.h"
 
 class HttpParser {
 public:
@@ -24,11 +23,12 @@ public:
 	HttpParser& operator=(HttpParser&&) = default;
 	virtual ~HttpParser() = default;
 
-	bool Add(char const* p, size_t n);
+	char const* Add(char const* begin, char const* end);
 
 protected:
 	std::string first, next, last, data;
 	HeaderMap headers;
+	bool isComplete{};
 
 	void Reset();
 	bool ValidateVersion(std::string const& s);
@@ -38,7 +38,7 @@ private:
 
 	fn_t fn = &HttpParser::CollectFirst;
 	std::string name, value;
-	size_t contentLength;
+	size_t contentLength{};
 
 	char const* CollectFirst(char const* p, char const* const q);
 	char const* CollectLast(char const* p, char const* const q);
@@ -49,5 +49,4 @@ private:
 	virtual bool ValidateFirst(std::string const& s);
 	virtual bool ValidateNext(std::string const& s);
 	virtual bool ValidateLast(std::string const& s);
-	virtual bool HandleMessage() = 0;
 };

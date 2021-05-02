@@ -70,23 +70,27 @@ namespace {
 				out << indent << "\tif(AtEndOfPath(p[" << prefix.size() << "])) {" << std::endl;
 				out << indent << "\t\t" << (queriesFn.empty() ? "QueryBase" : queriesFn) << " queries;" << std::endl;
 				out << indent << "\t\tif(!queries.CollectQueries(p, " << prefix.size() << ")) {" << std::endl;
-				out << indent << "\t\t\treturn FourHundred(response, \"bad query string\");" << std::endl;
+				out << indent << "\t\t\tFourHundred(response, \"bad query string\");" << std::endl;
+				out << indent << "\t\t\treturn next;" << std::endl;
 				out << indent << "\t\t}" << std::endl;
 				out << indent << "\t\t" << (headersFn.empty() ? "HeaderBase" : headersFn) << " headers;" << std::endl;
 				out << indent << "\t\tif(!headers.CollectHeaders(p)) {" << std::endl;
-				out << indent << "\t\t\treturn FourHundred(response, \"bad headers\");" << std::endl;
+				out << indent << "\t\t\tFourHundred(response, \"bad headers\");" << std::endl;
+				out << indent << "\t\t\treturn next;" << std::endl;
 				out << indent << "\t\t}" << std::endl;
 				if(fn.back() == '+') {
 					out << indent << "\t\tif(!headers.ContentLength.first) {" << std::endl;
-					out << indent << "\t\t\treturn FourHundred(response, \"no content length header\");" << std::endl;
+					out << indent << "\t\t\tFourHundred(response, \"no content length header\");" << std::endl;
+					out << indent << "\t\t\treturn next;" << std::endl;
 					out << indent << "\t\t}" << std::endl;
 					out << indent << "\t\tchar* end_;" << std::endl;
 					out << indent << "\t\tauto size = std::strtol(headers.ContentLength.first, &end_, 10);" << std::endl;
 					out << indent << "\t\tif(size == LONG_MAX || size == LONG_MIN || end_ != headers.ContentLength.second) {" << std::endl;
-					out << indent << "\t\t\treturn FourHundred(response, \"bad content length header\");" << std::endl;
+					out << indent << "\t\t\tFourHundred(response, \"bad content length header\");" << std::endl;
+					out << indent << "\t\t\treturn next;" << std::endl;
 					out << indent << "\t\t}" << std::endl;
 				}
-				out << indent << "\t\treturn ";
+				out << indent << "\t\t";
 				std::vector<std::string> parameters;
 				for(decltype(parameterCount) i = 0; i < parameterCount; ++i) {
 					std::stringstream ss;
@@ -119,6 +123,7 @@ namespace {
 					out << parameter;
 				}
 				out << ");" << std::endl;
+				out << indent << "\t\treturn next;" << std::endl;
 				out << indent << "\t}" << std::endl;
 			}
 			out << indent << '}' << std::endl;
