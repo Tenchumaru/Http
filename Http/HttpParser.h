@@ -34,7 +34,7 @@ protected:
 	bool ValidateVersion(std::string const& s);
 
 private:
-	using fn_t = char const*(HttpParser::*)(char const* p, char const* const q);
+	using fn_t = char const* (HttpParser::*)(char const* p, char const* const q);
 
 	fn_t fn = &HttpParser::CollectFirst;
 	std::string name, value;

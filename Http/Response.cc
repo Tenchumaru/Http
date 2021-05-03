@@ -4,19 +4,18 @@
 namespace {
 	std::string const contentLengthKey = "Content-Length";
 	std::string const serverKey = "Server";
-	char const defaultResponse[] = "HTTP/1.1 200 OK\r\n";
 	constexpr ptrdiff_t minimumHeaderBufferSize = 512;
 
 	// TODO:  consider creating a thread that runs once per second to update
 	// the time buffer.
 	std::string GetTime() {
-		time_t t = time(nullptr);
+		time_t const t = time(nullptr);
 #ifdef _WIN32
 		tm m_;
 		gmtime_s(&m_, &t);
-		tm* m = &m_;
+		tm* const m = &m_;
 #else
-		tm* m = gmtime(&t);
+		tm* const m = gmtime(&t);
 #endif
 		char buf[88];
 		strftime(buf, sizeof(buf), "%a, %d %b %Y %T GMT", m);
@@ -38,23 +37,31 @@ Response::Response(TcpSocket& socket, char* begin, char* end) :
 	}
 }
 
+void Response::WriteStatus(StatusLines::StatusLine const& statusLine) {
+	if (next != begin) {
+		throw std::logic_error("cannot write Status line more than once");
+	}
+	memcpy(begin, statusLine.first, statusLine.second);
+	next = begin + statusLine.second;
+}
+
 void Response::WriteHeader(xstring const& name, xstring const& value) {
 	if (next == begin) {
 		WriteStatus(StatusLines::OK);
 	}
-	auto nameSize = name.second - name.first;
-	auto valueSize = value.second - value.first;
+	auto const nameSize = name.second - name.first;
+	auto const valueSize = value.second - value.first;
 	if (nameSize + valueSize + 4 >= end - next) {
 		throw std::runtime_error("Response::WriteHeader");
 	}
 	if (contentLengthKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, contentLengthKey.c_str()) == 0) {
 		if (wroteContentLength) {
-			throw std::logic_error("wroteContentLength");
+			throw std::logic_error("cannot write Content-Length header more than once");
 		}
 		wroteContentLength = true;
 	} else if (serverKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, serverKey.c_str()) == 0) {
 		if (wroteServer) {
-			throw std::logic_error("wroteServer");
+			throw std::logic_error("cannot write Server header more than once");
 		}
 		wroteServer = true;
 	}
@@ -92,7 +99,7 @@ bool Response::CompleteHeaders() {
 	if (!wroteServer) {
 		WriteHeader("Server", "C++");
 	}
-	bool isChunked = !wroteContentLength;
+	bool const isChunked = !wroteContentLength;
 	if (isChunked) {
 		WriteHeader("Transfer-Encoding", "chunked");
 	}
@@ -132,7 +139,7 @@ std::streamsize Response::nstreambuf::xsputn(char_type const* s, std::streamsize
 
 int Response::nstreambuf::overflow(int c) {
 	if (c != traits_type::eof()) {
-		char_type ch = traits_type::to_char_type(c);
+		char_type const ch = traits_type::to_char_type(c);
 		xsputn(&ch, 1);
 	}
 	return c;
@@ -141,7 +148,7 @@ int Response::nstreambuf::overflow(int c) {
 void Response::nstreambuf::InitialSend(char_type const* s, std::streamsize n) {
 	// Have the Response object complete its headers.
 	sendFn = &nstreambuf::Send;
-	bool isChunked = response.CompleteHeaders();
+	bool const isChunked = response.CompleteHeaders();
 
 	// Send the headers.
 	begin = response.begin;
@@ -211,7 +218,7 @@ void Response::nstreambuf::InternalSendBuffer() {
 
 void Response::nstreambuf::InternalSend(char_type const* s, std::streamsize n) {
 	for (decltype(n) i = 0; i < n;) {
-		auto v = socket.Send(s + i, n - i);
+		auto const v = socket.Send(s + i, n - i);
 		if (v > 0) {
 			i += v;
 		} else {
@@ -228,7 +235,7 @@ void Response::nstreambuf::InternalSendBufferChunk() {
 void Response::nstreambuf::InternalSendChunk(char_type const* s, std::streamsize n) {
 	if (n > 0) {
 		char chunkSize[16];
-		unsigned count = snprintf(chunkSize, _countof(chunkSize), "%llx\r\n", n);
+		unsigned const count = snprintf(chunkSize, _countof(chunkSize), "%llx\r\n", n);
 		InternalSend(chunkSize, count);
 		InternalSend(s, n);
 		InternalSend("\r\n", 2);

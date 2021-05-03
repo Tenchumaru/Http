@@ -8,7 +8,6 @@ namespace {
 	constexpr size_t maxValueSize = 888;
 	constexpr size_t maxContentLength = 1024 * 1024;
 	constexpr size_t maxHeaders = 99;
-	char const* const closeSignal = reinterpret_cast<char const*>(8);
 }
 
 char const* HttpParser::Add(char const* begin, char const* end) {
@@ -84,7 +83,7 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 	// Check for too many headers.
 	if (headers.size() >= maxHeaders) {
-		throw Exception(StatusLines::BadRequest);
+		throw Exception(StatusLines::BadRequest); // TODO:  provide useful content.
 	}
 
 	// Look for the end of the name (a colon).

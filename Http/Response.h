@@ -14,14 +14,7 @@ public:
 	Response(Response&&) = default;
 	Response& operator=(Response const&) = delete;
 	Response& operator=(Response&&) = default;
-
-	void WriteStatus(StatusLines::StatusLine const& statusLine) {
-		if(next != begin) {
-			throw std::logic_error("WriteStatus");
-		}
-		memcpy(begin, statusLine.first, statusLine.second);
-		next = begin + statusLine.second;
-	}
+	void WriteStatus(StatusLines::StatusLine const& statusLine);
 	void WriteHeader(std::string const& name, std::string const& value) {
 		WriteHeader(xstring{ name.data(), name.data() + name.size() }, xstring{ value.data(), value.data() + value.size() });
 	}

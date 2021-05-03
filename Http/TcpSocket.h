@@ -12,7 +12,8 @@ public:
 	TcpSocket& operator=(TcpSocket&&) = default;
 	~TcpSocket() = default;
 
-	int Receive(char* buffer, size_t bufferSize); // TODO:  consider returning a size-error pair.
+	// TODO:  consider returning size-error pairs.
+	int Receive(char* buffer, size_t bufferSize);
 	int Send(char const* buffer, size_t bufferSize);
 
 protected:

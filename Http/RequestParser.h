@@ -6,8 +6,6 @@
 
 class RequestParser : public HttpParser {
 public:
-	using fn_t = std::function<bool(Request const& request)>;
-
 	RequestParser() = default;
 	RequestParser(RequestParser const&) = delete;
 	RequestParser(RequestParser&&) = default;
