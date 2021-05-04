@@ -12,6 +12,16 @@ namespace {
 	constexpr size_t stackSize = 0x10000;
 }
 
+FibrousTcpSocketFactory::FibrousTcpSocketFactory(FibrousTcpSocketFactory&& that) noexcept : TcpSocketFactory(std::move(that)) {
+	SwapPrivates(that);
+}
+
+FibrousTcpSocketFactory& FibrousTcpSocketFactory::operator=(FibrousTcpSocketFactory&& that) noexcept {
+	SwapPrivates(that);
+	TcpSocketFactory::operator=(std::move(that));
+	return *this;
+}
+
 void FibrousTcpSocketFactory::ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile) {
 	// Validate parameters.
 	if (sslContext) {
@@ -100,6 +110,9 @@ void FibrousTcpSocketFactory::Accept(SOCKET server, socklen_t addressSize, fn_t 
 				void* fiber;
 				if (availableFibers.empty()) {
 					fiber = CreateFiber(stackSize, &FibrousTcpSocketFactory::InvokeOnConnect, this);
+					if (!fiber) {
+						std::cerr << "CreateFiber failed: " << errno << std::endl;
+					}
 				} else {
 					fiber = availableFibers.back();
 					availableFibers.pop_back();
@@ -140,4 +153,13 @@ void FibrousTcpSocketFactory::InvokeOnConnect(void* parameter) {
 		p->availableFibers.push_back(GetCurrentFiber());
 		SwitchToFiber(p->mainFiber);
 	}
+}
+
+void FibrousTcpSocketFactory::SwapPrivates(FibrousTcpSocketFactory& that) noexcept {
+	std::swap(availableFibers, that.availableFibers);
+	std::swap(awaitFn, that.awaitFn);
+	std::swap(mainFiber, that.mainFiber);
+	std::swap(onConnect, that.onConnect);
+	std::swap(sslContext, that.sslContext);
+	std::swap(socket, that.socket);
 }

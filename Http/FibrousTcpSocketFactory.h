@@ -7,9 +7,9 @@ class FibrousTcpSocketFactory : public TcpSocketFactory {
 public:
 	FibrousTcpSocketFactory() = default;
 	FibrousTcpSocketFactory(FibrousTcpSocketFactory const&) = delete;
-	FibrousTcpSocketFactory(FibrousTcpSocketFactory&&) = default;
+	FibrousTcpSocketFactory(FibrousTcpSocketFactory&& that) noexcept;
 	FibrousTcpSocketFactory& operator=(FibrousTcpSocketFactory const&) = delete;
-	FibrousTcpSocketFactory& operator=(FibrousTcpSocketFactory&&) = default;
+	FibrousTcpSocketFactory& operator=(FibrousTcpSocketFactory&& that) noexcept;
 	~FibrousTcpSocketFactory() = default;
 
 	void ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile);
@@ -24,10 +24,11 @@ private:
 	std::function<void(SOCKET, short)> awaitFn;
 	InvokeFn invokeOnConnectFn = [this] { return onConnect(FibrousTcpSocket(socket, awaitFn)); };
 	fn_t onConnect;
-	void* mainFiber;
+	void* mainFiber{};
 	std::unique_ptr<SSL_CTX, SslContextDeleter> sslContext;
-	SOCKET socket;
+	SOCKET socket{ INVALID_SOCKET };
 
 	void Accept(SOCKET server, socklen_t sock_addr_size, fn_t onConnect) override;
 	static void InvokeOnConnect(void* parameter);
+	void SwapPrivates(FibrousTcpSocketFactory& that) noexcept;
 };

@@ -18,9 +18,9 @@ public:
 
 	HttpParser() = default;
 	HttpParser(HttpParser const&) = delete;
-	HttpParser(HttpParser&&) = default;
+	HttpParser(HttpParser&&) noexcept = default;
 	HttpParser& operator=(HttpParser const&) = delete;
-	HttpParser& operator=(HttpParser&&) = default;
+	HttpParser& operator=(HttpParser&&) noexcept = default;
 	virtual ~HttpParser() = default;
 
 	char const* Add(char const* begin, char const* end);

@@ -7,9 +7,9 @@ public:
 	explicit TcpSocket(SOCKET socket) : Socket(socket) {}
 	TcpSocket() = delete;
 	TcpSocket(TcpSocket const&) = delete;
-	TcpSocket(TcpSocket&&) = default;
+	TcpSocket(TcpSocket&& that) noexcept : Socket(INVALID_SOCKET) { std::swap(socket, that.socket); }
 	TcpSocket& operator=(TcpSocket const&) = delete;
-	TcpSocket& operator=(TcpSocket&&) = default;
+	TcpSocket& operator=(TcpSocket&& that) noexcept;
 	~TcpSocket() = default;
 
 	// TODO:  consider returning size-error pairs.

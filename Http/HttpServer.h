@@ -7,9 +7,9 @@ class HttpServer {
 public:
 	HttpServer() = default;
 	HttpServer(HttpServer const&) = delete;
-	HttpServer(HttpServer&&) = default;
+	HttpServer(HttpServer&&) noexcept = default;
 	HttpServer& operator=(HttpServer const&) = delete;
-	HttpServer& operator=(HttpServer&&) = default;
+	HttpServer& operator=(HttpServer&&) noexcept = default;
 	virtual ~HttpServer() = default;
 
 	void ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile);

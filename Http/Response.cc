@@ -28,13 +28,19 @@ Response::Response(TcpSocket& socket, char* begin, char* end) :
 	next(begin),
 	end(end),
 	outputStreamBuffer(*this, socket),
-	responseStream(&outputStreamBuffer),
-	wroteContentLength(false),
-	wroteServer(false),
-	inBody(false) {
+	responseStream(&outputStreamBuffer) {
 	if (end - begin < minimumHeaderBufferSize) {
 		throw std::runtime_error("minimumHeaderBufferSize");
 	}
+}
+
+Response::Response(Response&& that) noexcept : outputStreamBuffer(std::move(that.outputStreamBuffer)), responseStream(&outputStreamBuffer) {
+	std::swap(begin, that.begin);
+	std::swap(next, that.next);
+	std::swap(end, that.end);
+	std::swap(wroteContentLength, that.wroteContentLength);
+	std::swap(wroteServer, that.wroteServer);
+	std::swap(inBody, that.inBody);
 }
 
 void Response::WriteStatus(StatusLines::StatusLine const& statusLine) {
@@ -121,6 +127,17 @@ Response::nstreambuf::nstreambuf(Response& response, TcpSocket& socket) :
 	next(response.next),
 	end(response.end) {
 	static_assert(sizeof(char_type) == sizeof(char));
+}
+
+Response::nstreambuf::nstreambuf(nstreambuf&& that) noexcept : response(that.response), socket(that.socket) {
+	std::swap(closeFn, that.closeFn);
+	std::swap(internalSendBufferFn, that.internalSendBufferFn);
+	std::swap(internalSendFn, that.internalSendFn);
+	std::swap(sendFn, that.sendFn);
+	std::swap(begin, that.begin);
+	std::swap(next, that.next);
+	std::swap(end, that.end);
+	std::swap(hasWritten, that.hasWritten);
 }
 
 void Response::nstreambuf::Close() {

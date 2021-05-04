@@ -116,8 +116,18 @@ SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_
 	}
 }
 
+SecureFibrousTcpSocket::SecureFibrousTcpSocket(SecureFibrousTcpSocket&& that) noexcept : FibrousTcpSocket(std::move(that)) {
+	SwapPrivates(that);
+}
+
 SecureFibrousTcpSocket::~SecureFibrousTcpSocket() {
 	SSL_free(ssl);
+}
+
+SecureFibrousTcpSocket& SecureFibrousTcpSocket::operator=(SecureFibrousTcpSocket&& that) noexcept {
+	SwapPrivates(that);
+	FibrousTcpSocket::operator=(std::move(that));
+	return *this;
 }
 
 int SecureFibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
@@ -164,4 +174,10 @@ int SecureFibrousTcpSocket::BioWrite(BIO* bio, char const* data, size_t n, size_
 	}
 	*pn = i;
 	return 1;
+}
+
+void SecureFibrousTcpSocket::SwapPrivates(SecureFibrousTcpSocket& that) {
+	SSL_free(ssl);
+	ssl = nullptr;
+	std::swap(ssl, that.ssl);
 }

@@ -9,9 +9,9 @@ public:
 	FibrousTcpSocket(SOCKET socket, fn_t awaitFn) : TcpSocket(socket), awaitFn(awaitFn) {}
 	FibrousTcpSocket() = delete;
 	FibrousTcpSocket(FibrousTcpSocket const&) = delete;
-	FibrousTcpSocket(FibrousTcpSocket&&) = default;
+	FibrousTcpSocket(FibrousTcpSocket&& that) noexcept : TcpSocket(std::move(that)), awaitFn(that.awaitFn) {}
 	FibrousTcpSocket& operator=(FibrousTcpSocket const&) = delete;
-	FibrousTcpSocket& operator=(FibrousTcpSocket&&) = default;
+	FibrousTcpSocket& operator=(FibrousTcpSocket&& that) noexcept;
 	~FibrousTcpSocket() = default;
 
 protected:

@@ -6,9 +6,9 @@ class StaticHttpServer : public HttpServer {
 public:
 	StaticHttpServer() = default;
 	StaticHttpServer(StaticHttpServer const&) = delete;
-	StaticHttpServer(StaticHttpServer&&) = default;
+	StaticHttpServer(StaticHttpServer&&) noexcept = default;
 	StaticHttpServer& operator=(StaticHttpServer const&) = delete;
-	StaticHttpServer& operator=(StaticHttpServer&&) = default;
+	StaticHttpServer& operator=(StaticHttpServer&&) noexcept = default;
 	~StaticHttpServer() override = default;
 
 private:

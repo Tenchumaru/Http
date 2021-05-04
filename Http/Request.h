@@ -7,9 +7,9 @@ class Request {
 public:
 	Request() = default;
 	Request(Request const&) = delete;
-	Request(Request&&) = default;
+	Request(Request&&) noexcept = default;
 	Request& operator=(Request const&) = delete;
-	Request& operator=(Request&&) = default;
+	Request& operator=(Request&&) noexcept = default;
 	~Request() = default;
 
 	std::string const& GetVerb() const { return verb; }

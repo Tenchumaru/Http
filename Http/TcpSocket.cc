@@ -1,6 +1,12 @@
 #include "pch.h"
 #include "TcpSocket.h"
 
+TcpSocket& TcpSocket::operator=(TcpSocket&& that) noexcept {
+	Close();
+	std::swap(socket, that.socket);
+	return *this;
+}
+
 int TcpSocket::Receive(char* buffer, size_t bufferSize) {
 	return InternalReceive(buffer, bufferSize);
 }

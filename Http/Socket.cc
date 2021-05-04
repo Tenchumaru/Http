@@ -1,6 +1,16 @@
 #include "pch.h"
 #include "Socket.h"
 
+Socket::Socket(Socket&& that) noexcept : socket(INVALID_SOCKET) {
+	std::swap(socket, that.socket);
+}
+
+Socket& Socket::operator=(Socket&& that) noexcept {
+	Close();
+	std::swap(socket, that.socket);
+	return *this;
+}
+
 Socket::~Socket() {
 	Close();
 }

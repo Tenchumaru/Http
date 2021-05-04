@@ -8,9 +8,9 @@ class RequestParser : public HttpParser {
 public:
 	RequestParser() = default;
 	RequestParser(RequestParser const&) = delete;
-	RequestParser(RequestParser&&) = default;
+	RequestParser(RequestParser&&) noexcept = default;
 	RequestParser& operator=(RequestParser const&) = delete;
-	RequestParser& operator=(RequestParser&&) = default;
+	RequestParser& operator=(RequestParser&&) noexcept = default;
 	~RequestParser() = default;
 	bool ComposeRequest(Request& request);
 

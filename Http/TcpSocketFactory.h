@@ -8,9 +8,9 @@ public:
 
 	TcpSocketFactory() = default;
 	TcpSocketFactory(TcpSocketFactory const&) = default;
-	TcpSocketFactory(TcpSocketFactory&&) = default;
+	TcpSocketFactory(TcpSocketFactory&&) noexcept = default;
 	TcpSocketFactory& operator=(TcpSocketFactory const&) = default;
-	TcpSocketFactory& operator=(TcpSocketFactory&&) = default;
+	TcpSocketFactory& operator=(TcpSocketFactory&&) noexcept = default;
 	virtual ~TcpSocketFactory() = default;
 
 	void CreateClient(char const* hostName, unsigned short port, fn_t onConnect);

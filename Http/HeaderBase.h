@@ -6,9 +6,9 @@ class HeaderBase {
 public:
 	HeaderBase() = default;
 	HeaderBase(HeaderBase const&) = delete;
-	HeaderBase(HeaderBase&&) = default;
+	HeaderBase(HeaderBase&&) noexcept = default;
 	HeaderBase& operator=(HeaderBase const&) = delete;
-	HeaderBase& operator=(HeaderBase&&) = default;
+	HeaderBase& operator=(HeaderBase&&) noexcept = default;
 	virtual ~HeaderBase() = default;
 
 	virtual bool CollectHeaderName(char const*& p, xstring*& q) {

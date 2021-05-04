@@ -7,9 +7,9 @@ public:
 
 	Uri() = default;
 	Uri(Uri const&) = default;
-	Uri(Uri&&) = default;
+	Uri(Uri&&) noexcept = default;
 	Uri& operator=(Uri const&) = default;
-	Uri& operator=(Uri&&) = default;
+	Uri& operator=(Uri&&) noexcept = default;
 	~Uri() = default;
 
 	static bool Create(std::string const& s, Uri& uri);

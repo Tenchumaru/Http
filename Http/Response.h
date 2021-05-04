@@ -11,9 +11,9 @@ public:
 	Response(TcpSocket& socket, char* begin, char* end);
 	Response() = delete;
 	Response(Response const&) = delete;
-	Response(Response&&) = default;
+	Response(Response&& that) noexcept;
 	Response& operator=(Response const&) = delete;
-	Response& operator=(Response&&) = default;
+	Response& operator=(Response&&) noexcept = delete;
 	void WriteStatus(StatusLines::StatusLine const& statusLine);
 	void WriteHeader(std::string const& name, std::string const& value) {
 		WriteHeader(xstring{ name.data(), name.data() + name.size() }, xstring{ value.data(), value.data() + value.size() });
@@ -38,11 +38,11 @@ protected:
 private:
 	struct nstreambuf : public std::streambuf {
 		nstreambuf(Response& response, TcpSocket& socket);
-	nstreambuf() = delete;
-	nstreambuf(nstreambuf const&) = delete;
-	nstreambuf(nstreambuf&&) = default;
-	nstreambuf& operator=(nstreambuf const&) = delete;
-	nstreambuf& operator=(nstreambuf&&) = default;
+		nstreambuf() = delete;
+		nstreambuf(nstreambuf const&) = delete;
+		nstreambuf(nstreambuf&& that) noexcept;
+		nstreambuf& operator=(nstreambuf const&) = delete;
+		nstreambuf& operator=(nstreambuf&&) noexcept = delete;
 		void Close();
 		bool get_HasWritten() const { return hasWritten; }
 		__declspec(property(get = get_HasWritten)) bool const HasWritten;
@@ -74,14 +74,14 @@ private:
 		void InternalSendChunk(char_type const* s, std::streamsize n);
 	};
 
-	char* begin;
-	char* next;
-	char* end;
+	char* begin{};
+	char* next{};
+	char* end{};
 	nstreambuf outputStreamBuffer;
 	std::ostream responseStream;
-	bool wroteContentLength;
-	bool wroteServer;
-	bool inBody;
+	bool wroteContentLength{};
+	bool wroteServer{};
+	bool inBody{};
 
 	bool CompleteHeaders();
 };

@@ -6,9 +6,9 @@ public:
 
 	Waiter() : current(&a), next(&b), entry(a.cend()) {}
 	Waiter(Waiter const&) = delete;
-	Waiter(Waiter&&) = default;
+	Waiter(Waiter&&) noexcept = default;
 	Waiter& operator=(Waiter const&) = delete;
-	Waiter& operator=(Waiter&&) = default;
+	Waiter& operator=(Waiter&&) noexcept = default;
 	~Waiter() = default;
 
 	void Add(SOCKET s, short pollValue);

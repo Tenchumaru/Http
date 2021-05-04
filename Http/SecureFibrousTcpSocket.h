@@ -7,9 +7,9 @@ public:
 	SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_CTX* sslContext, bool isServer);
 	SecureFibrousTcpSocket() = delete;
 	SecureFibrousTcpSocket(SecureFibrousTcpSocket const&) = delete;
-	SecureFibrousTcpSocket(SecureFibrousTcpSocket&&) = default;
+	SecureFibrousTcpSocket(SecureFibrousTcpSocket&& that) noexcept;
 	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket const&) = delete;
-	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket&&) = default;
+	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket&& that) noexcept;
 	~SecureFibrousTcpSocket();
 
 protected:
@@ -18,8 +18,9 @@ protected:
 
 private:
 	static BIO_METHOD* bioMethod;
-	SSL *ssl;
+	SSL* ssl{};
 
 	static int BioRead(BIO* bio, char* data, size_t n, size_t* pn);
 	static int BioWrite(BIO* bio, char const* data, size_t n, size_t* pn);
+	void SwapPrivates(SecureFibrousTcpSocket& that);
 };

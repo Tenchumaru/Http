@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "HttpParser.h"
 
+using namespace std::literals;
+
 namespace {
 	constexpr size_t versionSize = 8; // Eight characters for "HTTP #.#".  See https://tools.ietf.org/html/rfc7230#appendix-B.
 	// TODO:  the following are configurable.
@@ -107,7 +109,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			}
 
 			// Get the content length, if any.
-			auto const it = headers.find("Content-Length");
+			auto const it = headers.find("Content-Length"s);
 			contentLength = it == headers.cend() ? 0 : std::stoul(it->second);
 			if (contentLength == 0) {
 				// There isn't one or it's zero; assume there's no data.

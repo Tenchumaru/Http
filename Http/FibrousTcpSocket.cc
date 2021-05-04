@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "FibrousTcpSocket.h"
 
+FibrousTcpSocket& FibrousTcpSocket::operator=(FibrousTcpSocket&& that) noexcept {
+	TcpSocket::operator=(std::move(that));
+	return *this;
+}
+
 int FibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
 	int result;
 	do {
