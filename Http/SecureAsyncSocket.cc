@@ -11,6 +11,16 @@ SecureAsyncSocket::SecureAsyncSocket(AsyncSocket&& socket, SSL_CTX* sslContext) 
 	SSL_set_fd(ssl, static_cast<int>(this->socket));
 }
 
+SecureAsyncSocket::SecureAsyncSocket(SecureAsyncSocket&& that) noexcept : AsyncSocket(std::move(that)) {
+	SwapPrivates(that);
+}
+
+SecureAsyncSocket& SecureAsyncSocket::operator=(SecureAsyncSocket&& that) noexcept {
+	SwapPrivates(that);
+	AsyncSocket::operator=(std::move(that));
+	return *this;
+}
+
 SecureAsyncSocket::~SecureAsyncSocket() {
 	SSL_free(ssl);
 }
@@ -124,4 +134,10 @@ Task<int> SecureAsyncSocket::InternalShutDown() {
 		}
 	}
 	co_return std::move(result);
+}
+
+void SecureAsyncSocket::SwapPrivates(SecureAsyncSocket& that) {
+	SSL_free(ssl);
+	ssl = nullptr;
+	std::swap(ssl, that.ssl);
 }

@@ -7,9 +7,9 @@ public:
 	AsyncBody(char const* begin, char*& next, int size, AsyncSocket& socket) : begin(begin), next(next), size(size), socket(socket) {}
 	AsyncBody() = delete;
 	AsyncBody(AsyncBody const&) = delete;
-	AsyncBody(AsyncBody&&) = default;
+	AsyncBody(AsyncBody&&) noexcept = default;
 	AsyncBody& operator=(AsyncBody const&) = delete;
-	AsyncBody& operator=(AsyncBody&&) = default;
+	AsyncBody& operator=(AsyncBody&&) noexcept = default;
 	~AsyncBody() = default;
 
 private:

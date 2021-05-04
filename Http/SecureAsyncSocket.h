@@ -7,9 +7,9 @@ public:
 	SecureAsyncSocket(AsyncSocket&& socket, SSL_CTX* sslContext);
 	SecureAsyncSocket() = delete;
 	SecureAsyncSocket(SecureAsyncSocket const&) = delete;
-	SecureAsyncSocket(SecureAsyncSocket&&) = default;
+	SecureAsyncSocket(SecureAsyncSocket&& that) noexcept;
 	SecureAsyncSocket& operator=(SecureAsyncSocket const&) = delete;
-	SecureAsyncSocket& operator=(SecureAsyncSocket&&) = default;
+	SecureAsyncSocket& operator=(SecureAsyncSocket&& that) noexcept;
 	~SecureAsyncSocket();
 	Task<int> Accept();
 	Task<std::pair<size_t, int>> Receive(void* buffer, size_t bufferSize) {
@@ -26,6 +26,8 @@ protected:
 	Task<int> InternalShutDown();
 
 private:
-	SSL* ssl;
+	SSL* ssl{};
+
+	void SwapPrivates(SecureAsyncSocket& that);
 };
 

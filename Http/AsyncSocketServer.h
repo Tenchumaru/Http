@@ -7,9 +7,9 @@ class AsyncSocketServer {
 public:
 	AsyncSocketServer() = default;
 	AsyncSocketServer(AsyncSocketServer const&) = delete;
-	AsyncSocketServer(AsyncSocketServer&&) = default;
+	AsyncSocketServer(AsyncSocketServer&&) noexcept = default;
 	AsyncSocketServer& operator=(AsyncSocketServer const&) = delete;
-	AsyncSocketServer& operator=(AsyncSocketServer&&) = default;
+	AsyncSocketServer& operator=(AsyncSocketServer&&) noexcept = default;
 	virtual ~AsyncSocketServer() = default;
 	void Run(char const* service);
 	void Run(unsigned short port);

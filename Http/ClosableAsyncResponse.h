@@ -7,9 +7,9 @@ public:
 	ClosableAsyncResponse(AsyncSocket& socket, char* begin, char* end) : AsyncResponse(socket, begin, end) {}
 	ClosableAsyncResponse() = delete;
 	ClosableAsyncResponse(ClosableAsyncResponse const&) = delete;
-	ClosableAsyncResponse(ClosableAsyncResponse&&) = default;
+	ClosableAsyncResponse(ClosableAsyncResponse&&) noexcept = default;
 	ClosableAsyncResponse& operator=(ClosableAsyncResponse const&) = delete;
-	ClosableAsyncResponse& operator=(ClosableAsyncResponse&&) = default;
+	ClosableAsyncResponse& operator=(ClosableAsyncResponse&&) noexcept = default;
 	~ClosableAsyncResponse() = default;
 	using AsyncResponse::Close;
 };

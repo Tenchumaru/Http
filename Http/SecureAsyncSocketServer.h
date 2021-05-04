@@ -6,9 +6,9 @@ class SecureAsyncSocketServer : public AsyncSocketServer {
 public:
 	SecureAsyncSocketServer() = default;
 	SecureAsyncSocketServer(SecureAsyncSocketServer const&) = delete;
-	SecureAsyncSocketServer(SecureAsyncSocketServer&&) = default;
+	SecureAsyncSocketServer(SecureAsyncSocketServer&&) noexcept = default;
 	SecureAsyncSocketServer& operator=(SecureAsyncSocketServer const&) = delete;
-	SecureAsyncSocketServer& operator=(SecureAsyncSocketServer&&) = default;
+	SecureAsyncSocketServer& operator=(SecureAsyncSocketServer&&) noexcept = default;
 	~SecureAsyncSocketServer() = default;
 	void ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile);
 

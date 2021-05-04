@@ -9,9 +9,9 @@ public:
 	AsyncResponse(AsyncSocket& socket, char* begin, char* end);
 	AsyncResponse() = delete;
 	AsyncResponse(AsyncResponse const&) = delete;
-	AsyncResponse(AsyncResponse&&) = default;
+	AsyncResponse(AsyncResponse&&) noexcept = default;
 	AsyncResponse& operator=(AsyncResponse const&) = delete;
-	AsyncResponse& operator=(AsyncResponse&&) = default;
+	AsyncResponse& operator=(AsyncResponse&&) noexcept = default;
 	template<typename T>
 	Task<void> Write(T t) {
 		inBody = true;
@@ -44,6 +44,11 @@ protected:
 private:
 	struct AsyncBuffer {
 		AsyncBuffer(AsyncResponse& response, AsyncSocket& socket);
+		AsyncBuffer() = delete;
+		AsyncBuffer(AsyncBuffer const&) = delete;
+		AsyncBuffer(AsyncBuffer&&) noexcept = default;
+		AsyncBuffer& operator=(AsyncBuffer const&) = delete;
+		AsyncBuffer& operator=(AsyncBuffer&&) noexcept = default;
 		Task<void> Close();
 		Task<void> Write(void const* s, size_t n);
 
@@ -71,13 +76,13 @@ private:
 		Task<void> InternalSendChunk(void const* s, size_t n);
 	};
 
-	char* begin;
-	char* next;
-	char* end;
+	char* begin{};
+	char* next{};
+	char* end{};
 	AsyncBuffer buffer;
-	bool wroteContentLength;
-	bool wroteServer;
-	bool inBody;
+	bool wroteContentLength{};
+	bool wroteServer{};
+	bool inBody{};
 
 	bool CompleteHeaders();
 	template<typename T>

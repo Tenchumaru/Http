@@ -8,9 +8,9 @@ public:
 	explicit AsyncSocket(SOCKET socket);
 	AsyncSocket() = delete;
 	AsyncSocket(AsyncSocket const&) = delete;
-	AsyncSocket(AsyncSocket&&) = default;
+	AsyncSocket(AsyncSocket&&) noexcept = default;
 	AsyncSocket& operator=(AsyncSocket const&) = delete;
-	AsyncSocket& operator=(AsyncSocket&&) = default;
+	AsyncSocket& operator=(AsyncSocket&&) noexcept = default;
 	~AsyncSocket() = default;
 	Task<std::pair<size_t, int>> Receive(void* buffer, size_t bufferSize) {
 		return InternalReceive(buffer, bufferSize);
