@@ -201,51 +201,6 @@ void AsyncSocketServer::AddPromise(base_promise_type* promise) {
 	sockets.push_back({ socketAwaiter->awaitable.fd, socketAwaiter->awaitable.pollValue });
 }
 
-Task<std::pair<size_t, int>> Receive(SOCKET clientSocket, void* p, size_t n) {
-	auto fn = [clientSocket, p = static_cast<char*>(p), n = static_cast<int>(n)]{
-		return recv(clientSocket, p, n, 0);
-	};
-	n = fn();
-	if (n == -1) {
-		int errorCode = errno;
-		if (errorCode == EWOULDBLOCK) {
-			errorCode = co_await SocketAwaitable{ clientSocket, POLLIN };
-		}
-		if (errorCode) {
-			co_return{ size_t{}, errorCode };
-		}
-		n = fn();
-	}
-	if (n == -1) {
-		co_return{ size_t{}, errno };
-	}
-	if (*static_cast<char const*>(p) == 'x') {
-		throw std::runtime_error("x");
-	}
-	co_return{ static_cast<size_t>(n), 0 };
-}
-
-Task<std::pair<size_t, int>> Send(SOCKET clientSocket, void const* p, size_t n) {
-	auto fn = [clientSocket, p = static_cast<char const*>(p), n = static_cast<int>(n)]{
-		return send(clientSocket, p, n, 0);
-	};
-	n = fn();
-	if (n == -1) {
-		int errorCode = errno;
-		if (errorCode == EWOULDBLOCK) {
-			errorCode = co_await SocketAwaitable{ clientSocket, POLLOUT };
-		}
-		if (errorCode) {
-			co_return{ size_t{}, errorCode };
-		}
-		n = fn();
-	}
-	if (n == -1) {
-		co_return{ size_t{}, errno };
-	}
-	co_return{ static_cast<size_t>(n), 0 };
-}
-
 void AsyncSocketServer::ProcessPromise(base_promise_type* promise) {
 	auto handle = std::coroutine_handle<base_promise_type>::from_promise(*promise);
 	handle();
