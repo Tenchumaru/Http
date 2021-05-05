@@ -41,9 +41,6 @@
     <ClCompile Include="UriTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WaiterTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResponseTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

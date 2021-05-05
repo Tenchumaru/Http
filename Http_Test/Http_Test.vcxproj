@@ -106,7 +106,6 @@
     </ClCompile>
     <ClCompile Include="TcpSocketTest.cpp" />
     <ClCompile Include="UriTest.cpp" />
-    <ClCompile Include="WaiterTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Http\Http.vcxproj">

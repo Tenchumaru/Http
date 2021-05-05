@@ -33,9 +33,6 @@
     <ClInclude Include="Response.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Waiter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Uri.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -117,9 +114,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Response.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Waiter.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Uri.cc">
