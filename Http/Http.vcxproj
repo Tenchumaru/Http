@@ -130,6 +130,7 @@
     <ClInclude Include="Request.h" />
     <ClInclude Include="RequestParser.h" />
     <ClInclude Include="Response.h" />
+    <ClInclude Include="SecureFibrousSocketServer.h" />
     <ClInclude Include="SecureFibrousTcpSocket.h" />
     <ClInclude Include="Socket.h" />
     <ClInclude Include="SocketServer.h" />
@@ -156,6 +157,7 @@
     </ClCompile>
     <ClCompile Include="RequestParser.cc" />
     <ClCompile Include="Response.cc" />
+    <ClCompile Include="SecureFibrousSocketServer.cc" />
     <ClCompile Include="SecureFibrousTcpSocket.cc" />
     <ClCompile Include="Socket.cc" />
     <ClCompile Include="SocketServer.cc" />

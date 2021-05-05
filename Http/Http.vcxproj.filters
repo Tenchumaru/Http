@@ -108,6 +108,9 @@
     <ClInclude Include="FibrousSocketServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SecureFibrousSocketServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HttpParser.cc">
@@ -171,6 +174,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FibrousSocketServer.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SecureFibrousSocketServer.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
