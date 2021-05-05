@@ -42,9 +42,6 @@
     <ClInclude Include="Socket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TcpSocketFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TcpSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -129,9 +126,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Socket.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TcpSocketFactory.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TcpSocket.cc">

@@ -137,7 +137,6 @@
     <ClInclude Include="StatusLines.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TcpSocket.h" />
-    <ClInclude Include="TcpSocketFactory.h" />
     <ClInclude Include="Uri.h" />
     <ClInclude Include="Waiter.h" />
     <ClInclude Include="xtypes.h" />
@@ -162,7 +161,6 @@
     <ClCompile Include="StaticHttpServer.cc" />
     <ClCompile Include="StatusLines.cc" />
     <ClCompile Include="TcpSocket.cc" />
-    <ClCompile Include="TcpSocketFactory.cc" />
     <ClCompile Include="Uri.cc" />
     <ClCompile Include="Waiter.cc" />
   </ItemGroup>
