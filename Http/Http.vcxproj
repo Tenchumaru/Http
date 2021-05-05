@@ -119,7 +119,6 @@
     <ClInclude Include="DynamicHttpServer.h" />
     <ClInclude Include="FibrousSocketServer.h" />
     <ClInclude Include="FibrousTcpSocket.h" />
-    <ClInclude Include="FibrousTcpSocketFactory.h" />
     <ClInclude Include="HeaderBase.h" />
     <ClInclude Include="HeaderMap.h" />
     <ClInclude Include="Http.h" />
@@ -147,7 +146,6 @@
     <ClCompile Include="DynamicHttpServer.cc" />
     <ClCompile Include="FibrousSocketServer.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />
-    <ClCompile Include="FibrousTcpSocketFactory.cc" />
     <ClCompile Include="Http.cc" />
     <ClCompile Include="HttpParser.cc" />
     <ClCompile Include="HttpServer.cc" />

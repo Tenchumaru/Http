@@ -51,9 +51,6 @@
     <ClInclude Include="FibrousTcpSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FibrousTcpSocketFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HeaderMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -141,9 +138,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FibrousTcpSocket.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FibrousTcpSocketFactory.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Http.cc">
