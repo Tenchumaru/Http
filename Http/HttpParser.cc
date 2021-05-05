@@ -13,7 +13,12 @@ namespace {
 }
 
 char const* HttpParser::Add(char const* begin, char const* end) {
-	return (this->*fn)(begin, end);
+	try {
+		return (this->*fn)(begin, end);
+	} catch (...) {
+		Reset();
+		throw;
+	}
 }
 
 void HttpParser::Reset() {
