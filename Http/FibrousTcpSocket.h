@@ -13,6 +13,7 @@ public:
 	FibrousTcpSocket& operator=(FibrousTcpSocket const&) = delete;
 	FibrousTcpSocket& operator=(FibrousTcpSocket&& that) noexcept;
 	~FibrousTcpSocket() = default;
+	static bool IsAwaitable(int errorValue);
 
 protected:
 	int InternalReceive(char* buffer, size_t bufferSize) override;

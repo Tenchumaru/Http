@@ -6,6 +6,10 @@ FibrousTcpSocket& FibrousTcpSocket::operator=(FibrousTcpSocket&& that) noexcept 
 	return *this;
 }
 
+bool FibrousTcpSocket::IsAwaitable(int errorValue) {
+	return errorValue == EALREADY || errorValue == EINPROGRESS || errorValue == EWOULDBLOCK;
+}
+
 int FibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
 	int result;
 	do {
@@ -23,12 +27,9 @@ int FibrousTcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
 }
 
 bool FibrousTcpSocket::IsAwaiting(int result, short pollValue) {
-	if (result < 0) {
-		auto v = errno;
-		if (v == EALREADY || v == EINPROGRESS || v == EWOULDBLOCK) {
-			awaitFn(socket, pollValue);
-			return true;
-		}
+	if (result < 0 && IsAwaitable(errno)) {
+		awaitFn(socket, pollValue);
+		return true;
 	}
 	return false;
 }
