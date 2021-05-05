@@ -8,6 +8,7 @@ public:
 	SecureFibrousTcpSocket() = delete;
 	SecureFibrousTcpSocket(SecureFibrousTcpSocket const&) = delete;
 	SecureFibrousTcpSocket(SecureFibrousTcpSocket&& that) noexcept;
+	SecureFibrousTcpSocket(FibrousTcpSocket&& that, SSL_CTX* sslContext, bool isServer);
 	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket const&) = delete;
 	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket&& that) noexcept;
 	~SecureFibrousTcpSocket();

@@ -92,8 +92,14 @@ BIO_METHOD* SecureFibrousTcpSocket::bioMethod = [] {
 }();
 
 SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_CTX* sslContext, bool isServer) :
-	FibrousTcpSocket(socket, awaitFn),
-	ssl(SSL_new(sslContext)) {
+	SecureFibrousTcpSocket(FibrousTcpSocket(socket, awaitFn), sslContext, isServer) {
+}
+
+SecureFibrousTcpSocket::SecureFibrousTcpSocket(SecureFibrousTcpSocket&& that) noexcept : FibrousTcpSocket(std::move(that)) {
+	SwapPrivates(that);
+}
+
+SecureFibrousTcpSocket::SecureFibrousTcpSocket(FibrousTcpSocket&& that, SSL_CTX* sslContext, bool isServer) : FibrousTcpSocket(std::move(that)), ssl(SSL_new(sslContext)) {
 	if (!ssl) {
 		perror("Cannot create SSL");
 		throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_new");
@@ -114,10 +120,6 @@ SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_
 			throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_connect");
 		}
 	}
-}
-
-SecureFibrousTcpSocket::SecureFibrousTcpSocket(SecureFibrousTcpSocket&& that) noexcept : FibrousTcpSocket(std::move(that)) {
-	SwapPrivates(that);
 }
 
 SecureFibrousTcpSocket::~SecureFibrousTcpSocket() {
