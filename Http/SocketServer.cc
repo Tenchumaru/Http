@@ -64,17 +64,21 @@ std::pair<SOCKET, socklen_t> SocketServer::Open(char const* service) {
 }
 
 void SocketServer::Run(char const* service) {
-	// Create the server socket.
-	auto [serverSocket, addressSize] = Open(service);
+	try {
+		// Create the server socket.
+		auto [serverSocket, addressSize] = Open(service);
 
-	// Accept and handle connections from it.
-	for (;;) {
-		auto [clientSocket, errorCode] = Accept(serverSocket, addressSize);
-		if (errorCode) {
-			std::cerr << "accept error " << errorCode << std::endl;
-		} else {
-			Handle(std::move(clientSocket));
+		// Accept and handle connections from it.
+		for (;;) {
+			auto [clientSocket, errorCode] = Accept(serverSocket, addressSize);
+			if (errorCode) {
+				std::cerr << "accept error " << errorCode << std::endl;
+			} else {
+				Handle(std::move(clientSocket));
+			}
 		}
+	} catch (std::exception const& ex) {
+		std::cerr << "SocketServer::Run failed:  " << ex.what() << std::endl;
 	}
 }
 
