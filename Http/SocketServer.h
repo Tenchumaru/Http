@@ -20,4 +20,5 @@ protected:
 
 private:
 	virtual void Handle(SOCKET clientSocket) = 0;
+	virtual bool TrySocketUse(SOCKET serverSocket, addrinfo const* address, socklen_t& addressSize);
 };

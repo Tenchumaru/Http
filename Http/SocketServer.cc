@@ -34,22 +34,9 @@ std::pair<SOCKET, socklen_t> SocketServer::Open(char const* service) {
 		if (serverSocket == INVALID_SOCKET) {
 			continue;
 		}
-		int const reuse = 1;
-		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char const*>(&reuse), sizeof(reuse)) < 0) {
-			throw std::runtime_error("SocketServer::Open.setsockopt(SO_REUSEADDR)");
-		}
-#ifdef SO_REUSEPORT
-		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
-			throw std::runtime_error("SocketServer::Open.setsockopt(SO_REUSEPORT)");
-		}
-#endif
-		addressSize = static_cast<decltype(addressSize)>(address->ai_addrlen);
-		if (bind(serverSocket, address->ai_addr, addressSize) == 0) {
+		if (TrySocketUse(serverSocket, address, addressSize)) {
 			break;
 		}
-#ifdef _DEBUG
-		std::cerr << "bind failed; error " << errno << std::endl;
-#endif
 		close(serverSocket);
 		serverSocket = INVALID_SOCKET;
 	}
@@ -150,4 +137,26 @@ std::pair<SOCKET, int> SocketServer::Accept(SOCKET serverSocket, socklen_t addre
 
 int SocketServer::ConnectImpl(SOCKET clientSocket, sockaddr const* address, size_t addressSize) noexcept {
 	return connect(clientSocket, address, static_cast<socklen_t>(addressSize)) ? errno : 0;
+}
+
+bool SocketServer::TrySocketUse(SOCKET serverSocket, addrinfo const* address, socklen_t& addressSize) {
+	int const reuse = 1;
+	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char const*>(&reuse), sizeof(reuse))) {
+		std::cerr << "SocketServer::TrySocketUse.setsockopt(SO_REUSEADDR) error " << errno << std::endl;
+	}
+#ifdef SO_REUSEPORT
+	else if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse))) {
+		std::cerr << "SocketServer::TrySocketUse.setsockopt(SO_REUSEPORT) error " << errno << std::endl;
+	}
+#endif
+	else {
+		addressSize = static_cast<std::remove_reference_t<decltype(addressSize)>>(address->ai_addrlen);
+		if (bind(serverSocket, address->ai_addr, addressSize) == 0) {
+			return true;
+		}
+	}
+#ifdef _DEBUG
+	std::cerr << "SocketServer::TrySocketUse.bind error " << errno << std::endl;
+#endif
+	return false;
 }
