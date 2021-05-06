@@ -5,44 +5,6 @@ void DynamicHttpServer::Add(char const* path, fn_t fn) {
 	handlers.push_back({ path, fn });
 }
 
-bool DynamicHttpServer::Dispatch(TcpSocket& socket, ClosableResponse& response) {
-	// Read some data from the client.
-	std::array<char, 0x1000> buffer;
-	auto n = socket.Receive(buffer.data(), buffer.size());
-	if (n <= 0) {
-		return true;
-	}
-
-	// Give it to the response parser.
-	StatusLines::StatusLine statusLine{};
-	try {
-		char const* p = buffer.data();
-		char const* const q = p + n;
-		while (p < q) {
-			p = parser.Add(p, q);
-			while (parser.ComposeRequest(request)) {
-				auto isLastRequest = InternalHandle(response);
-				if (isLastRequest) {
-					return true;
-				}
-				response.Close();
-			}
-		}
-	} catch (HttpParser::Exception const& ex) {
-		statusLine = ex.StatusLine;
-	} catch (std::exception const& /*ex*/) {
-		statusLine = StatusLines::InternalServerError;
-	}
-	if (statusLine != StatusLines::StatusLine{}) {
-		// Respond with the appropriate status code.
-		response.WriteStatus(statusLine);
-
-		// Close the connection.
-		return true;
-	}
-	return false;
-}
-
 char const* DynamicHttpServer::DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const {
 	next, end, socket;
 	auto* this_ = const_cast<std::remove_const_t<std::remove_pointer_t<decltype(this)>>*>(this);

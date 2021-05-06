@@ -22,7 +22,6 @@ private:
 	Request request;
 	RequestParser parser;
 
-	bool Dispatch(TcpSocket& socket, ClosableResponse& response);
 	char const* DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const override;
 	bool InternalHandle(Response& response) const;
 };
