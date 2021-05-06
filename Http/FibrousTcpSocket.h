@@ -16,10 +16,12 @@ public:
 	static bool IsAwaitable(int errorValue);
 
 protected:
+	void Await(short pollValue);
 	int InternalReceive(char* buffer, size_t bufferSize) override;
 	int InternalSend(char const* buffer, size_t bufferSize) override;
 
 private:
 	fn_t awaitFn;
+
 	bool IsAwaiting(int result, short pollValue);
 };

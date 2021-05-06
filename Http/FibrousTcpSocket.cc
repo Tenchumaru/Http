@@ -10,6 +10,10 @@ bool FibrousTcpSocket::IsAwaitable(int errorValue) {
 	return errorValue == EALREADY || errorValue == EINPROGRESS || errorValue == EWOULDBLOCK;
 }
 
+void FibrousTcpSocket::Await(short pollValue) {
+	awaitFn(socket, pollValue);
+}
+
 int FibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
 	int result;
 	do {
