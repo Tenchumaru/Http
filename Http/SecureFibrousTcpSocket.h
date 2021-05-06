@@ -21,7 +21,6 @@ private:
 	static BIO_METHOD* bioMethod;
 	SSL* ssl{};
 
-	static int BioRead(BIO* bio, char* data, size_t n, size_t* pn);
-	static int BioWrite(BIO* bio, char const* data, size_t n, size_t* pn);
+	int Invoke(std::function<int()> fn);
 	void SwapPrivates(SecureFibrousTcpSocket& that);
 };
