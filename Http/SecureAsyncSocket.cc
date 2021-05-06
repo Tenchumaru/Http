@@ -29,28 +29,23 @@ namespace {
 	template<typename FN>
 	Task<int> Invoke(FN fn, SSL* ssl, SOCKET socket) {
 		int result;
-		while (result = fn(), result < 0) {
+		while (result = fn(), result <= 0) {
 			result = SSL_get_error(ssl, result);
 			if (result == SSL_ERROR_WANT_READ) {
 				// Await the read and try again.
 				result = co_await SocketAwaitable{ socket, POLLIN };
 				if (result) {
-					co_return std::move(result);
+					break;
 				}
 			} else if (result == SSL_ERROR_WANT_WRITE) {
 				// Await the write and try again.
 				result = co_await SocketAwaitable{ socket, POLLOUT };
 				if (result) {
-					co_return std::move(result);
+					break;
 				}
 			} else {
-				co_return std::move(result);
+				break;
 			}
-		}
-		if (result == 0) {
-			result = SSL_get_error(ssl, result);
-		} else {
-			result = 0;
 		}
 		co_return std::move(result);
 	}
@@ -60,7 +55,11 @@ Task<int> SecureAsyncSocket::Accept() {
 	auto fn = [this] {
 		return SSL_accept(ssl);
 	};
-	return Invoke(fn, ssl, socket);
+	auto result = co_await Invoke(fn, ssl, socket);
+	if (result == 0) {
+		result = -1;
+	}
+	co_return result;
 }
 
 // TODO:  invoke this method.
@@ -92,10 +91,10 @@ Task<std::pair<size_t, int>> SecureAsyncSocket::InternalReceive(void* buffer, si
 		return SSL_read(ssl, buffer, bufferSize);
 	};
 	auto result = co_await Invoke(fn, ssl, socket);
-	if (result > 0) {
-		co_return{ result, 0 };
+	if (result <= 0 && SSL_get_error(ssl, result) == SSL_ERROR_ZERO_RETURN) {
+		result = 0;
 	}
-	co_return{ 0, result == SSL_ERROR_ZERO_RETURN ? 0 : result };
+	co_return{ result, 0 };
 }
 
 Task<std::pair<size_t, int>> SecureAsyncSocket::InternalSend(void const* buffer, size_t bufferSize) {
@@ -107,10 +106,10 @@ Task<std::pair<size_t, int>> SecureAsyncSocket::InternalSend(void const* buffer,
 		return SSL_write(ssl, buffer, bufferSize);
 	};
 	auto result = co_await Invoke(fn, ssl, socket);
-	if (result > 0) {
-		co_return{ result, 0 };
+	if (result <= 0 && SSL_get_error(ssl, result) == SSL_ERROR_ZERO_RETURN) {
+		result = 0;
 	}
-	co_return{ 0, result == SSL_ERROR_ZERO_RETURN ? 0 : result };
+	co_return{ result, 0 };
 }
 
 Task<int> SecureAsyncSocket::InternalShutDown() {
