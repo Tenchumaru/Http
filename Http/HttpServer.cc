@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ClosableResponse.h"
+#include "HttpParser.h"
 #include "HttpServer.h"
 
 // TODO:  consider an alternate design in which the Request object produced by
@@ -76,15 +77,30 @@ char const* HttpServer::ProcessRequest(char const* begin, char const* body, char
 	// Process the first request.  It's possible the process returns a dynamically
 	// allocated buffer.  It's actually a std::vector<char>.  The process also checks
 	// the Connection header value and returns nullptr to indicate closing the socket.
+	StatusLines::StatusLine statusLine{};
+	char const* message = nullptr;
 	try {
 		end = DispatchRequest(begin, body, next, end, clientSocket, response);
 		response.Close();
+	} catch (HttpParser::Exception const& ex) {
+		statusLine = ex.StatusLine;
+		message = ex.Message;
 	} catch (std::exception const& ex) {
+		statusLine = StatusLines::InternalServerError;
 		std::cerr << "DispatchRequest threw an exception:  " << ex.what() << std::endl;
+	}
+	if (statusLine != StatusLines::StatusLine{}) {
+		// Respond with the appropriate status code if possible.
 		if (response.Reset()) {
-			response.WriteStatus(StatusLines::InternalServerError);
+			response.WriteStatus(statusLine);
+			if (message) {
+				response.WriteHeader("Content-Length", std::to_string(strlen(message) + 2));
+				response << message << "\r\n";
+			}
 			response.Close();
 		}
+
+		// Close the connection.
 		return nullptr;
 	}
 
