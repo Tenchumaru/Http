@@ -19,13 +19,17 @@ namespace {
 
 std::unique_ptr<TcpSocket> SecureFibrousSocketServer::MakeSocketImpl(SOCKET socket) const {
 	auto socket_ = std::unique_ptr<FibrousTcpSocket>(static_cast<FibrousTcpSocket*>(FibrousSocketServer::MakeSocketImpl(socket).release()));
-	return std::make_unique<SecureFibrousTcpSocket>(std::move(*socket_), sslContext.get(), false);
+	return std::make_unique<SecureFibrousTcpSocket>(std::move(*socket_), sslContext.get());
 }
 
 void SecureFibrousSocketServer::InternalHandle(std::unique_ptr<FibrousTcpSocket> clientSocket) {
 	if (sslContext) {
 		// Transform it into a secure socket.
-		clientSocket = std::make_unique<SecureFibrousTcpSocket>(std::move(*clientSocket), sslContext.get(), true);
+		auto clientSocket_ = std::make_unique<SecureFibrousTcpSocket>(std::move(*clientSocket), sslContext.get());
+		if (clientSocket_->Accept()) {
+			return;
+		}
+		clientSocket = std::move(clientSocket_);
 	}
 	InternalHandleImpl(std::move(clientSocket));
 }
@@ -46,7 +50,6 @@ void SecureFibrousSocketServer::ConfigureSecurity(char const* certificateChainFi
 	// Create the SSL context.
 	sslContext.reset(SSL_CTX_new(TLS_server_method()));
 	if (!sslContext) {
-		perror("Cannot create SSL context");
 		ERR_print_errors_fp(stderr);
 		throw std::runtime_error("SecureFibrousSocketServer::ConfigureSecurity.SSL_CTX_new");
 	}

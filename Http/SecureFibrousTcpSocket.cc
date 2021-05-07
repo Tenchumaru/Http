@@ -1,38 +1,21 @@
 #include "pch.h"
 #include "SecureFibrousTcpSocket.h"
 
-// TODO:  is this ever invoked with isServer false?
-SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_CTX* sslContext, bool isServer) :
-	SecureFibrousTcpSocket(FibrousTcpSocket(socket, awaitFn), sslContext, isServer) {}
+SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_CTX* sslContext) :
+	SecureFibrousTcpSocket(FibrousTcpSocket(socket, awaitFn), sslContext) {}
 
 SecureFibrousTcpSocket::SecureFibrousTcpSocket(SecureFibrousTcpSocket&& that) noexcept : FibrousTcpSocket(std::move(that)) {
 	SwapPrivates(that);
 }
 
-SecureFibrousTcpSocket::SecureFibrousTcpSocket(FibrousTcpSocket&& that, SSL_CTX* sslContext, bool isServer) : FibrousTcpSocket(std::move(that)), ssl(SSL_new(sslContext)) {
+SecureFibrousTcpSocket::SecureFibrousTcpSocket(FibrousTcpSocket&& that, SSL_CTX* sslContext) : FibrousTcpSocket(std::move(that)), ssl(SSL_new(sslContext)) {
 	if (!ssl) {
-		perror("Cannot create SSL");
+		ERR_print_errors_fp(stderr);
 		throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_new");
 	}
-	SSL_set_fd(ssl, static_cast<int>(socket));
-	if (isServer) {
-		auto fn = [this] {
-			return SSL_accept(ssl);
-		};
-		auto result = Invoke(fn);
-		if (result <= 0) {
-			ERR_print_errors_fp(stderr);
-			throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_accept");
-		}
-	} else {
-		auto fn = [this] {
-			return SSL_connect(ssl);
-		};
-		auto result = Invoke(fn);
-		if (result <= 0) {
-			ERR_print_errors_fp(stderr);
-			throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_connect");
-		}
+	if (!SSL_set_fd(ssl, static_cast<int>(socket))) {
+		ERR_print_errors_fp(stderr);
+		throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_set_fd");
 	}
 }
 
@@ -44,6 +27,17 @@ SecureFibrousTcpSocket& SecureFibrousTcpSocket::operator=(SecureFibrousTcpSocket
 	SwapPrivates(that);
 	FibrousTcpSocket::operator=(std::move(that));
 	return *this;
+}
+
+int SecureFibrousTcpSocket::Accept() noexcept {
+	auto fn = [this] {
+		return SSL_accept(ssl);
+	};
+	int result = Invoke(fn);
+	if (result == 0) {
+		result = -1;
+	}
+	return result;
 }
 
 int SecureFibrousTcpSocket::Connect(sockaddr const* address, size_t addressSize) noexcept {
