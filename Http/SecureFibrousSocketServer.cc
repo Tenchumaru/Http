@@ -17,14 +17,9 @@ namespace {
 #endif
 }
 
-using namespace std::literals;
-
-int SecureFibrousSocketServer::ConnectImpl(SOCKET clientSocket, sockaddr const* address, size_t addressSize) noexcept {
-	int result = FibrousSocketServer::ConnectImpl(clientSocket, address, addressSize);
-	if (!result && sslContext) {
-		// TODO:  replace the client socket with a secure one.
-	}
-	return result;
+std::unique_ptr<TcpSocket> SecureFibrousSocketServer::MakeSocketImpl(SOCKET socket) const {
+	auto socket_ = std::unique_ptr<FibrousTcpSocket>(static_cast<FibrousTcpSocket*>(FibrousSocketServer::MakeSocketImpl(socket).release()));
+	return std::make_unique<SecureFibrousTcpSocket>(std::move(*socket_), sslContext.get(), false);
 }
 
 void SecureFibrousSocketServer::InternalHandle(std::unique_ptr<FibrousTcpSocket> clientSocket) {

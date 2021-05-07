@@ -73,7 +73,7 @@ void SocketServer::Run(unsigned short port) {
 	Run(buf);
 }
 
-SOCKET SocketServer::Connect(char const* nodeName, char const* serviceName) {
+std::unique_ptr<TcpSocket> SocketServer::Connect(char const* nodeName, char const* serviceName) {
 	// Create and connect a client socket.
 	addrinfo hints{};
 	hints.ai_family = AF_UNSPEC; // Allow IPv4 or IPv6.
@@ -82,26 +82,25 @@ SOCKET SocketServer::Connect(char const* nodeName, char const* serviceName) {
 	if (getaddrinfo(nodeName, serviceName, &hints, &addresses)) {
 		throw std::runtime_error("SocketServer::Connect.getaddrinfo");
 	}
-	SOCKET clientSocket = INVALID_SOCKET;
+	std::unique_ptr<TcpSocket> clientSocket;
 	for (auto const* address = addresses; address != nullptr; address = address->ai_next) {
-		clientSocket = socket(address->ai_family, address->ai_socktype, address->ai_protocol);
-		if (clientSocket == INVALID_SOCKET) {
-			continue;
+		auto clientSocket_ = socket(address->ai_family, address->ai_socktype, address->ai_protocol);
+		if (clientSocket_ != INVALID_SOCKET) {
+			clientSocket = MakeSocketImpl(clientSocket_);
+			if (clientSocket->Connect(address->ai_addr, address->ai_addrlen) == 0) {
+				break;
+			}
+			clientSocket.reset();
 		}
-		if (ConnectImpl(clientSocket, address->ai_addr, address->ai_addrlen) == 0) {
-			break;
-		}
-		close(clientSocket);
-		clientSocket = INVALID_SOCKET;
 	}
 	freeaddrinfo(addresses);
-	if (clientSocket == INVALID_SOCKET) {
+	if (!clientSocket) {
 		throw std::runtime_error("SocketServer::Connect");
 	}
 	return clientSocket;
 }
 
-SOCKET SocketServer::Connect(char const* host, std::uint16_t port) {
+std::unique_ptr<TcpSocket> SocketServer::Connect(char const* host, std::uint16_t port) {
 	char s[6];
 	sprintf_s(s, "%d", port);
 	return Connect(host, s);
@@ -133,8 +132,8 @@ std::pair<SOCKET, int> SocketServer::Accept(SOCKET serverSocket, socklen_t addre
 	return{ clientSocket, clientSocket == INVALID_SOCKET ? errno : 0 };
 }
 
-int SocketServer::ConnectImpl(SOCKET clientSocket, sockaddr const* address, size_t addressSize) noexcept {
-	return connect(clientSocket, address, static_cast<socklen_t>(addressSize)) ? errno : 0;
+std::unique_ptr<TcpSocket> SocketServer::MakeSocketImpl(SOCKET socket) const {
+	return std::make_unique<TcpSocket>(socket);
 }
 
 bool SocketServer::TrySocketUse(SOCKET serverSocket, addrinfo const* address, socklen_t& addressSize) {

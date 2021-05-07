@@ -13,7 +13,7 @@ public:
 	void ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile);
 
 protected:
-	int ConnectImpl(SOCKET clientSocket, sockaddr const* address, size_t addressSize) noexcept override;
+	std::unique_ptr<TcpSocket> MakeSocketImpl(SOCKET socket) const override;
 
 private:
 	struct SslContextDeleter {

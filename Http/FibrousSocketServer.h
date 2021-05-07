@@ -15,7 +15,7 @@ public:
 protected:
 	std::pair<SOCKET, socklen_t> Open(char const* service) override;
 	std::pair<SOCKET, int> Accept(SOCKET serverSocket, socklen_t addressSize) override;
-	int ConnectImpl(SOCKET clientSocket, sockaddr const* address, size_t addressSize) noexcept override;
+	std::unique_ptr<TcpSocket> MakeSocketImpl(SOCKET socket) const override;
 
 private:
 	struct {

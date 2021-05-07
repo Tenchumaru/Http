@@ -65,15 +65,8 @@ std::pair<SOCKET, int> FibrousSocketServer::Accept(SOCKET serverSocket, socklen_
 	}
 }
 
-int FibrousSocketServer::ConnectImpl(SOCKET clientSocket, sockaddr const* address, size_t addressSize) noexcept {
-	for (;;) {
-		int result = SocketServer::ConnectImpl(clientSocket, address, addressSize);
-		if (FibrousTcpSocket::IsAwaitable(result)) {
-			Await(clientSocket, POLLOUT);
-		} else {
-			return result;
-		}
-	}
+std::unique_ptr<TcpSocket> FibrousSocketServer::MakeSocketImpl(SOCKET socket) const {
+	return std::make_unique<FibrousTcpSocket>(socket, awaitFn);
 }
 
 void FibrousSocketServer::Handle(SOCKET clientSocket) {
