@@ -6,7 +6,7 @@ class FibrousTcpSocket : public TcpSocket {
 public:
 	using fn_t = std::function<void(SOCKET, short)>;
 
-	FibrousTcpSocket(SOCKET socket, fn_t awaitFn) : TcpSocket(socket), awaitFn(awaitFn) {}
+	FibrousTcpSocket(SOCKET socket, fn_t awaitFn);
 	FibrousTcpSocket() = delete;
 	FibrousTcpSocket(FibrousTcpSocket const&) = delete;
 	FibrousTcpSocket(FibrousTcpSocket&& that) noexcept : TcpSocket(std::move(that)), awaitFn(that.awaitFn) {}

@@ -1,6 +1,12 @@
 #include "pch.h"
 #include "FibrousTcpSocket.h"
 
+FibrousTcpSocket::FibrousTcpSocket(SOCKET socket, fn_t awaitFn) : TcpSocket(socket), awaitFn(awaitFn) {
+	if (!SetNonblocking(socket)) {
+		throw std::runtime_error("FibrousTcpSocket::FibrousTcpSocket.SetNonblocking");
+	}
+}
+
 FibrousTcpSocket& FibrousTcpSocket::operator=(FibrousTcpSocket&& that) noexcept {
 	TcpSocket::operator=(std::move(that));
 	return *this;
