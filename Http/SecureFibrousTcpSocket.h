@@ -12,6 +12,7 @@ public:
 	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket const&) = delete;
 	SecureFibrousTcpSocket& operator=(SecureFibrousTcpSocket&& that) noexcept;
 	~SecureFibrousTcpSocket();
+	int Connect(sockaddr const* address, size_t addressSize) noexcept override;
 
 protected:
 	int InternalReceive(char* buffer, size_t bufferSize) override;

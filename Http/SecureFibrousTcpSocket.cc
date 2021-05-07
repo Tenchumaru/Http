@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "SecureFibrousTcpSocket.h"
 
+// TODO:  is this ever invoked with isServer false?
 SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_CTX* sslContext, bool isServer) :
 	SecureFibrousTcpSocket(FibrousTcpSocket(socket, awaitFn), sslContext, isServer) {}
 
@@ -43,6 +44,20 @@ SecureFibrousTcpSocket& SecureFibrousTcpSocket::operator=(SecureFibrousTcpSocket
 	SwapPrivates(that);
 	FibrousTcpSocket::operator=(std::move(that));
 	return *this;
+}
+
+int SecureFibrousTcpSocket::Connect(sockaddr const* address, size_t addressSize) noexcept {
+	int result = FibrousTcpSocket::Connect(address, addressSize);
+	if (result == 0) {
+		auto fn = [this] {
+			return SSL_connect(ssl);
+		};
+		result = Invoke(fn);
+		if (result == 0) {
+			result = -1;
+		}
+	}
+	return result;
 }
 
 int SecureFibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {

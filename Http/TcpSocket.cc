@@ -7,6 +7,10 @@ TcpSocket& TcpSocket::operator=(TcpSocket&& that) noexcept {
 	return *this;
 }
 
+int TcpSocket::Connect(sockaddr const* address, size_t addressSize) noexcept {
+	return connect(socket, address, static_cast<int>(addressSize));
+}
+
 int TcpSocket::Receive(char* buffer, size_t bufferSize) {
 	return InternalReceive(buffer, bufferSize);
 }

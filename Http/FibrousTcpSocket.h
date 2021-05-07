@@ -14,6 +14,7 @@ public:
 	FibrousTcpSocket& operator=(FibrousTcpSocket&& that) noexcept;
 	~FibrousTcpSocket() = default;
 	static bool IsAwaitable(int errorValue);
+	int Connect(sockaddr const* address, size_t addressSize) noexcept override;
 
 protected:
 	void Await(short pollValue);

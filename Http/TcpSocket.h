@@ -11,6 +11,7 @@ public:
 	TcpSocket& operator=(TcpSocket const&) = delete;
 	TcpSocket& operator=(TcpSocket&& that) noexcept;
 	~TcpSocket() = default;
+	virtual int Connect(sockaddr const* address, size_t addressSize) noexcept;
 
 	// TODO:  consider returning size-error pairs.
 	int Receive(char* buffer, size_t bufferSize);

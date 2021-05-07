@@ -16,6 +16,14 @@ bool FibrousTcpSocket::IsAwaitable(int errorValue) {
 	return errorValue == EALREADY || errorValue == EINPROGRESS || errorValue == EWOULDBLOCK;
 }
 
+int FibrousTcpSocket::Connect(sockaddr const* address, size_t addressSize) noexcept {
+	int result;
+	do {
+		result = TcpSocket::Connect(address, addressSize);
+	} while (IsAwaiting(result, POLLOUT));
+	return result;
+}
+
 void FibrousTcpSocket::Await(short pollValue) {
 	awaitFn(socket, pollValue);
 }
