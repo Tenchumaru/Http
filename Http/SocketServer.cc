@@ -58,9 +58,7 @@ void SocketServer::Run(char const* service) {
 		// Accept and handle connections from it.
 		for (;;) {
 			auto [clientSocket, errorCode] = Accept(serverSocket, addressSize);
-			if (errorCode) {
-				std::cerr << "accept error " << errorCode << std::endl;
-			} else {
+			if (!errorCode) {
 				Handle(std::move(clientSocket));
 			}
 		}
@@ -93,9 +91,6 @@ SOCKET SocketServer::Connect(char const* nodeName, char const* serviceName) {
 		if (ConnectImpl(clientSocket, address->ai_addr, address->ai_addrlen) == 0) {
 			break;
 		}
-#ifdef _DEBUG
-		std::cerr << "connect failed; error " << errno << std::endl;
-#endif
 		close(clientSocket);
 		clientSocket = INVALID_SOCKET;
 	}
@@ -116,8 +111,11 @@ std::pair<SOCKET, int> SocketServer::Accept(SOCKET serverSocket, socklen_t addre
 	auto n = addressSize;
 	SOCKADDR_INET address;
 	auto const clientSocket = accept(serverSocket, reinterpret_cast<sockaddr*>(&address), &n);
+	if (clientSocket == INVALID_SOCKET) {
+		std::cerr << "SocketServer::Accept.accept error " << errno << std::endl;
+	}
 #ifdef _DEBUG
-	if (clientSocket != INVALID_SOCKET) {
+	else {
 		std::cout << "accepted socket " << clientSocket << ", address family " << address.si_family << std::endl;
 		if (address.si_family == AF_INET || address.si_family == AF_INET6) {
 			char s[std::max(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
