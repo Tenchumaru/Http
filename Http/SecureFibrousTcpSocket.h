@@ -16,8 +16,8 @@ public:
 	int Connect(sockaddr const* address, size_t addressSize) noexcept override;
 
 protected:
-	int InternalReceive(char* buffer, size_t bufferSize) override;
-	int InternalSend(char const* buffer, size_t bufferSize) override;
+	std::pair<size_t, int> InternalReceive(char* buffer, size_t bufferSize) override;
+	std::pair<size_t, int> InternalSend(char const* buffer, size_t bufferSize) override;
 
 private:
 	static BIO_METHOD* bioMethod;

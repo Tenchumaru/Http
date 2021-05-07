@@ -29,10 +29,10 @@ public:
 		char buf[217];
 
 		// Act
-		int result = s.Receive(buf, sizeof(buf));
+		auto result = s.Receive(buf, sizeof(buf));
 
 		// Assert
-		Assert::AreEqual(0, result);
+		Assert::AreEqual(0, result.second);
 		Assert::AreEqual(buf, actualBuf);
 		Assert::AreEqual(sizeof(buf), static_cast<size_t>(actualLen));
 		Assert::AreEqual(0, actualFlags);
@@ -56,10 +56,10 @@ public:
 		char buf[139];
 
 		// Act
-		int result = s.Send(buf, sizeof(buf));
+		auto result = s.Send(buf, sizeof(buf));
 
 		// Assert
-		Assert::AreEqual(0, result);
+		Assert::AreEqual(0, result.second);
 		Assert::AreEqual(buf, actualBuf);
 		Assert::AreEqual(sizeof(buf), static_cast<size_t>(actualLen));
 		Assert::AreEqual(0, actualFlags);

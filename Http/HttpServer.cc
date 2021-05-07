@@ -25,8 +25,8 @@ void HttpServer::InternalHandleImpl(std::unique_ptr<FibrousTcpSocket> clientSock
 		auto const m = buffer.size();
 		auto* const end = begin + m;
 		for (std::remove_const_t<decltype(m)> i = 0; i < m;) {
-			auto const n = clientSocket->Receive(begin + i, m - i);
-			if (n <= 0) {
+			auto [n, errorCode] = clientSocket->Receive(begin + i, m - i);
+			if (n == 0 || errorCode) {
 				return;
 			}
 			auto const* p = begin;

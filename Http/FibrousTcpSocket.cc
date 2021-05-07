@@ -28,24 +28,24 @@ void FibrousTcpSocket::Await(short pollValue) {
 	awaitFn(socket, pollValue);
 }
 
-int FibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
-	int result;
+std::pair<size_t, int> FibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
+	decltype(InternalReceive(nullptr, 0)) result;
 	do {
 		result = TcpSocket::InternalReceive(buffer, bufferSize);
-	} while (IsAwaiting(result, POLLIN));
+	} while (IsAwaiting(result.second, POLLIN));
 	return result;
 }
 
-int FibrousTcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
-	int result;
+std::pair<size_t, int> FibrousTcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
+	decltype(InternalSend(nullptr, 0)) result;
 	do {
 		result = TcpSocket::InternalSend(buffer, bufferSize);
-	} while (IsAwaiting(result, POLLOUT));
+	} while (IsAwaiting(result.second, POLLOUT));
 	return result;
 }
 
-bool FibrousTcpSocket::IsAwaiting(int result, short pollValue) {
-	if (result < 0 && IsAwaitable(errno)) {
+bool FibrousTcpSocket::IsAwaiting(int errorCode, short pollValue) {
+	if (IsAwaitable(errorCode)) {
 		awaitFn(socket, pollValue);
 		return true;
 	}

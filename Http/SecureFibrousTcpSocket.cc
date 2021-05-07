@@ -54,34 +54,42 @@ int SecureFibrousTcpSocket::Connect(sockaddr const* address, size_t addressSize)
 	return result;
 }
 
-int SecureFibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
+std::pair<size_t, int> SecureFibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
 	if (!buffer || !bufferSize) {
 		assert(buffer && bufferSize);
-		return 0;
+		return { 0, EINVAL };
 	}
 	auto fn = [this, buffer, bufferSize = static_cast<int>(bufferSize)]{
 		return SSL_read(ssl, buffer, bufferSize);
 	};
 	auto result = Invoke(fn);
-	if (result <= 0 && SSL_get_error(ssl, result) == SSL_ERROR_ZERO_RETURN) {
-		result = 0;
+	if (result <= 0) {
+		int errorCode = SSL_get_error(ssl, result);
+		if (errorCode == SSL_ERROR_ZERO_RETURN) {
+			return{ 0, 0 };
+		}
+		return{ 0, errorCode };
 	}
-	return result;
+	return { result, 0 };
 }
 
-int SecureFibrousTcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
+std::pair<size_t, int> SecureFibrousTcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
 	if (!buffer || !bufferSize) {
 		assert(buffer && bufferSize);
-		return 0;
+		return { 0, EINVAL };
 	}
 	auto fn = [this, buffer, bufferSize = static_cast<int>(bufferSize)]{
 		return SSL_write(ssl, buffer, bufferSize);
 	};
 	auto result = Invoke(fn);
-	if (result <= 0 && SSL_get_error(ssl, result) == SSL_ERROR_ZERO_RETURN) {
-		result = 0;
+	if (result <= 0) {
+		int errorCode = SSL_get_error(ssl, result);
+		if (errorCode == SSL_ERROR_ZERO_RETURN) {
+			return{ 0, 0 };
+		}
+		return{ 0, errorCode };
 	}
-	return result;
+	return { result, 0 };
 }
 
 int SecureFibrousTcpSocket::Invoke(std::function<int()> fn) {
