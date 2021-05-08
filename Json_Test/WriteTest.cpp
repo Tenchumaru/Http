@@ -9,6 +9,14 @@ namespace Json_Test {
 		char* stringValue = strdup("string");
 		wchar_t* wideStringValue = wcsdup(L"string");
 
+		template<typename T, typename U>
+		void WriteStringImpl(U u) {
+			std::stringstream ss;
+			T s = u;
+			WriteJson(ss, s);
+			Assert::AreEqual(ss.str(), "\""s + stringValue + '"');
+		}
+
 public:
 	TEST_METHOD(WriteUnorderedMap) {
 		std::stringstream ss;
@@ -33,24 +41,15 @@ public:
 	}
 
 	TEST_METHOD(WriteString) {
-		std::stringstream ss;
-		std::string s = stringValue;
-		WriteJson(ss, s);
-		Assert::AreEqual(ss.str(), "\""s + stringValue + '"');
+		WriteStringImpl<std::string>(stringValue);
 	}
 
 	TEST_METHOD(WriteCharacterPointer) {
-		std::stringstream ss;
-		char* p = stringValue;
-		WriteJson(ss, p);
-		Assert::AreEqual(ss.str(), "\""s + stringValue + '"');
+		WriteStringImpl<char*>(stringValue);
 	}
 
 	TEST_METHOD(WriteCharacterConstantPointer) {
-		std::stringstream ss;
-		char const* p = stringValue;
-		WriteJson(ss, p);
-		Assert::AreEqual(ss.str(), "\""s + stringValue + '"');
+		WriteStringImpl<char const*>(stringValue);
 	}
 
 	TEST_METHOD(WriteCharacter) {
@@ -68,24 +67,15 @@ public:
 	}
 
 	TEST_METHOD(WriteWideString) {
-		std::stringstream ss;
-		std::wstring s = wideStringValue;
-		WriteJson(ss, s);
-		Assert::AreEqual(ss.str(), "\""s + stringValue + '"');
+		WriteStringImpl<std::wstring>(wideStringValue);
 	}
 
 	TEST_METHOD(WriteWideCharacterPointer) {
-		std::stringstream ss;
-		wchar_t* p = wideStringValue;
-		WriteJson(ss, p);
-		Assert::AreEqual(ss.str(), "\""s + stringValue + '"');
+		WriteStringImpl<wchar_t*>(wideStringValue);
 	}
 
 	TEST_METHOD(WriteWideCharacterConstantPointer) {
-		std::stringstream ss;
-		wchar_t const* p = wideStringValue;
-		WriteJson(ss, p);
-		Assert::AreEqual(ss.str(), "\""s + stringValue + '"');
+		WriteStringImpl<wchar_t const*>(wideStringValue);
 	}
 
 	TEST_METHOD(WriteWideCharacter) {
