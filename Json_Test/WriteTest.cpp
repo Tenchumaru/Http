@@ -78,112 +78,74 @@ public:
 		WriteStringImpl<wchar_t const*>(wideStringValue);
 	}
 
-	TEST_METHOD(WriteWideCharacter) {
+	template<typename T>
+	void WriteSomething(T value, std::string const& expectedValue) {
 		std::stringstream ss;
-		wchar_t ch = L'a';
-		WriteJson(ss, ch);
-		Assert::AreEqual("\"a\""s, ss.str());
+		WriteJson(ss, value);
+		auto actualValue = ss.str();
+		Assert::AreEqual(expectedValue, actualValue);
+	}
+	TEST_METHOD(WriteWideCharacter) {
+		WriteSomething(L'a', "\"a\"");
 	}
 
 	TEST_METHOD(WriteDouble) {
-		std::stringstream ss;
-		double d = 1.1e307;
-		WriteJson(ss, d);
-		Assert::AreEqual("1.1e+307"s, ss.str());
+		WriteSomething(1.1e307, "1.1e+307");
 	}
 
 	TEST_METHOD(WriteLongLong) {
-		std::stringstream ss;
-		std::int64_t value = -17;
-		WriteJson(ss, value);
-		Assert::AreEqual("-17"s, ss.str());
+		WriteSomething(std::int64_t(-17), "-17");
 	}
 
 	TEST_METHOD(WriteLong) {
-		std::stringstream ss;
-		long value = -17;
-		WriteJson(ss, value);
-		Assert::AreEqual("-17"s, ss.str());
+		WriteSomething(-17l, "-17");
 	}
 
 	TEST_METHOD(WriteInteger) {
-		std::stringstream ss;
-		int value = -17;
-		WriteJson(ss, value);
-		Assert::AreEqual("-17"s, ss.str());
+		WriteSomething(-17, "-17");
 	}
 
 	TEST_METHOD(WriteShort) {
-		std::stringstream ss;
-		short value = -17;
-		WriteJson(ss, value);
-		Assert::AreEqual("-17"s, ss.str());
+		WriteSomething(short(-17), "-17");
 	}
 
 	TEST_METHOD(WriteSignedByte) {
-		std::stringstream ss;
-		std::int8_t value = -17;
-		WriteJson(ss, value);
-		Assert::AreEqual("-17"s, ss.str());
+		WriteSomething(std::int8_t(-17), "-17");
 	}
 
 	TEST_METHOD(WriteUnsignedLongLong) {
-		std::stringstream ss;
-		std::uint64_t value = 17;
-		WriteJson(ss, value);
-		Assert::AreEqual("17"s, ss.str());
+		WriteSomething(std::uint64_t(17), "17");
 	}
 
 	TEST_METHOD(WriteUnsignedLong) {
-		std::stringstream ss;
-		unsigned long value = 17;
-		WriteJson(ss, value);
-		Assert::AreEqual("17"s, ss.str());
+		WriteSomething(17ul, "17");
 	}
 
 	TEST_METHOD(WriteUnsignedInteger) {
-		std::stringstream ss;
-		unsigned value = 17;
-		WriteJson(ss, value);
-		Assert::AreEqual("17"s, ss.str());
+		WriteSomething(17u, "17");
 	}
 
 	TEST_METHOD(WriteUnsignedShort) {
-		std::stringstream ss;
-		unsigned short value = 17;
-		WriteJson(ss, value);
-		Assert::AreEqual("17"s, ss.str());
+		WriteSomething(unsigned short(17), "17");
 	}
 
 	TEST_METHOD(WriteByte) {
-		std::stringstream ss;
-		std::uint8_t value = 17;
-		WriteJson(ss, value);
-		Assert::AreEqual("17"s, ss.str());
+		WriteSomething(std::uint8_t(17), "17");
 	}
 
 	TEST_METHOD(WriteFalse) {
-		std::stringstream ss;
-		bool value = false;
-		WriteJson(ss, value);
-		Assert::AreEqual("false"s, ss.str());
+		WriteSomething(false, "false");
 	}
 
 	TEST_METHOD(WriteTrue) {
-		std::stringstream ss;
-		bool value = true;
-		WriteJson(ss, value);
-		Assert::AreEqual("true"s, ss.str());
+		WriteSomething(true, "true");
 	}
 
 	TEST_METHOD(WriteNullPointer) {
-		std::stringstream ss;
-		nullptr_t value = nullptr;
-		WriteJson(ss, value);
-		Assert::AreEqual("null"s, ss.str());
+		WriteSomething(nullptr, "null");
 	}
 
-	TEST_METHOD(WriteObjectPointer) {
+	TEST_METHOD(WriteObject) {
 		std::stringstream ss;
 		nullptr_t value1 = nullptr;
 		bool value2 = true;
@@ -196,14 +158,12 @@ public:
 	}
 
 	TEST_METHOD(WriteIterableArrayVector) {
-		std::stringstream ss;
 		std::array<std::vector<double>, 3> mv{
 			std::vector<double>{ .1, .2, .3 },
 			std::vector<double>{ .1, .2, .3 },
 			std::vector<double>{ .1, .2, .3 },
 		};
-		WriteJson(ss, mv);
-		Assert::AreEqual("[[0.1,0.2,0.3],[0.1,0.2,0.3],[0.1,0.2,0.3]]"s, ss.str());
+		WriteSomething(mv, "[[0.1,0.2,0.3],[0.1,0.2,0.3],[0.1,0.2,0.3]]");
 	}
 
 	TEST_METHOD(WriteArrayVector) {
@@ -218,32 +178,57 @@ public:
 	}
 
 	TEST_METHOD(WriteMapVector) {
-		std::stringstream ss;
 		std::map<int, std::vector<double>> mv{
 			{ 1, { .1, .2, .3 }},
 			{ 2, { .1, .2, .3 }},
 			{ 3, { .1, .2, .3 }},
 		};
-		WriteJson(ss, mv);
-		Assert::AreEqual("{\"1\":[0.1,0.2,0.3],\"2\":[0.1,0.2,0.3],\"3\":[0.1,0.2,0.3]}"s, ss.str());
+		WriteSomething(mv, "{\"1\":[0.1,0.2,0.3],\"2\":[0.1,0.2,0.3],\"3\":[0.1,0.2,0.3]}");
 	}
 
 	TEST_METHOD(WriteVectorMap) {
-		std::stringstream ss;
 		std::vector<std::map<unsigned char, double>> vm{
 			{{ 1, .1 }},
 			{{ 2, .2 }},
 			{{ 3, .3 }},
 		};
-		WriteJson(ss, vm);
-		Assert::AreEqual("[{\"1\":0.1},{\"2\":0.2},{\"3\":0.3}]"s, ss.str());
+		WriteSomething(vm, "[{\"1\":0.1},{\"2\":0.2},{\"3\":0.3}]");
 	}
 
-	TEST_METHOD(WriteValue) {
-		std::stringstream ss;
-		Value value = Value(2.25);
-		WriteJson(ss, value);
-		Assert::AreEqual("2.25"s, ss.str());
+	TEST_METHOD(WriteNullValue) {
+		WriteSomething(Value(nullptr), "null");
+	}
+
+	TEST_METHOD(WriteBooleanValue) {
+		WriteSomething(Value(true), "true");
+	}
+
+	TEST_METHOD(WriteNumberValue) {
+		WriteSomething(Value(2.25), "2.25");
+	}
+
+	TEST_METHOD(WriteArrayValue) {
+		std::vector<Value> v;
+		v.emplace_back(Value(nullptr));
+		v.emplace_back(Value(true));
+		v.emplace_back(Value(2.25));
+		WriteSomething(Value(std::move(v)), "[null,true,2.25]");
+	}
+
+	TEST_METHOD(WriteObjectValue) {
+		std::unordered_map<std::string, Value> m;
+		m.emplace("1", Value(nullptr));
+		m.emplace("2", Value(true));
+		m.emplace("3", Value(2.25));
+		WriteSomething(Value(std::move(m)), "{\"1\":null,\"2\":true,\"3\":2.25}");
+	}
+
+	TEST_METHOD(WriteCharacterConstantPointerValue) {
+		WriteSomething(Value("string"), "\""s + stringValue + '"');
+	}
+
+	TEST_METHOD(WriteStringValue) {
+		WriteSomething(Value("string"s), "\""s + stringValue + '"');
 	}
 	};
 }
