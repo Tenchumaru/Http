@@ -11,6 +11,7 @@
 #include "CppUnitTest.h"
 
 #include <algorithm>
+#include <array>
 #ifndef _WIN32
 # include <codecvt>
 #endif
