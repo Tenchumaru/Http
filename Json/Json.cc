@@ -418,8 +418,15 @@ void WriteJson(std::ostream& os, char const* s) {
 
 void WriteJson(std::ostream& os, wchar_t const* s) {
 	if (s != nullptr) {
+#ifdef _WIN32
+		auto l = wcslen(s);
+		auto n = WideCharToMultiByte(CP_UTF8, 0, s, static_cast<int>(l), nullptr, 0, nullptr, nullptr);
+		std::string result(n, 0);
+		WideCharToMultiByte(CP_UTF8, 0, s, static_cast<int>(l), &result[0], n, nullptr, nullptr);
+#else
 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 		auto const result = converter.to_bytes(s);
+#endif
 		WriteJson(os, result);
 	} else {
 		WriteJson(os, nullptr);

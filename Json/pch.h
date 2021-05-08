@@ -1,11 +1,14 @@
 #pragma once
 
 #ifdef _WIN32
+# define WIN32_LEAN_AND_MEAN
 # include "targetver.h"
+# include <Windows.h>
 #else
 # include <cmath>
 #endif
 
+#include <algorithm>
 #include <codecvt>
 #include <iomanip>
 #include <memory>
