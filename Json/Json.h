@@ -143,8 +143,13 @@ inline void WriteJson(std::ostream& os, nullptr_t) {
 	os << "null";
 }
 
-inline void WriteJson(std::ostream& os, bool b) {
-	auto const* s = b ? "true" : "false";
+template<typename T>
+using remove_cv_ref_t = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
+
+template<typename T>
+std::enable_if_t<std::is_same_v<std::decay_t<remove_cv_ref_t<T>>, bool>>
+WriteJson(std::ostream& os, T b) {
+	auto const* const s = b ? "true" : "false";
 	os << s;
 }
 
@@ -157,18 +162,28 @@ inline void WriteJson(std::ostream& os, std::wstring const& s) {
 }
 
 inline void WriteJson(std::ostream& os, char ch) {
-	char s[2]{ ch };
+	char const s[2]{ ch };
 	WriteJson(os, s);
 }
 
 inline void WriteJson(std::ostream& os, wchar_t ch) {
-	wchar_t s[2]{ ch };
+	wchar_t const s[2]{ ch };
 	WriteJson(os, s);
 }
 
 template<typename T>
 std::enable_if_t<is_integer<T>::value> WriteJson(std::ostream& os, T const& t) {
 	os << t;
+}
+
+template<>
+inline void WriteJson(std::ostream& os, std::uint8_t const& t) {
+	os << static_cast<unsigned>(t);
+}
+
+template<>
+inline void WriteJson(std::ostream& os, std::int8_t const& t) {
+	os << static_cast<int>(t);
 }
 
 template<typename T>
@@ -204,6 +219,18 @@ std::enable_if_t<is_iterable<T>::value> WriteJson(std::ostream& os, T const& m) 
 	for (typename T::const_iterator it = m.cbegin(), end = m.cend(); it != end; ) {
 		WriteJson(os, *it);
 		if (++it != end) {
+			os << ',';
+		}
+	}
+	os << ']';
+}
+
+template<typename T, size_t N>
+std::enable_if_t<is_iterable<T>::value> WriteJson(std::ostream& os, T const (&m)[N]) {
+	os << '[';
+	for (size_t i = 0; i < N; ++i) {
+		WriteJson(os, m[i]);
+		if (i < N - 1) {
 			os << ',';
 		}
 	}
