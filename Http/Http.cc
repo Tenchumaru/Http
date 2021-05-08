@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Http.h"
 
+using namespace std::literals;
+
 bool AtEndOfPath(char ch) {
 	return std::isspace(ch, std::locale()) || ch == '?' || ch == '#';
 }
@@ -15,11 +17,13 @@ bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*
 }
 
 void FourHundred(Response& response, char const* message) {
-	response, message;
-	// TODO
+	response.WriteStatus(StatusLines::BadRequest);
+	if (message && *message) {
+		response.WriteHeader("Content-Length"s, std::to_string(strlen(message)));
+		response << message;
+	}
 }
 
 void FourZeroFour(Response& response) {
-	response;
-	// TODO
+	response.WriteStatus(StatusLines::NotFound);
 }
