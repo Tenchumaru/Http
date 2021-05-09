@@ -59,8 +59,6 @@ Task<bool> DynamicHttpServer::InternalHandle(Request const& request, std::unique
 	});
 
 	// Create the response and send it to the client.
-	// TODO:  consider creating a flushable response to allow for
-	// content larger than this buffer.
 	std::array<char, 16'000> buffer;
 	ClosableAsyncResponse response(*clientSocket, buffer.data(), buffer.data() + buffer.size());
 

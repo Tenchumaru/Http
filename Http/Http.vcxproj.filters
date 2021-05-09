@@ -33,16 +33,10 @@
     <ClInclude Include="Response.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Waiter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Uri.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Socket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TcpSocketFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TcpSocket.h">
@@ -51,16 +45,10 @@
     <ClInclude Include="FibrousTcpSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FibrousTcpSocketFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HeaderMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ClosableResponse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DispatchParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HeaderBase.h">
@@ -143,28 +131,16 @@
     <ClCompile Include="Response.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Waiter.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Uri.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Socket.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TcpSocketFactory.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TcpSocket.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FibrousTcpSocket.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FibrousTcpSocketFactory.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DispatchParser.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Http.cc">

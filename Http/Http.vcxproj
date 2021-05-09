@@ -121,10 +121,8 @@
     <ClInclude Include="Body.h" />
     <ClInclude Include="ClosableAsyncResponse.h" />
     <ClInclude Include="ClosableResponse.h" />
-    <ClInclude Include="DispatchParser.h" />
     <ClInclude Include="DynamicHttpServer.h" />
     <ClInclude Include="FibrousTcpSocket.h" />
-    <ClInclude Include="FibrousTcpSocketFactory.h" />
     <ClInclude Include="HeaderBase.h" />
     <ClInclude Include="HeaderMap.h" />
     <ClInclude Include="Http.h" />
@@ -144,19 +142,15 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="TcpSocket.h" />
-    <ClInclude Include="TcpSocketFactory.h" />
     <ClInclude Include="Uri.h" />
-    <ClInclude Include="Waiter.h" />
     <ClInclude Include="xtypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AsyncResponse.cc" />
     <ClCompile Include="AsyncSocket.cc" />
     <ClCompile Include="AsyncSocketServer.cc" />
-    <ClCompile Include="DispatchParser.cc" />
     <ClCompile Include="DynamicHttpServer.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />
-    <ClCompile Include="FibrousTcpSocketFactory.cc" />
     <ClCompile Include="Http.cc" />
     <ClCompile Include="HttpParser.cc" />
     <ClCompile Include="HttpServer.cc" />
@@ -174,9 +168,7 @@
     <ClCompile Include="StatusLines.cc" />
     <ClCompile Include="Task.cc" />
     <ClCompile Include="TcpSocket.cc" />
-    <ClCompile Include="TcpSocketFactory.cc" />
     <ClCompile Include="Uri.cc" />
-    <ClCompile Include="Waiter.cc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
