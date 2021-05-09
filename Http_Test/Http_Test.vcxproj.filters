@@ -41,12 +41,6 @@
     <ClCompile Include="UriTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TcpSocketFactoryTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WaiterTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResponseTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,5 +59,8 @@
     <ClCompile Include="Dispatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

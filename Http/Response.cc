@@ -235,7 +235,7 @@ void Response::nstreambuf::InternalSendBuffer() {
 
 void Response::nstreambuf::InternalSend(char_type const* s, std::streamsize n) {
 	for (decltype(n) i = 0; i < n;) {
-		auto const v = socket.Send(s + i, n - i);
+		auto [v, errorCode] = socket.Send(s + i, n - i);
 		if (v > 0) {
 			i += v;
 		} else {

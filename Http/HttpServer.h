@@ -1,9 +1,9 @@
 #pragma once
 
-#include "TcpSocketFactory.h"
+#include "SecureFibrousSocketServer.h"
 #include "Response.h"
 
-class HttpServer {
+class HttpServer : public SecureFibrousSocketServer {
 public:
 	HttpServer() = default;
 	HttpServer(HttpServer const&) = delete;
@@ -12,14 +12,8 @@ public:
 	HttpServer& operator=(HttpServer&&) noexcept = default;
 	virtual ~HttpServer() = default;
 
-	void ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile);
-	void Run(unsigned short port);
-
 private:
-	std::string certificateChainFile;
-	std::string privateKeyFile;
-
-	TcpSocketFactory::fn_t GetConnectFn() const;
-	char const* ProcessRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket) const;
-	virtual char const* DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const = 0;
+	char const* ProcessRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& clientSocket) const;
+	virtual char const* DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& clientSocket, Response& response) const = 0;
+	void InternalHandleImpl(std::unique_ptr<FibrousTcpSocket> clientSocket) override;
 };

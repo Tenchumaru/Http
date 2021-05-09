@@ -13,7 +13,12 @@ namespace {
 }
 
 char const* HttpParser::Add(char const* begin, char const* end) {
-	return (this->*fn)(begin, end);
+	try {
+		return (this->*fn)(begin, end);
+	} catch (...) {
+		Reset();
+		throw;
+	}
 }
 
 void HttpParser::Reset() {
@@ -34,7 +39,7 @@ char const* HttpParser::CollectFirst(char const* p, char const* const q) {
 			return p + 1;
 		} else if (*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
-			throw Exception(StatusLines::BadRequest);
+			throw Exception(StatusLines::BadRequest, "malformed start line");
 		}
 		first += *p;
 		++p;
@@ -47,14 +52,14 @@ char const* HttpParser::CollectNext(char const* p, char const* const q) {
 		if (*p == ' ') {
 			// Validate it and start collecting the last part.
 			if (!ValidateNext(next)) {
-				throw Exception(StatusLines::BadRequest);
+				throw Exception(StatusLines::BadRequest, "malformed start line");
 			}
 			last.clear();
 			fn = &HttpParser::CollectLast;
 			return p + 1;
 		} else if (*p == '\r' || *p == '\n') {
 			// Didn't find it; it's an invalid message.
-			throw Exception(StatusLines::BadRequest);
+			throw Exception(StatusLines::BadRequest, "malformed start line");
 		}
 		next += *p;
 		++p;
@@ -69,7 +74,7 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 		} else if (*p == '\n') {
 			// Validate it and start collecting the first header name.
 			if (!ValidateLast(last)) {
-				throw Exception(StatusLines::BadRequest);
+				throw Exception(StatusLines::BadRequest, "malformed start line");
 			}
 			name.clear();
 			fn = &HttpParser::CollectHeaderName;
@@ -85,7 +90,7 @@ char const* HttpParser::CollectLast(char const* p, char const* const q) {
 char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 	// Check for too many headers.
 	if (headers.size() >= maxHeaders) {
-		throw Exception(StatusLines::BadRequest); // TODO:  provide useful content.
+		throw Exception(StatusLines::BadRequest, "too many headers");
 	}
 
 	// Look for the end of the name (a colon).
@@ -93,7 +98,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 		if (*p == ':') {
 			// Found it; validate the name.
 			if (name.empty()) {
-				throw Exception(StatusLines::BadRequest);
+				throw Exception(StatusLines::BadRequest, "malformed header");
 			}
 
 			// Start collecting the header value.
@@ -105,7 +110,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 		} else if (*p == '\n') {
 			// Didn't find it.  If there is a name, it's an invalid message.
 			if (!name.empty()) {
-				throw Exception(StatusLines::BadRequest);
+				throw Exception(StatusLines::BadRequest, "malformed header");
 			}
 
 			// Get the content length, if any.
@@ -131,12 +136,12 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 			if (name.empty()) {
 				name += ' ';
 			} else if (name != " ") {
-				throw Exception(StatusLines::BadRequest);
+				throw Exception(StatusLines::BadRequest, "malformed header");
 			}
 		} else {
 			name += *p;
 			if (name.size() >= maxNameSize) {
-				throw Exception(StatusLines::BadRequest);
+				throw Exception(StatusLines::BadRequest, "malformed header");
 			}
 		}
 	}
@@ -161,7 +166,7 @@ char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 		} else if (!value.empty() || !isspace(*p)) {
 			value += *p;
 			if (value.size() >= maxValueSize) {
-				throw Exception(StatusLines::BadRequest);
+				throw Exception(StatusLines::BadRequest, "malformed header");
 			}
 		}
 		++p;

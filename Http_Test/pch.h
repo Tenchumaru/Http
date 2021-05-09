@@ -5,6 +5,9 @@
 
 #include <WS2tcpip.h>
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include <array>
 #include <functional>
 #include <locale>

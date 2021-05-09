@@ -7,18 +7,30 @@ TcpSocket& TcpSocket::operator=(TcpSocket&& that) noexcept {
 	return *this;
 }
 
-int TcpSocket::Receive(char* buffer, size_t bufferSize) {
+int TcpSocket::Connect(sockaddr const* address, size_t addressSize) noexcept {
+	return connect(socket, address, static_cast<int>(addressSize));
+}
+
+std::pair<size_t, int> TcpSocket::Receive(char* buffer, size_t bufferSize) {
 	return InternalReceive(buffer, bufferSize);
 }
 
-int TcpSocket::Send(char const* buffer, size_t bufferSize) {
+std::pair<size_t, int> TcpSocket::Send(char const* buffer, size_t bufferSize) {
 	return InternalSend(buffer, bufferSize);
 }
 
-int TcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
-	return recv(socket, buffer, static_cast<int>(bufferSize), 0);
+std::pair<size_t, int> TcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
+	auto result = recv(socket, buffer, static_cast<int>(bufferSize), 0);
+	if (result >= 0) {
+		return{ result, 0 };
+	}
+	return{ 0, errno };
 }
 
-int TcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
-	return send(socket, buffer, static_cast<int>(bufferSize), 0);
+std::pair<size_t, int> TcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
+	auto result = send(socket, buffer, static_cast<int>(bufferSize), 0);
+	if (result >= 0) {
+		return{ result, 0 };
+	}
+	return{ 0, errno };
 }

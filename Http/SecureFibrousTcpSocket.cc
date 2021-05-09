@@ -1,123 +1,22 @@
 #include "pch.h"
 #include "SecureFibrousTcpSocket.h"
 
-namespace {
-#ifdef _DEBUG
-	void PrintCommand(int command) {
-		char const* s = "(unknown)";
-		switch (command) {
-		case BIO_CTRL_RESET:
-			s = "CTRL_RESET";
-			break;
-		case BIO_C_FILE_SEEK:
-			s = "C_FILE_SEEK";
-			break;
-		case BIO_C_FILE_TELL:
-			s = "C_FILE_TELL";
-			break;
-		case BIO_CTRL_PUSH:
-			s = "CTRL_PUSH";
-			break;
-		case BIO_CTRL_POP:
-			s = "CTRL_POP";
-			break;
-		case BIO_CTRL_INFO:
-			s = "CTRL_INFO";
-			break;
-		case BIO_CTRL_PENDING:
-			s = "CTRL_PENDING";
-			break;
-		case BIO_CTRL_WPENDING:
-			s = "CTRL_WPENDING";
-			break;
-		case BIO_CTRL_DUP:
-			s = "CTRL_DUP";
-			break;
-		case BIO_CTRL_FLUSH:
-			s = "CTRL_FLUSH";
-			break;
-		}
-		OutputDebugStringA(s);
-		OutputDebugStringA("\n");
-	}
-#else
-# define PrintCommand(command) ((void)0)
-#endif
-
-	long BioControl(BIO* bio, int command, long value, void*) {
-		PrintCommand(command);
-		switch (command) {
-		case BIO_CTRL_DUP:
-		case BIO_CTRL_EOF:
-		case BIO_CTRL_RESET:
-			break;
-		case BIO_CTRL_GET_CLOSE:
-			return BIO_get_shutdown(bio);
-		case BIO_CTRL_SET_CLOSE:
-			BIO_set_shutdown(bio, static_cast<int>(value));
-			return 1;
-		case BIO_CTRL_INFO:
-		case BIO_CTRL_PENDING:
-		case BIO_CTRL_SET_CALLBACK:
-		case BIO_CTRL_WPENDING:
-			return 0;
-		case BIO_CTRL_FLUSH:
-		case BIO_CTRL_POP:
-		case BIO_CTRL_PUSH:
-			return 1;
-		default:
-			DebugBreak();
-		}
-		return -1;
-	}
-
-	int BioCreate(BIO* bio) {
-		BIO_set_init(bio, 1);
-		return 1;
-	}
-
-	int BioDestroy(BIO*) {
-		return 1;
-	}
-}
-
-BIO_METHOD* SecureFibrousTcpSocket::bioMethod = [] {
-	auto* const rv = BIO_meth_new(BIO_get_new_index() | BIO_TYPE_SOURCE_SINK, "SecureFibrousTcpSocket::bioMethod");
-	BIO_meth_set_ctrl(rv, BioControl);
-	BIO_meth_set_create(rv, BioCreate);
-	BIO_meth_set_destroy(rv, BioDestroy);
-	BIO_meth_set_read_ex(rv, SecureFibrousTcpSocket::BioRead);
-	BIO_meth_set_write_ex(rv, SecureFibrousTcpSocket::BioWrite);
-	return rv;
-}();
-
-SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_CTX* sslContext, bool isServer) :
-	FibrousTcpSocket(socket, awaitFn),
-	ssl(SSL_new(sslContext)) {
-	if (!ssl) {
-		perror("Cannot create SSL");
-		throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_new");
-	}
-	auto* const bio = BIO_new(bioMethod);
-	BIO_set_data(bio, this);
-	SSL_set0_rbio(ssl, bio);
-	BIO_up_ref(bio);
-	SSL_set0_wbio(ssl, bio);
-	if (isServer) {
-		if (SSL_accept(ssl) <= 0) {
-			ERR_print_errors_fp(stderr);
-			throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_accept");
-		}
-	} else {
-		if (SSL_connect(ssl) <= 0) {
-			ERR_print_errors_fp(stderr);
-			throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_connect");
-		}
-	}
-}
+SecureFibrousTcpSocket::SecureFibrousTcpSocket(SOCKET socket, fn_t awaitFn, SSL_CTX* sslContext) :
+	SecureFibrousTcpSocket(FibrousTcpSocket(socket, awaitFn), sslContext) {}
 
 SecureFibrousTcpSocket::SecureFibrousTcpSocket(SecureFibrousTcpSocket&& that) noexcept : FibrousTcpSocket(std::move(that)) {
 	SwapPrivates(that);
+}
+
+SecureFibrousTcpSocket::SecureFibrousTcpSocket(FibrousTcpSocket&& that, SSL_CTX* sslContext) : FibrousTcpSocket(std::move(that)), ssl(SSL_new(sslContext)) {
+	if (!ssl) {
+		ERR_print_errors_fp(stderr);
+		throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_new");
+	}
+	if (!SSL_set_fd(ssl, static_cast<int>(socket))) {
+		ERR_print_errors_fp(stderr);
+		throw std::runtime_error("SecureFibrousTcpSocket::SecureFibrousTcpSocket.SSL_set_fd");
+	}
 }
 
 SecureFibrousTcpSocket::~SecureFibrousTcpSocket() {
@@ -130,54 +29,90 @@ SecureFibrousTcpSocket& SecureFibrousTcpSocket::operator=(SecureFibrousTcpSocket
 	return *this;
 }
 
-int SecureFibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
-	if (!bufferSize) {
-		assert(bufferSize);
-		return 0;
+int SecureFibrousTcpSocket::Accept() noexcept {
+	auto fn = [this] {
+		return SSL_accept(ssl);
+	};
+	int result = Invoke(fn);
+	if (result == 0) {
+		result = -1;
 	}
-	int result = SSL_read(ssl, buffer, static_cast<int>(bufferSize));
-	if (result > 0) {
-		return result;
-	}
-	result = SSL_get_error(ssl, result);
-	return result == SSL_ERROR_ZERO_RETURN ? 0 : -1;
+	return result;
 }
 
-int SecureFibrousTcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
-	if (!bufferSize) {
-		assert(bufferSize);
-		return 0;
+int SecureFibrousTcpSocket::Connect(sockaddr const* address, size_t addressSize) noexcept {
+	int result = FibrousTcpSocket::Connect(address, addressSize);
+	if (result == 0) {
+		auto fn = [this] {
+			return SSL_connect(ssl);
+		};
+		result = Invoke(fn);
+		if (result == 0) {
+			result = -1;
+		}
 	}
-	int result = SSL_write(ssl, buffer, static_cast<int>(bufferSize));
-	if (result > 0) {
-		return result;
-	}
-	result = SSL_get_error(ssl, result);
-	return result == SSL_ERROR_ZERO_RETURN ? 0 : -1;
+	return result;
 }
 
-int SecureFibrousTcpSocket::BioRead(BIO* bio, char* data, size_t n, size_t* pn) {
-	auto* const p = reinterpret_cast<SecureFibrousTcpSocket*>(BIO_get_data(bio));
-	int const i = p->FibrousTcpSocket::InternalReceive(data, n);
-	if (i < 0) {
-		return -1;
+std::pair<size_t, int> SecureFibrousTcpSocket::InternalReceive(char* buffer, size_t bufferSize) {
+	if (!buffer || !bufferSize) {
+		assert(buffer && bufferSize);
+		return { 0, EINVAL };
 	}
-	*pn = i;
-	return 1;
+	auto fn = [this, buffer, bufferSize = static_cast<int>(bufferSize)]{
+		return SSL_read(ssl, buffer, bufferSize);
+	};
+	auto result = Invoke(fn);
+	if (result <= 0) {
+		int errorCode = SSL_get_error(ssl, result);
+		if (errorCode == SSL_ERROR_ZERO_RETURN) {
+			return{ 0, 0 };
+		}
+		return{ 0, errorCode };
+	}
+	return { result, 0 };
 }
 
-int SecureFibrousTcpSocket::BioWrite(BIO* bio, char const* data, size_t n, size_t* pn) {
-	auto* const p = reinterpret_cast<SecureFibrousTcpSocket*>(BIO_get_data(bio));
-	int const i = p->FibrousTcpSocket::InternalSend(data, n);
-	if (i < 0) {
-		return -1;
+std::pair<size_t, int> SecureFibrousTcpSocket::InternalSend(char const* buffer, size_t bufferSize) {
+	if (!buffer || !bufferSize) {
+		assert(buffer && bufferSize);
+		return { 0, EINVAL };
 	}
-	*pn = i;
-	return 1;
+	auto fn = [this, buffer, bufferSize = static_cast<int>(bufferSize)]{
+		return SSL_write(ssl, buffer, bufferSize);
+	};
+	auto result = Invoke(fn);
+	if (result <= 0) {
+		int errorCode = SSL_get_error(ssl, result);
+		if (errorCode == SSL_ERROR_ZERO_RETURN) {
+			return{ 0, 0 };
+		}
+		return{ 0, errorCode };
+	}
+	return { result, 0 };
+}
+
+int SecureFibrousTcpSocket::Invoke(std::function<int()> fn) {
+	int result;
+	while (result = fn(), result <= 0) {
+		int errorCode = SSL_get_error(ssl, result);
+		if (errorCode == SSL_ERROR_WANT_READ) {
+			// Await the read and try again.
+			Await(POLLIN);
+		} else if (errorCode == SSL_ERROR_WANT_WRITE) {
+			// Await the write and try again.
+			Await(POLLOUT);
+		} else {
+			break;
+		}
+	}
+	return result;
 }
 
 void SecureFibrousTcpSocket::SwapPrivates(SecureFibrousTcpSocket& that) {
-	SSL_free(ssl);
-	ssl = nullptr;
+	if (ssl) {
+		SSL_free(ssl);
+		ssl = nullptr;
+	}
 	std::swap(ssl, that.ssl);
 }
