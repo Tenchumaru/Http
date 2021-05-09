@@ -3,15 +3,6 @@
 #include "HttpParser.h"
 #include "HttpServer.h"
 
-// TODO:  consider an alternate design in which the Request object produced by
-// a RequestParser has its handler invoked on a new fiber so the parser can
-// continue, possibly parsing and producing the next request if the first
-// becomes blocked.  However, since it's all the same socket, the client will
-// expect the responses in the same order as the requests.  Buffer out-of-order
-// responses until the preceding responses are sent.  Additionally, if a later
-// request depends on the outcome of an earlier request, this will necessitate
-// synchronization to ensure effects occur in the expected order.
-
 namespace {
 	std::array<char, 4> pattern = { '\r', '\n', '\r', '\n' };
 	std::boyer_moore_searcher searcher(pattern.begin(), pattern.end());
