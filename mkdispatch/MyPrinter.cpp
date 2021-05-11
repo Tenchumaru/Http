@@ -80,6 +80,7 @@ namespace {
 				out << indent << "\t\t}" << std::endl;
 				if (fn.back() == '+') {
 					// TODO:  add configuration to limit the content length.
+					// TODO:  handle Expect header.  See Http\RequestParser.cc.
 					out << indent << "\t\tif(!headers.ContentLength.first) {" << std::endl;
 					out << indent << "\t\t\tFourHundred(response, \"no content length header\");" << std::endl;
 					out << indent << "\t\t\treturn end;" << std::endl;

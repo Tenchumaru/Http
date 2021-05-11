@@ -6,6 +6,8 @@
 
 class Response {
 public:
+	constexpr static ptrdiff_t MinimumHeaderBufferSize = 512;
+
 	// TODO:  consider creating a flushable response to allow for
 	// content larger than the provided buffer.
 	Response(TcpSocket& socket, char* begin, char* end);

@@ -4,7 +4,6 @@
 namespace {
 	std::string const contentLengthKey = "Content-Length";
 	std::string const serverKey = "Server";
-	constexpr ptrdiff_t minimumHeaderBufferSize = 512;
 
 	// TODO:  consider creating a thread that runs once per second to update
 	// the time buffer.
@@ -29,8 +28,8 @@ Response::Response(TcpSocket& socket, char* begin, char* end) :
 	end(end),
 	outputStreamBuffer(*this, socket),
 	responseStream(&outputStreamBuffer) {
-	if (end - begin < minimumHeaderBufferSize) {
-		throw std::runtime_error("minimumHeaderBufferSize");
+	if (end - begin < MinimumHeaderBufferSize) {
+		throw std::runtime_error("MinimumHeaderBufferSize");
 	}
 }
 

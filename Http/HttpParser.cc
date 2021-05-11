@@ -200,14 +200,12 @@ std::streamsize HttpParser::ValidateDataSizeHeaders() {
 		}
 	} else if (headers.find("Transfer-Encoding"s) != headers.cend()) {
 		throw Exception(StatusLines::BadRequest, "invalid combination of content length and transfer encoding");
-	} else if (!std::all_of(it->second.cbegin(), it->second.cend(), isdigit)) {
+	} else if (!std::all_of(it->second.cbegin(), it->second.cend(), [](char ch) { return std::isdigit(ch, std::locale()); })) {
 		throw Exception(StatusLines::BadRequest, "invalid content length");
 	} else if (it->second.size() > CountDigits<maxContentLength>()) {
 		throw Exception(StatusLines::PayloadTooLarge);
 	}
-	contentLength = std::stoll(it->second);
-	// TODO:  for requests, check for the "Expect: 100-continue" header.
-	return contentLength;
+	return std::stoll(it->second);
 }
 
 bool HttpParser::ValidateFirst(std::string const& s) {

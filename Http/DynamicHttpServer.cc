@@ -21,6 +21,14 @@ char const* DynamicHttpServer::DispatchRequest(char const* begin, char const* bo
 	});
 
 	if (it != handlers.cend()) {
+		// If the request contains an expectation, immediately respond with a continue.
+		if (request.Headers.find("Expect"s) != request.Headers.cend()) {
+			std::array<char, Response::MinimumHeaderBufferSize> continueBuffer;
+			ClosableResponse continueResponse(socket, continueBuffer.data(), continueBuffer.data() + continueBuffer.size());
+			continueResponse.WriteStatus(StatusLines::Continue);
+			continueResponse.Close();
+		}
+
 		// Invoke the handler.
 		auto it_ = request.Headers.find("Content-Length"s);
 		auto size = it_ == request.Headers.cend() ? 0 : std::strtol(it_->second.c_str(), nullptr, 10);
