@@ -24,7 +24,7 @@ namespace {
 
 	class Body {
 	public:
-		Body(char const* begin, char*& next, int size, TcpSocket& socket);
+		Body(char const* begin, char const* next, int size, TcpSocket& socket);
 		Body(Body const&) = delete;
 		Body(Body&&) = default;
 		Body& operator=(Body const&) = delete;
@@ -35,12 +35,12 @@ namespace {
 
 	private:
 		char const* begin;
-		char*& next;
+		char const* next;
 		int size;
 		TcpSocket& socket;
 	};
 
-	Body::Body(char const* begin, char*& next, int size, TcpSocket& socket) : begin(begin), next(next), size(size), socket(socket) {}
+	Body::Body(char const* begin, char const* next, int size, TcpSocket& socket) : begin(begin), next(next), size(size), socket(socket) {}
 
 	size_t CollectParameter_invocationCount;
 	bool CollectQueries_succeeded;
@@ -258,7 +258,7 @@ public:
 		Response response;
 		std::string request("G /j HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsFalse(CollectQueries_succeeded);
 		Assert::IsFalse(CollectQueries_failed);
@@ -270,7 +270,7 @@ public:
 		Response response;
 		std::string request("O /j HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsFalse(CollectQueries_succeeded);
 		Assert::IsFalse(CollectQueries_failed);
@@ -282,7 +282,7 @@ public:
 		Response response;
 		std::string request("G / HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(root_invoked);
 	}
@@ -292,7 +292,7 @@ public:
 		Response response;
 		std::string request("G /a/b HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(a_b_invoked);
 	}
@@ -302,7 +302,7 @@ public:
 		Response response;
 		std::string request("G /a/bc HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(a_bc_invoked);
 	}
@@ -312,7 +312,7 @@ public:
 		Response response;
 		std::string request("G /x/y HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(x_y_invoked);
 	}
@@ -322,7 +322,7 @@ public:
 		Response response;
 		std::string request("G /xy/z HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(xy_z_invoked);
 	}
@@ -332,7 +332,7 @@ public:
 		Response response;
 		std::string request("G /r/abc/p HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(r___p_p0, r___p_q0);
 		Assert::AreEqual(std::string("abc"), s);
@@ -343,7 +343,7 @@ public:
 		Response response;
 		std::string request("G /q/abc/xyz HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 2ull);
 		std::string s(q_____p0, q_____q0);
 		Assert::AreEqual(std::string("abc"), s);
@@ -356,7 +356,7 @@ public:
 		Response response;
 		std::string request("G /q/abc HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(q___p0, q___q0);
 		Assert::AreEqual(std::string("abc"), s);
@@ -367,7 +367,7 @@ public:
 		Response response;
 		std::string request("G /z/abc/xyz/y HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 2ull);
 		std::string s(z____y_p0, z____y_q0);
 		Assert::AreEqual(std::string("abc"), s);
@@ -380,7 +380,7 @@ public:
 		Response response;
 		std::string request("G /m/m/ HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::IsTrue(m_m__invoked);
 	}
 
@@ -389,7 +389,7 @@ public:
 		Response response;
 		std::string request("G /m/m/abc HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(m_m___p0, m_m___q0);
 		Assert::AreEqual(std::string("abc"), s);
@@ -400,7 +400,7 @@ public:
 		Response response;
 		std::string request("G /m/m/abc/a HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(m_m___a_p0, m_m___a_q0);
 		Assert::AreEqual(std::string("abc"), s);
@@ -411,7 +411,7 @@ public:
 		Response response;
 		std::string request("G /m/m/abc/b HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p, p, p, socket, response);
+		Dispatch(request.c_str(), p, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		std::string s(m_m___b_p0, m_m___b_q0);
 		Assert::AreEqual(std::string("abc"), s);
@@ -422,7 +422,7 @@ public:
 		Response response;
 		std::string request("P /a/b HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p - 4, p, p, socket, response);
+		Dispatch(request.c_str(), p - 4, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(Pa_b_hasGoodBody);
 		Assert::IsTrue(Pa_b_invoked);
@@ -433,7 +433,7 @@ public:
 		Response response;
 		std::string request("P /a/b/c HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p - 4, p, p, socket, response);
+		Dispatch(request.c_str(), p - 4, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsTrue(Pa_b_c_hasGoodBody);
 		Assert::IsTrue(Pa_b_c_invoked);
@@ -444,7 +444,7 @@ public:
 		Response response;
 		std::string request("P /x/y/y HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p - 4, p, p, socket, response);
+		Dispatch(request.c_str(), p - 4, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 2ull);
 		Assert::IsTrue(Px___y_hasGoodBody);
 		std::string s(Px___y_p0, Px___y_q0);
@@ -456,7 +456,7 @@ public:
 		Response response;
 		std::string request("P /x/y/y/z HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
-		Dispatch(request.c_str(), p - 4, p, p, socket, response);
+		Dispatch(request.c_str(), p - 4, p, socket, response);
 		Assert::AreEqual(CollectParameter_invocationCount, 1ull);
 		Assert::IsTrue(Px_y___z_hasGoodBody);
 		std::string s(Px_y___z_p0, Px_y___z_q0);
