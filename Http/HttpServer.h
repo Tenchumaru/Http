@@ -13,7 +13,7 @@ public:
 	virtual ~HttpServer() = default;
 
 private:
-	char const* ProcessRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& clientSocket) const;
-	virtual char const* DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& clientSocket, Response& response) const = 0;
+	char const* ProcessRequest(char const* begin, char const* body, char const* end, TcpSocket& clientSocket) const;
+	virtual char const* DispatchRequest(char const* begin, char const* body, char const* end, TcpSocket& clientSocket, Response& response) const = 0;
 	void InternalHandleImpl(std::unique_ptr<FibrousTcpSocket> clientSocket) override;
 };

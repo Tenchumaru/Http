@@ -5,8 +5,8 @@ void DynamicHttpServer::Add(char const* path, fn_t fn) {
 	handlers.push_back({ path, fn });
 }
 
-char const* DynamicHttpServer::DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const {
-	next, end, socket;
+char const* DynamicHttpServer::DispatchRequest(char const* begin, char const* body, char const* end, TcpSocket& socket, Response& response) const {
+	end, socket; // TODO:  process the body if there is one.
 	auto* this_ = const_cast<std::remove_const_t<std::remove_pointer_t<decltype(this)>>*>(this);
 	auto const* p = begin;
 	do {
