@@ -1,12 +1,13 @@
 #include "pch.h"
 #include "DynamicHttpServer.h"
 
+using namespace std::literals;
+
 void DynamicHttpServer::Add(char const* path, fn_t fn) {
 	handlers.push_back({ path, fn });
 }
 
 char const* DynamicHttpServer::DispatchRequest(char const* begin, char const* body, char const* end, TcpSocket& socket, Response& response) const {
-	end, socket; // TODO:  process the body if there is one.
 	auto* this_ = const_cast<std::remove_const_t<std::remove_pointer_t<decltype(this)>>*>(this);
 	auto const* p = begin;
 	do {
@@ -21,7 +22,9 @@ char const* DynamicHttpServer::DispatchRequest(char const* begin, char const* bo
 
 	if (it != handlers.cend()) {
 		// Invoke the handler.
-		it->second(request, response);
+		auto it_ = request.Headers.find("Content-Length"s);
+		auto size = it_ == request.Headers.cend() ? 0 : std::strtol(it_->second.c_str(), nullptr, 10);
+		it->second(request, Body(body, end, size, socket), response);
 	} else {
 		// Return a 404.
 		response.WriteStatus(StatusLines::NotFound);
@@ -32,7 +35,7 @@ char const* DynamicHttpServer::DispatchRequest(char const* begin, char const* bo
 	// the HTTP version is less than 1.1 and there is no "Connection"
 	// header whose value is "Keep-Alive", close the socket.
 	bool isLastRequest;
-	auto header = request.Headers.find("connection");
+	auto header = request.Headers.find("Connection");
 	if (request.Version >= 0x11) {
 		isLastRequest = header != request.Headers.cend() && _stricmp(header->second.c_str(), "close") == 0;
 	} else {

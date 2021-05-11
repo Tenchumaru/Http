@@ -3,13 +3,13 @@
 #include "../Http/Http.h"
 #include "../Http/DynamicHttpServer.h"
 
-void HandleJson(Request const& request, Response& response) {
+void HandleJson(Request const& request, Body&&, Response& response) {
 	std::stringstream ss;
 	std::unordered_map<std::string, std::string> object;
 	object.insert({ "message", "Hello, World!" });
 	WriteJson(ss, object);
 	response.WriteStatus(StatusLines::OK);
-	auto it = request.Headers.find("origin");
+	auto it = request.Headers.find("Origin");
 	if (it != request.Headers.cend()) {
 		response.WriteHeader("Access-Control-Allow-Credentials", "true");
 		response.WriteHeader("Access-Control-Allow-Origin", it->second);
@@ -18,8 +18,8 @@ void HandleJson(Request const& request, Response& response) {
 	response << ss.str();
 }
 
-void HandlePlainText(Request const& request, Response& response) {
-	auto it = request.Headers.find("origin");
+void HandlePlainText(Request const& request, Body&&, Response& response) {
+	auto it = request.Headers.find("Origin");
 	if (it != request.Headers.cend()) {
 		response.WriteHeader("Access-Control-Allow-Credentials", "true");
 		response.WriteHeader("Access-Control-Allow-Origin", it->second);
