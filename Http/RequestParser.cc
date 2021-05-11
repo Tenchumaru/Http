@@ -7,7 +7,6 @@ bool RequestParser::ComposeRequest(Request& request) {
 		std::swap(request.uri, uri);
 		request.version = ((last[5] - '0') << 4) | (last[7] - '0');
 		request.headers.swap(headers);
-		request.data.swap(data);
 		HttpParser::Reset();
 		return true;
 	}
@@ -20,4 +19,12 @@ bool RequestParser::ValidateNext(std::string const& s) {
 
 bool RequestParser::ValidateLast(std::string const& s) {
 	return ValidateVersion(s);
+}
+
+std::streamsize RequestParser::ValidateDataSizeHeaders() {
+	auto contentLength_ = HttpParser::ValidateDataSizeHeaders();
+	if (contentLength_ == 0 && (first == "POST" || first == "PUT")) {
+		throw Exception(StatusLines::LengthRequired);
+	}
+	return contentLength_;
 }
