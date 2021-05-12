@@ -78,9 +78,12 @@ namespace {
 				out << indent << "\t\t\tFourHundred(response, \"bad headers\");" << std::endl;
 				out << indent << "\t\t\treturn end;" << std::endl;
 				out << indent << "\t\t}" << std::endl;
+				out << indent << "\t\tif(!headers.HandleExpectation(socket)) {" << std::endl;
+				out << indent << "\t\t\tFourExEx(response, StatusLines::ExpectationFailed);" << std::endl;
+				out << indent << "\t\t\treturn end;" << std::endl;
+				out << indent << "\t\t}" << std::endl;
 				if (fn.back() == '+') {
 					// TODO:  add configuration to limit the content length.
-					// TODO:  handle Expect header.  See Http\RequestParser.cc.
 					out << indent << "\t\tif(!headers.ContentLength.first) {" << std::endl;
 					out << indent << "\t\t\tFourHundred(response, \"no content length header\");" << std::endl;
 					out << indent << "\t\t\treturn end;" << std::endl;

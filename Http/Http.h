@@ -9,5 +9,6 @@
 
 bool AtEndOfPath(char ch);
 bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*& qn);
+void FourExEx(Response& response, StatusLines::StatusLine const& statusLine, char const* message = nullptr);
 void FourHundred(Response& response, char const* message);
 void FourZeroFour(Response& response);
