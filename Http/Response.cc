@@ -37,21 +37,21 @@ Response::Response(Response&& that) noexcept : outputStreamBuffer(std::move(that
 	std::swap(begin, that.begin);
 	std::swap(next, that.next);
 	std::swap(end, that.end);
+	std::swap(statusLine, that.statusLine);
 	std::swap(contentLength, that.contentLength);
 	std::swap(wroteServer, that.wroteServer);
 	std::swap(inBody, that.inBody);
 }
 
-void Response::WriteStatus(StatusLines::StatusLine const& statusLine) {
-	if (next != begin) {
+void Response::WriteStatus(StatusLines::StatusLine const& statusLine_) {
+	if (statusLine) {
 		throw std::logic_error("cannot write Status line more than once");
 	}
-	memcpy(begin, statusLine.first, statusLine.second);
-	next = begin + statusLine.second;
+	statusLine = &statusLine_;
 }
 
 void Response::WriteHeader(xstring const& name, xstring const& value) {
-	if (next == begin) {
+	if (!statusLine) {
 		WriteStatus(StatusLines::OK);
 	}
 	auto const nameSize = name.second - name.first;
@@ -107,6 +107,9 @@ bool Response::CompleteHeaders() {
 	bool const isChunked = !contentLength;
 	if (isChunked) {
 		WriteHeader("Transfer-Encoding", "chunked");
+	} else if (contentLength.value() == 0 && *statusLine == StatusLines::OK) {
+		// Set the status line to 204 if it's 200 and the content length is zero.
+		statusLine = &StatusLines::NoContent;
 	}
 
 	// Write "end of headers."
@@ -165,6 +168,9 @@ void Response::nstreambuf::InitialSend(char_type const* s, std::streamsize n) {
 	// Have the Response object complete its headers.
 	sendFn = &nstreambuf::Send;
 	bool const isChunked = response.CompleteHeaders();
+
+	// Send the start line.
+	InternalSend(response.statusLine->first, response.statusLine->second);
 
 	// Send the headers.
 	begin = response.begin;

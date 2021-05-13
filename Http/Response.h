@@ -79,6 +79,7 @@ private:
 	char* begin{};
 	char* next{};
 	char* end{};
+	StatusLines::StatusLine const* statusLine{};
 	nstreambuf outputStreamBuffer;
 	std::ostream responseStream;
 	std::optional<size_t> contentLength;
