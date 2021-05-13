@@ -37,7 +37,7 @@ Response::Response(Response&& that) noexcept : outputStreamBuffer(std::move(that
 	std::swap(begin, that.begin);
 	std::swap(next, that.next);
 	std::swap(end, that.end);
-	std::swap(wroteContentLength, that.wroteContentLength);
+	std::swap(contentLength, that.contentLength);
 	std::swap(wroteServer, that.wroteServer);
 	std::swap(inBody, that.inBody);
 }
@@ -60,10 +60,10 @@ void Response::WriteHeader(xstring const& name, xstring const& value) {
 		throw std::runtime_error("Response::WriteHeader");
 	}
 	if (contentLengthKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, contentLengthKey.c_str()) == 0) {
-		if (wroteContentLength) {
+		if (contentLength) {
 			throw std::logic_error("cannot write Content-Length header more than once");
 		}
-		wroteContentLength = true;
+		contentLength = std::strtoull(value.first, nullptr, 10);
 	} else if (serverKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, serverKey.c_str()) == 0) {
 		if (wroteServer) {
 			throw std::logic_error("cannot write Server header more than once");
@@ -83,14 +83,14 @@ bool Response::Reset() {
 		return false;
 	}
 	next = begin;
-	wroteContentLength = false;
+	contentLength.reset();
 	wroteServer = false;
 	inBody = false;
 	return true;
 }
 
 void Response::Close() {
-	if (!inBody && next != begin && !wroteContentLength) {
+	if (!inBody && next != begin && !contentLength) {
 		static constexpr char zero = '0';
 		WriteHeader(contentLengthKey, xstring{ &zero, &zero + sizeof(zero) });
 	}
@@ -104,7 +104,7 @@ bool Response::CompleteHeaders() {
 	if (!wroteServer) {
 		WriteHeader("Server", "C++");
 	}
-	bool const isChunked = !wroteContentLength;
+	bool const isChunked = !contentLength;
 	if (isChunked) {
 		WriteHeader("Transfer-Encoding", "chunked");
 	}

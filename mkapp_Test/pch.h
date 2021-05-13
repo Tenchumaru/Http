@@ -13,3 +13,4 @@
 
 #include <array>
 #include <locale>
+#include <optional>

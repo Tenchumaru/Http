@@ -7,5 +7,6 @@
 #include <array>
 #include <locale>
 #include <map>
+#include <optional>
 #include <string>
 #include <unordered_map>

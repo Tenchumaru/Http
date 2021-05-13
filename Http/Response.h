@@ -81,7 +81,7 @@ private:
 	char* end{};
 	nstreambuf outputStreamBuffer;
 	std::ostream responseStream;
-	bool wroteContentLength{};
+	std::optional<size_t> contentLength;
 	bool wroteServer{};
 	bool inBody{};
 
