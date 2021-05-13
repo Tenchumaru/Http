@@ -1,6 +1,5 @@
 #include "pch.h"
-#include "CppUnitTest.h"
-#include "Utils.inl"
+#include "Utilities.h"
 namespace {
 #include "segDispatch.inl"
 	bool callsCollectParameter = true;

@@ -1,8 +1,8 @@
 void TestDispatch(int count) {
 	std::cout << "Testing " << name << std::endl;
 	std::chrono::high_resolution_clock clock;
-	TcpSocket socket;
-	Response response;
+	TcpSocket socket(INVALID_SOCKET);
+	TestResponse response(socket);
 	auto before = clock.now();
 	for (int i = 0; i < count; ++i) {
 		Dispatch("POST /extensions/clientId/auth/secret\r", nullptr, nullptr, socket, response);

@@ -108,8 +108,8 @@ public:
 	}
 
 	bool HandleExpectation(TcpSocket& socket) {
-		bool rv{};
-		if (expect != xstring{}) {
+		bool rv = expect == xstring{};
+		if (!rv) {
 			std::array<char, Response::MinimumHeaderBufferSize> continueBuffer;
 			ClosableResponse continueResponse(socket, continueBuffer.data(), continueBuffer.data() + continueBuffer.size());
 			if (_strnicmp(expect.first, "100-continue", 12) == 0) {

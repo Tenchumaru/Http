@@ -23,15 +23,3 @@ void FourExEx(Response& response, StatusLines::StatusLine const& statusLine, cha
 		response << message;
 	}
 }
-
-void FourHundred(Response& response, char const* message) {
-	response.WriteStatus(StatusLines::BadRequest);
-	if (message && *message) {
-		response.WriteHeader("Content-Length"s, std::to_string(strlen(message)));
-		response << message;
-	}
-}
-
-void FourZeroFour(Response& response) {
-	response.WriteStatus(StatusLines::NotFound);
-}

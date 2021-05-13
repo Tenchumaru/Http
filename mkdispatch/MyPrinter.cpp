@@ -70,12 +70,12 @@ namespace {
 				out << indent << "\tif(AtEndOfPath(p[" << prefix.size() << "])) {" << std::endl;
 				out << indent << "\t\t" << (queriesFn.empty() ? "QueryBase" : queriesFn) << " queries;" << std::endl;
 				out << indent << "\t\tif(!queries.CollectQueries(p, " << prefix.size() << ")) {" << std::endl;
-				out << indent << "\t\t\tFourHundred(response, \"bad query string\");" << std::endl;
+				out << indent << "\t\t\tFourExEx(response, StatusLines::BadRequest, \"bad query string\");" << std::endl;
 				out << indent << "\t\t\treturn end;" << std::endl;
 				out << indent << "\t\t}" << std::endl;
 				out << indent << "\t\t" << (headersFn.empty() ? "HeaderBase" : headersFn) << " headers;" << std::endl;
 				out << indent << "\t\tif(!headers.CollectHeaders(p)) {" << std::endl;
-				out << indent << "\t\t\tFourHundred(response, \"bad headers\");" << std::endl;
+				out << indent << "\t\t\tFourExEx(response, StatusLines::BadRequest, \"bad headers\");" << std::endl;
 				out << indent << "\t\t\treturn end;" << std::endl;
 				out << indent << "\t\t}" << std::endl;
 				out << indent << "\t\tif(!headers.HandleExpectation(socket)) {" << std::endl;
@@ -85,13 +85,13 @@ namespace {
 				if (fn.back() == '+') {
 					// TODO:  add configuration to limit the content length.
 					out << indent << "\t\tif(!headers.ContentLength.first) {" << std::endl;
-					out << indent << "\t\t\tFourHundred(response, \"no content length header\");" << std::endl;
+					out << indent << "\t\t\tFourExEx(response, StatusLines::BadRequest, \"no content length header\");" << std::endl;
 					out << indent << "\t\t\treturn end;" << std::endl;
 					out << indent << "\t\t}" << std::endl;
 					out << indent << "\t\tchar* end_;" << std::endl;
 					out << indent << "\t\tauto size = std::strtol(headers.ContentLength.first, &end_, 10);" << std::endl;
 					out << indent << "\t\tif(size == LONG_MAX || size == LONG_MIN || end_ != headers.ContentLength.second) {" << std::endl;
-					out << indent << "\t\t\tFourHundred(response, \"bad content length header\");" << std::endl;
+					out << indent << "\t\t\tFourExEx(response, StatusLines::BadRequest, \"bad content length header\");" << std::endl;
 					out << indent << "\t\t\treturn end;" << std::endl;
 					out << indent << "\t\t}" << std::endl;
 				}

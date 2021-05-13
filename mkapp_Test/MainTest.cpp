@@ -6,20 +6,24 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "../Http/QueryBase.h"
 #include "../Http/HeaderBase.h"
 
-#include "Basic.inl"
+namespace Microsoft {
+	namespace VisualStudio {
+		namespace CppUnitTestFramework {
+			template<>
+			inline std::wstring ToString<StatusLines::StatusLine>(StatusLines::StatusLine const& t) {
+				std::wstringstream ss;
+				if (t.first) {
+					ss << t.first << ',' << t.second;
+				} else {
+					ss << "{}";
+				}
+				return ss.str();
+			}
+		}
+	}
+}
 
-Socket::~Socket() {}
-int TcpSocket::Connect(sockaddr const*, size_t) noexcept { return 0; }
-std::pair<size_t, int> __cdecl TcpSocket::InternalReceive(char*, size_t) { return{}; }
-std::pair<size_t, int> __cdecl TcpSocket::InternalSend(char const*, size_t) { return{}; }
-Response::Response(TcpSocket& socket, char*, char*) : outputStreamBuffer(*this, socket), responseStream(&outputStreamBuffer) {}
-void Response::WriteStatus(struct std::pair<char const*, size_t> const&) {}
-void Response::Close() {}
-Response::nstreambuf::nstreambuf(Response& response, TcpSocket& socket) : response(response), socket(socket) {}
-std::streamsize Response::nstreambuf::xsputn(char const*, std::streamsize) { return 0; }
-int Response::nstreambuf::overflow(int) { return 0; }
-std::pair<char const*, size_t> StatusLines::Continue{};
-std::pair<char const*, size_t> StatusLines::ExpectationFailed{};
+#include "Basic.inl"
 
 namespace {
 	class TestResponse : public Response {
@@ -58,9 +62,7 @@ namespace {
 	size_t CollectParameter_invocationCount;
 	bool CollectQueries_succeeded;
 	bool CollectQueries_failed;
-	bool FourExEx_invoked;
-	bool FourHundred_invoked;
-	bool FourZeroFour_invoked;
+	StatusLines::StatusLine FourExEx_invoked;
 	bool root_invoked;
 	bool a_b_invoked;
 	bool a_bc_invoked;
@@ -127,17 +129,9 @@ namespace {
 		return CollectQueries_succeeded;
 	}
 
-	void FourExEx(Response& response, StatusLines::StatusLine const&, char const* message = nullptr) {
+	void FourExEx(Response& response, StatusLines::StatusLine const& statusLine, char const* message = nullptr) {
 		response, message;
-		FourExEx_invoked = true;
-	}
-	void FourHundred(Response& response, char const* message) {
-		response, message;
-		FourHundred_invoked = true;
-	}
-	void FourZeroFour(Response& response) {
-		response;
-		FourZeroFour_invoked = true;
+		FourExEx_invoked = statusLine;
 	}
 	void root(Query_one_ones__two&& queries, Header_contentXtype_customXheader_myXcustomXheader&& headers, Response& response) {
 		queries, headers, response;
@@ -236,8 +230,7 @@ namespace mkapp_Test {
 			CollectParameter_invocationCount = 0;
 			CollectQueries_succeeded = false;
 			CollectQueries_failed = false;
-			FourHundred_invoked = false;
-			FourZeroFour_invoked = false;
+			FourExEx_invoked = StatusLines::StatusLine{};
 			root_invoked = false;
 			a_b_invoked = false;
 			a_bc_invoked = false;
@@ -280,7 +273,7 @@ public:
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsFalse(CollectQueries_succeeded);
 		Assert::IsFalse(CollectQueries_failed);
-		Assert::IsTrue(FourZeroFour_invoked);
+		Assert::AreEqual(StatusLines::NotFound, FourExEx_invoked);
 	}
 
 	TEST_METHOD(FourZeroFour2) {
@@ -292,7 +285,7 @@ public:
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsFalse(CollectQueries_succeeded);
 		Assert::IsFalse(CollectQueries_failed);
-		Assert::IsTrue(FourZeroFour_invoked);
+		Assert::AreEqual(StatusLines::NotFound, FourExEx_invoked);
 	}
 
 	TEST_METHOD(root) {

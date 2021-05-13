@@ -1,6 +1,5 @@
 #include "pch.h"
-#include "CppUnitTest.h"
-#include "Utils.inl"
+#include "Utilities.h"
 namespace {
 #include "myDispatch.inl"
 	bool callsCollectParameter = true;
