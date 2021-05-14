@@ -110,7 +110,7 @@ public:
 	bool HandleExpectation(TcpSocket& socket) {
 		bool rv = expect == xstring{};
 		if (!rv) {
-			std::array<char, Response::MinimumHeaderBufferSize> continueBuffer;
+			std::array<char, Response::MinimumBufferSize> continueBuffer;
 			ClosableResponse continueResponse(socket, continueBuffer.data(), continueBuffer.data() + continueBuffer.size());
 			if (_strnicmp(expect.first, "100-continue", 12) == 0) {
 				continueResponse.WriteStatus(StatusLines::Continue);

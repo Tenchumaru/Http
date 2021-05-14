@@ -28,8 +28,8 @@ Response::Response(TcpSocket& socket, char* begin, char* end) :
 	end(end),
 	outputStreamBuffer(*this, socket),
 	responseStream(&outputStreamBuffer) {
-	if (end - begin < MinimumHeaderBufferSize) {
-		throw std::runtime_error("MinimumHeaderBufferSize");
+	if (end - begin < MinimumBufferSize) {
+		throw std::runtime_error("MinimumBufferSize");
 	}
 }
 

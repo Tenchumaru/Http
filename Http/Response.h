@@ -6,7 +6,7 @@
 
 class Response {
 public:
-	constexpr static ptrdiff_t MinimumHeaderBufferSize = 512;
+	constexpr static ptrdiff_t MinimumBufferSize = 512;
 
 	// TODO:  consider creating a flushable response to allow for
 	// content larger than the provided buffer.

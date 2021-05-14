@@ -32,11 +32,11 @@ namespace {
 		~TestResponse() = default;
 
 	private:
-		static std::array<char, Response::MinimumHeaderBufferSize> buffer;
+		static std::array<char, Response::MinimumBufferSize> buffer;
 		static TcpSocket socket;
 	};
 
-	std::array<char, Response::MinimumHeaderBufferSize> TestResponse::buffer;
+	std::array<char, Response::MinimumBufferSize> TestResponse::buffer;
 	TcpSocket TestResponse::socket = TcpSocket(0);
 
 	class Body {

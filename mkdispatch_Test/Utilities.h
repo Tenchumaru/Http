@@ -13,7 +13,7 @@ public:
 	~TestResponse() = default;
 
 private:
-	std::array<char, MinimumHeaderBufferSize> buffer;
+	std::array<char, MinimumBufferSize> buffer;
 	TestSocket socket;
 };
 

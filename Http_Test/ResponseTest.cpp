@@ -31,7 +31,7 @@ public:
 			return len;
 		};
 		TcpSocket socket(expectedSocket);
-		std::array<char, 4096> buffer;
+		std::array<char, Response::MinimumBufferSize> buffer;
 		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 
 		// Act
@@ -52,7 +52,7 @@ public:
 			return len;
 		};
 		TcpSocket socket(expectedSocket);
-		std::array<char, 4096> buffer;
+		std::array<char, Response::MinimumBufferSize> buffer;
 		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 
 		// Act
@@ -76,7 +76,7 @@ public:
 			return len;
 		};
 		TcpSocket socket(expectedSocket);
-		std::array<char, 777> buffer;
+		std::array<char, 3 * Response::MinimumBufferSize / 2> buffer;
 		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 		std::string m(333, '.');
 
