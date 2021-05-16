@@ -25,7 +25,7 @@ char const* DynamicHttpServer::DispatchRequest(char const* begin, char const* bo
 		if (request.Headers.find("Expect"s) != request.Headers.cend()) {
 			std::array<char, Response::MinimumBufferSize> continueBuffer;
 			ClosableResponse continueResponse(socket, continueBuffer.data(), continueBuffer.data() + continueBuffer.size());
-			continueResponse.WriteStatus(StatusLines::Continue);
+			continueResponse.WriteStatusLine(StatusLines::Continue);
 			continueResponse.Close();
 		}
 
@@ -35,7 +35,7 @@ char const* DynamicHttpServer::DispatchRequest(char const* begin, char const* bo
 		it->second(request, Body(body, end, size, socket), response);
 	} else {
 		// Return a 404.
-		response.WriteStatus(StatusLines::NotFound);
+		response.WriteStatusLine(StatusLines::NotFound);
 	}
 
 	// If the HTTP version is at least 1.1 and there is a "Connection"

@@ -43,7 +43,7 @@ Response::Response(Response&& that) noexcept : outputStreamBuffer(std::move(that
 	std::swap(inBody, that.inBody);
 }
 
-void Response::WriteStatus(StatusLines::StatusLine const& statusLine_) {
+void Response::WriteStatusLine(StatusLines::StatusLine const& statusLine_) {
 	if (statusLine) {
 		throw std::logic_error("cannot write Status line more than once");
 	}
@@ -52,7 +52,7 @@ void Response::WriteStatus(StatusLines::StatusLine const& statusLine_) {
 
 void Response::WriteHeader(xstring const& name, xstring const& value) {
 	if (!statusLine) {
-		WriteStatus(StatusLines::OK);
+		WriteStatusLine(StatusLines::OK);
 	}
 	auto const nameSize = name.second - name.first;
 	auto const valueSize = value.second - value.first;

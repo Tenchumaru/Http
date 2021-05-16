@@ -66,7 +66,7 @@ char const* HttpServer::ProcessRequest(char const* begin, char const* body, char
 	if (statusLine != StatusLines::StatusLine{}) {
 		// Respond with the appropriate status code if possible.
 		if (response.Reset()) {
-			response.WriteStatus(statusLine);
+			response.WriteStatusLine(statusLine);
 			if (message) {
 				response.WriteHeader("Content-Length", std::to_string(strlen(message) + 2));
 				response << message << "\r\n";

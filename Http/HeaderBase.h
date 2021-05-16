@@ -113,10 +113,10 @@ public:
 			std::array<char, Response::MinimumBufferSize> continueBuffer;
 			ClosableResponse continueResponse(socket, continueBuffer.data(), continueBuffer.data() + continueBuffer.size());
 			if (_strnicmp(expect.first, "100-continue", 12) == 0) {
-				continueResponse.WriteStatus(StatusLines::Continue);
+				continueResponse.WriteStatusLine(StatusLines::Continue);
 				rv = true;
 			} else {
-				continueResponse.WriteStatus(StatusLines::ExpectationFailed);
+				continueResponse.WriteStatusLine(StatusLines::ExpectationFailed);
 			}
 			continueResponse.Close();
 		}

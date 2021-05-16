@@ -41,7 +41,7 @@ public:
 		Assert::IsFalse(invoked);
 	}
 
-	TEST_METHOD(ResponseWriteStatus) {
+	TEST_METHOD(ResponseWriteStatusLine) {
 		// Arrange
 		std::string text;
 		Sockets::OnSend = [&text](SOCKET s, char const* p, int len, int flags) {
@@ -56,7 +56,7 @@ public:
 		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
 
 		// Act
-		response.WriteStatus(StatusLines::NoContent);
+		response.WriteStatusLine(StatusLines::NoContent);
 		response.Close();
 
 		// Assert

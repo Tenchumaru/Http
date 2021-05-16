@@ -8,7 +8,7 @@ void HandleJson(Request const& request, Body&&, Response& response) {
 	std::unordered_map<std::string, std::string> object;
 	object.insert({ "message", "Hello, World!" });
 	WriteJson(ss, object);
-	response.WriteStatus(StatusLines::OK);
+	response.WriteStatusLine(StatusLines::OK);
 	auto it = request.Headers.find("Origin");
 	if (it != request.Headers.cend()) {
 		response.WriteHeader("Access-Control-Allow-Credentials", "true");

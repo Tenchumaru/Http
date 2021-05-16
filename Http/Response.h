@@ -16,7 +16,7 @@ public:
 	Response(Response&& that) noexcept;
 	Response& operator=(Response const&) = delete;
 	Response& operator=(Response&&) noexcept = delete;
-	void WriteStatus(StatusLines::StatusLine const& statusLine);
+	void WriteStatusLine(StatusLines::StatusLine const& statusLine);
 	void WriteHeader(std::string const& name, std::string const& value) {
 		WriteHeader(xstring{ name.data(), name.data() + name.size() }, xstring{ value.data(), value.data() + value.size() });
 	}
