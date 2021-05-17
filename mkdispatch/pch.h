@@ -1,17 +1,3 @@
-#ifndef PCH_H
-#define PCH_H
+#pragma once
 
-#include <cstdint>
-#include <algorithm>
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <set>
-#include <sstream>
-#include <string>
-#include <utility>
-#include <vector>
-
-#endif //PCH_H
+#include "../pch.h"

@@ -1,19 +1,6 @@
 #pragma once
 
-#include "targetver.h"
-#include "CppUnitTest.h"
-
-#include <WS2tcpip.h>
-
+#include "../pch.h"
+#include <CppUnitTest.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-
-#include <array>
-#include <functional>
-#include <locale>
-#include <map>
-#include <memory>
-#include <optional>
-#include <string>
-#include <unordered_map>
-#include <vector>

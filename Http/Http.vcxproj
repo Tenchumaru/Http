@@ -135,7 +135,6 @@
     <ClInclude Include="SocketServer.h" />
     <ClInclude Include="StaticHttpServer.h" />
     <ClInclude Include="StatusLines.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="TcpSocket.h" />
     <ClInclude Include="Uri.h" />
     <ClInclude Include="xtypes.h" />
