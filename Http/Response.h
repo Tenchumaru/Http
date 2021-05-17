@@ -14,7 +14,7 @@ public:
 	Response(Response&& that) noexcept;
 	Response& operator=(Response const&) = delete;
 	Response& operator=(Response&&) noexcept = delete;
-	void WriteStatusLine(StatusLines::StatusLine const& statusLine) { outputStreamBuffer.WriteStatusLine(statusLine); }
+	void WriteStatusLine(std::string const& statusLine) { outputStreamBuffer.WriteStatusLine(statusLine); }
 	void WriteHeader(std::string const& name, std::string const& value) {
 		WriteHeader(xstring{ name.data(), name.data() + name.size() }, xstring{ value.data(), value.data() + value.size() });
 	}
@@ -42,7 +42,7 @@ private:
 		nstreambuf(nstreambuf&& that) noexcept;
 		nstreambuf& operator=(nstreambuf const&) = delete;
 		nstreambuf& operator=(nstreambuf&&) noexcept = delete;
-		void WriteStatusLine(StatusLines::StatusLine const& statusLine);
+		void WriteStatusLine(std::string const& statusLine);
 		void WriteHeader(xstring const& name, xstring const& value);
 		void Close();
 		bool Reset();
@@ -50,7 +50,7 @@ private:
 		int overflow(int c) override;
 
 	private:
-		using WriteStatusLineFn = void(nstreambuf::*)(StatusLines::StatusLine const&);
+		using WriteStatusLineFn = void(nstreambuf::*)(std::string const&);
 		using WriteHeaderFn = void(nstreambuf::*)(xstring const& name, xstring const& value);
 		using WriteBodyFn = void(nstreambuf::*)(char_type const* s, std::streamsize n);
 		using WriteFn = void(nstreambuf::*)(char_type const* s, std::streamsize n);
@@ -84,31 +84,31 @@ private:
 		void SendBuffer();
 		void InternalReset();
 
-		void InitialWriteStatusLine(StatusLines::StatusLine const& statusLine);
+		void InitialWriteStatusLine(std::string const& statusLine);
 		void InitialWriteHeader(xstring const& name, xstring const& value);
 		void InitialWriteBody(char_type const* s, std::streamsize n);
 		void InitialWrite(char_type const* s, std::streamsize n);
 		void InitialClose();
 
-		void InHeadersWriteStatusLine(StatusLines::StatusLine const& statusLine);
+		void InHeadersWriteStatusLine(std::string const& statusLine);
 		void InHeadersWriteHeader(xstring const& name, xstring const& value);
 		void InHeadersWriteBody(char_type const* s, std::streamsize n);
 		void InHeadersWrite(char_type const* s, std::streamsize n);
 		void InHeadersClose();
 
-		void SentSomeHeadersWriteStatusLine(StatusLines::StatusLine const& statusLine);
+		void SentSomeHeadersWriteStatusLine(std::string const& statusLine);
 		void SentSomeHeadersWriteHeader(xstring const& name, xstring const& value);
 		void SentSomeHeadersWriteBody(char_type const* s, std::streamsize n);
 		void SentSomeHeadersWrite(char_type const* s, std::streamsize n);
 		void SentSomeHeadersClose();
 
-		void InChunkedBodyWriteStatusLine(StatusLines::StatusLine const& statusLine);
+		void InChunkedBodyWriteStatusLine(std::string const& statusLine);
 		void InChunkedBodyWriteHeader(xstring const& name, xstring const& value);
 		void InChunkedBodyWriteBody(char_type const* s, std::streamsize n);
 		void InChunkedBodyWrite(char_type const* s, std::streamsize n);
 		void InChunkedBodyClose();
 
-		void InBodyWriteStatusLine(StatusLines::StatusLine const& statusLine);
+		void InBodyWriteStatusLine(std::string const& statusLine);
 		void InBodyWriteHeader(xstring const& name, xstring const& value);
 		void InBodyWriteBody(char_type const* s, std::streamsize n);
 		void InBodyWrite(char_type const* s, std::streamsize n);

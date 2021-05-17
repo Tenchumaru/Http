@@ -17,27 +17,10 @@ private:
 	TestSocket socket;
 };
 
-namespace Microsoft {
-	namespace VisualStudio {
-		namespace CppUnitTestFramework {
-			template<>
-			inline std::wstring ToString<StatusLines::StatusLine>(StatusLines::StatusLine const& t) {
-				std::wstringstream ss;
-				if (t.first) {
-					ss << t.first << ',' << t.second;
-				} else {
-					ss << "{}";
-				}
-				return ss.str();
-			}
-		}
-	}
-}
-
 extern size_t CollectParameter_invocationCount;
 extern bool CollectQueries_succeeded;
 extern bool CollectQueries_failed;
-extern StatusLines::StatusLine FourExEx_invoked;
+extern std::string FourExEx_invoked;
 extern bool root_invoked;
 extern bool a_b_invoked;
 extern bool a_bc_invoked;

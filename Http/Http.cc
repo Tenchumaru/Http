@@ -16,7 +16,7 @@ bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*
 	return true;
 }
 
-void FourExEx(Response& response, StatusLines::StatusLine const& statusLine, char const* message /*= nullptr*/) {
+void FourExEx(Response& response, std::string const& statusLine, char const* message /*= nullptr*/) {
 	response.WriteStatusLine(statusLine);
 	if (message && *message) {
 		response.WriteHeader("Content-Length"s, std::to_string(strlen(message)));

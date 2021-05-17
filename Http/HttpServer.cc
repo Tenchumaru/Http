@@ -51,7 +51,7 @@ char const* HttpServer::ProcessRequest(char const* begin, char const* body, char
 
 	// Process the first request.  It also checks the Connection header value and
 	// returns nullptr to indicate closing the socket.
-	StatusLines::StatusLine statusLine{};
+	std::string statusLine{};
 	char const* message = nullptr;
 	try {
 		end = DispatchRequest(begin, body, end, clientSocket, response);
@@ -63,7 +63,7 @@ char const* HttpServer::ProcessRequest(char const* begin, char const* body, char
 		statusLine = StatusLines::InternalServerError;
 		std::cerr << "DispatchRequest threw an exception:  " << ex.what() << std::endl;
 	}
-	if (statusLine != StatusLines::StatusLine{}) {
+	if (statusLine != std::string{}) {
 		// Respond with the appropriate status code if possible.
 		if (response.Reset()) {
 			response.WriteStatusLine(statusLine);

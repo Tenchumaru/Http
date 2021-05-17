@@ -9,4 +9,4 @@
 
 bool AtEndOfPath(char ch);
 bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*& qn);
-void FourExEx(Response& response, StatusLines::StatusLine const& statusLine, char const* message = nullptr);
+void FourExEx(Response& response, std::string const& statusLine, char const* message = nullptr);

@@ -7,7 +7,7 @@ namespace mkdispatch_Test {
 			CollectParameter_invocationCount = 0;
 			CollectQueries_succeeded = false;
 			CollectQueries_failed = false;
-			FourExEx_invoked = StatusLines::StatusLine{};
+			FourExEx_invoked = std::string{};
 			root_invoked = false;
 			a_b_invoked = false;
 			a_bc_invoked = false;

@@ -77,9 +77,8 @@ private:
 	std::array<char, Response::MinimumBufferSize> buffer;
 	std::string text;
 
-	void AssertServerHeaders(StatusLines::StatusLine const& statusLine) {
-		auto expectedStatusLine = std::string(statusLine.first, statusLine.first + statusLine.second);
-		Assert::AreEqual(std::string::size_type(), text.find(expectedStatusLine));
+	void AssertServerHeaders(std::string const& statusLine) {
+		Assert::AreEqual(std::string::size_type(), text.find(statusLine));
 		Assert::AreNotEqual(std::string::npos, text.find("Date: "));
 		Assert::AreNotEqual(std::string::npos, text.find(" GMT\r\n"));
 		Assert::AreNotEqual(std::string::npos, text.find("Server: C++\r\n"));

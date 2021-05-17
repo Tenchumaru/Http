@@ -5,24 +5,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "../Http/xtypes.h"
 #include "../Http/QueryBase.h"
 #include "../Http/HeaderBase.h"
-
-namespace Microsoft {
-	namespace VisualStudio {
-		namespace CppUnitTestFramework {
-			template<>
-			inline std::wstring ToString<StatusLines::StatusLine>(StatusLines::StatusLine const& t) {
-				std::wstringstream ss;
-				if (t.first) {
-					ss << t.first << ',' << t.second;
-				} else {
-					ss << "{}";
-				}
-				return ss.str();
-			}
-		}
-	}
-}
-
 #include "Basic.inl"
 
 namespace {
@@ -62,7 +44,7 @@ namespace {
 	size_t CollectParameter_invocationCount;
 	bool CollectQueries_succeeded;
 	bool CollectQueries_failed;
-	StatusLines::StatusLine FourExEx_invoked;
+	std::string FourExEx_invoked;
 	bool root_invoked;
 	bool a_b_invoked;
 	bool a_bc_invoked;
@@ -129,7 +111,7 @@ namespace {
 		return CollectQueries_succeeded;
 	}
 
-	void FourExEx(Response& response, StatusLines::StatusLine const& statusLine, char const* message = nullptr) {
+	void FourExEx(Response& response, std::string const& statusLine, char const* message = nullptr) {
 		response, message;
 		FourExEx_invoked = statusLine;
 	}
@@ -230,7 +212,7 @@ namespace mkapp_Test {
 			CollectParameter_invocationCount = 0;
 			CollectQueries_succeeded = false;
 			CollectQueries_failed = false;
-			FourExEx_invoked = StatusLines::StatusLine{};
+			FourExEx_invoked = std::string{};
 			root_invoked = false;
 			a_b_invoked = false;
 			a_bc_invoked = false;

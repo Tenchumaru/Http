@@ -7,15 +7,15 @@ class HttpParser {
 public:
 	class Exception : public std::runtime_error {
 	public:
-		explicit Exception(StatusLines::StatusLine const& statusLine, char const* message = nullptr) : std::runtime_error(""), statusLine(statusLine), message(message) {}
+		explicit Exception(std::string const& statusLine, char const* message = nullptr) : std::runtime_error(""), statusLine(statusLine), message(message) {}
 		~Exception() {}
-		StatusLines::StatusLine const& get_StatusLine() const { return statusLine; }
+		std::string const& get_StatusLine() const { return statusLine; }
 		char const* get_Message() const { return message; }
-		__declspec(property(get = get_StatusLine)) StatusLines::StatusLine const& StatusLine;
+		__declspec(property(get = get_StatusLine)) std::string const& StatusLine;
 		__declspec(property(get = get_Message)) char const* const Message;
 
 	private:
-		StatusLines::StatusLine const& statusLine;
+		std::string const& statusLine;
 		char const* message;
 	};
 

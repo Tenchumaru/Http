@@ -111,7 +111,7 @@ Response::nstreambuf::nstreambuf(nstreambuf&& that) noexcept : socket(that.socke
 	std::swap(wroteServer, that.wroteServer);
 }
 
-void Response::nstreambuf::WriteStatusLine(StatusLines::StatusLine const& statusLine) {
+void Response::nstreambuf::WriteStatusLine(std::string const& statusLine) {
 	(this->*states[stateIndex].WriteStatusLine)(statusLine);
 }
 
@@ -201,9 +201,9 @@ void Response::nstreambuf::InternalReset() {
 	next = begin;
 }
 
-void Response::nstreambuf::InitialWriteStatusLine(StatusLines::StatusLine const& statusLine) {
-	memcpy_s(begin, statusLine.second, statusLine.first, statusLine.second);
-	next = begin + statusLine.second;
+void Response::nstreambuf::InitialWriteStatusLine(std::string const& statusLine) {
+	statusLine.copy(begin, statusLine.size());
+	next = begin + statusLine.size();
 }
 
 void Response::nstreambuf::InitialWriteHeader(xstring const& name, xstring const& value) {
@@ -228,7 +228,7 @@ void Response::nstreambuf::InitialClose() {
 	Close();
 }
 
-void Response::nstreambuf::InHeadersWriteStatusLine(StatusLines::StatusLine const& /*statusLine*/) {
+void Response::nstreambuf::InHeadersWriteStatusLine(std::string const& /*statusLine*/) {
 	LogicError("cannot write status line after headers");
 }
 
@@ -286,7 +286,7 @@ void Response::nstreambuf::InHeadersClose() {
 	stateIndex = initialStateIndex;
 }
 
-void Response::nstreambuf::SentSomeHeadersWriteStatusLine(StatusLines::StatusLine const& /*statusLine*/) {
+void Response::nstreambuf::SentSomeHeadersWriteStatusLine(std::string const& /*statusLine*/) {
 	return LogicError("cannot write status line after some headers sent");
 }
 
@@ -325,7 +325,7 @@ void Response::nstreambuf::SentSomeHeadersClose() {
 	InHeadersClose();
 }
 
-void Response::nstreambuf::InChunkedBodyWriteStatusLine(StatusLines::StatusLine const& /*statusLine*/) {
+void Response::nstreambuf::InChunkedBodyWriteStatusLine(std::string const& /*statusLine*/) {
 	return LogicError("cannot write status line after some body sent");
 }
 
@@ -396,7 +396,7 @@ void Response::nstreambuf::InChunkedBodyClose() {
 	stateIndex = initialStateIndex;
 }
 
-void Response::nstreambuf::InBodyWriteStatusLine(StatusLines::StatusLine const& /*statusLine*/) {
+void Response::nstreambuf::InBodyWriteStatusLine(std::string const& /*statusLine*/) {
 	return LogicError("cannot write status line after some body sent");
 }
 
