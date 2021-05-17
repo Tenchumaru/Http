@@ -1,15 +1,11 @@
 #include "pch.h"
+#include "Http.h"
 #include "HttpParser.h"
 
 using namespace std::literals;
 
 namespace {
 	constexpr size_t versionSize = 8; // Eight characters for "HTTP #.#".  See https://tools.ietf.org/html/rfc7230#appendix-B.
-	// TODO:  the following are configurable.
-	constexpr size_t maxNameSize = 222;
-	constexpr size_t maxValueSize = 888;
-	constexpr size_t maxContentLength = 1024 * 1024;
-	constexpr size_t maxHeaders = 99;
 
 	template<size_t N>
 	constexpr size_t CountDigits() {
@@ -142,7 +138,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 		} else {
 			name += *p;
 			if (name.size() >= maxNameSize) {
-				throw Exception(StatusLines::BadRequest, "malformed header");
+				throw Exception(StatusLines::BadRequest, "header name too long");
 			}
 		}
 	}
@@ -167,7 +163,7 @@ char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 		} else if (!value.empty() || !isspace(*p)) {
 			value += *p;
 			if (value.size() >= maxValueSize) {
-				throw Exception(StatusLines::BadRequest, "malformed header");
+				throw Exception(StatusLines::BadRequest, "header value too long");
 			}
 		}
 		++p;
