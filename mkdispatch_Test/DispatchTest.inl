@@ -7,7 +7,7 @@ namespace mkdispatch_Test {
 			CollectParameter_invocationCount = 0;
 			CollectQueries_succeeded = false;
 			CollectQueries_failed = false;
-			FourExEx_invoked = std::string{};
+			FourExEx_result = std::string{};
 			root_invoked = false;
 			a_b_invoked = false;
 			a_bc_invoked = false;
@@ -54,7 +54,7 @@ public:
 		} else {
 			Assert::IsFalse(CollectQueries_failed);
 		}
-		Assert::AreEqual(StatusLines::NotFound, FourExEx_invoked);
+		Assert::AreEqual(StatusLines::NotFound, FourExEx_result);
 	}
 
 	TEST_METHOD(FourZeroFour2) {
@@ -68,7 +68,7 @@ public:
 			Assert::IsFalse(CollectQueries_succeeded);
 			Assert::IsFalse(CollectQueries_failed);
 		}
-		Assert::AreEqual(StatusLines::NotFound, FourExEx_invoked);
+		Assert::AreEqual(StatusLines::NotFound, FourExEx_result);
 	}
 
 	TEST_METHOD(root) {

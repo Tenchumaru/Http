@@ -4,7 +4,7 @@
 size_t CollectParameter_invocationCount;
 bool CollectQueries_succeeded;
 bool CollectQueries_failed;
-std::string FourExEx_invoked;
+std::string FourExEx_result;
 bool root_invoked;
 bool a_b_invoked;
 bool a_bc_invoked;
@@ -72,7 +72,7 @@ bool CollectQueries(char const* p) {
 }
 
 void FourExEx(Response&, std::string const& statusLine, char const*) {
-	FourExEx_invoked = statusLine;
+	FourExEx_result = statusLine;
 }
 
 void root(Response& response) { response; root_invoked = true; }

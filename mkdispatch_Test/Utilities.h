@@ -20,7 +20,7 @@ private:
 extern size_t CollectParameter_invocationCount;
 extern bool CollectQueries_succeeded;
 extern bool CollectQueries_failed;
-extern std::string FourExEx_invoked;
+extern std::string FourExEx_result;
 extern bool root_invoked;
 extern bool a_b_invoked;
 extern bool a_bc_invoked;

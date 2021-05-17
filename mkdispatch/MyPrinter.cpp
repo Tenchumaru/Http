@@ -83,9 +83,11 @@ namespace {
 				out << indent << "\t\t\treturn end;" << std::endl;
 				out << indent << "\t\t}" << std::endl;
 				if (fn.back() == '+') {
-					// TODO:  add configuration to limit the content length.
 					out << indent << "\t\tif(!headers.ContentLength.first) {" << std::endl;
 					out << indent << "\t\t\tFourExEx(response, StatusLines::BadRequest, \"no content length header\");" << std::endl;
+					out << indent << "\t\t\treturn end;" << std::endl;
+					out << indent << "\t\t} else if(headers.ContentLength.second - headers.ContentLength.first > maxContentLength) {" << std::endl;
+					out << indent << "\t\t\tFourExEx(response, StatusLines::PayloadTooLarge);" << std::endl;
 					out << indent << "\t\t\treturn end;" << std::endl;
 					out << indent << "\t\t}" << std::endl;
 					out << indent << "\t\tchar* end_;" << std::endl;

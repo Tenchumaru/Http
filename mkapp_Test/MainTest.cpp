@@ -3,8 +3,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 #include "../Http/xtypes.h"
-#include "../Http/QueryBase.h"
-#include "../Http/HeaderBase.h"
+#include "../Http/Http.h"
 #include "Basic.inl"
 
 namespace {
@@ -21,30 +20,10 @@ namespace {
 	std::array<char, Response::MinimumBufferSize> TestResponse::buffer;
 	TcpSocket TestResponse::socket = TcpSocket(0);
 
-	class Body {
-	public:
-		Body(char const* begin, char const* next, int size, TcpSocket& socket);
-		Body(Body const&) = delete;
-		Body(Body&&) = default;
-		Body& operator=(Body const&) = delete;
-		Body& operator=(Body&&) = default;
-		~Body() = default;
-		bool GetIsGood() const { return size == 4 && next - begin == 4 && !strncmp(begin, "body", 4); }
-		__declspec(property(get = GetIsGood)) bool const IsGood;
-
-	private:
-		char const* begin;
-		char const* next;
-		int size;
-		TcpSocket& socket;
-	};
-
-	Body::Body(char const* begin, char const* next, int size, TcpSocket& socket) : begin(begin), next(next), size(size), socket(socket) {}
-
 	size_t CollectParameter_invocationCount;
 	bool CollectQueries_succeeded;
 	bool CollectQueries_failed;
-	std::string FourExEx_invoked;
+	std::string FourExEx_result;
 	bool root_invoked;
 	bool a_b_invoked;
 	bool a_bc_invoked;
@@ -78,43 +57,16 @@ namespace {
 	char const* Px_y___z_p0;
 	char const* Px_y___z_q0;
 
-	bool AtEndOfPath(char ch) {
-		return ch == '?' || ch == '#' || ch == ' ' || ch == '\r' || ch == '\n';
+	bool IsGood(Body const& body) {
+		struct TestBody {
+			char const* begin;
+			char const* end;
+			int size;
+		};
+		auto const& r = reinterpret_cast<TestBody const&>(body);
+		return r.size == 4 && r.end - r.begin == 4 && !strncmp(r.begin, "body", 4);
 	}
 
-	bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*& qn) {
-		++CollectParameter_invocationCount;
-		pn = qn = p + index;
-		while (*qn != '?' && *qn != '/' && *qn != '#' && *qn != ' ' && *qn != '\r' && *qn != '\n') {
-			++qn;
-		}
-		if (pn == qn) {
-			return false;
-		}
-		p = qn - index - 1;
-		return true;
-	}
-
-	char const* CollectParameter(char const*& p, size_t index) {
-		++CollectParameter_invocationCount;
-		char const* q = p + index;
-		while (*q != '?' && *q != '/' && *q != '#' && *q != ' ' && *q != '\r' && *q != '\n') {
-			++q;
-		}
-		p = q - index;
-		return q;
-	}
-
-	bool CollectQueries(char const* p) {
-		CollectQueries_succeeded = AtEndOfPath(*p);
-		CollectQueries_failed = !CollectQueries_succeeded;
-		return CollectQueries_succeeded;
-	}
-
-	void FourExEx(Response& response, std::string const& statusLine, char const* message = nullptr) {
-		response, message;
-		FourExEx_invoked = statusLine;
-	}
 	void root(Query_one_ones__two&& queries, Header_contentXtype_customXheader_myXcustomXheader&& headers, Response& response) {
 		queries, headers, response;
 		root_invoked = true;
@@ -180,26 +132,48 @@ namespace {
 	}
 	void Pa_b(Header_contentXlength&& headers, Body&& body, Response& response) {
 		headers, body, response;
-		Pa_b_hasGoodBody = body.IsGood;
+		Pa_b_hasGoodBody = IsGood(body);
 		Pa_b_invoked = true;
 	}
 	void Pa_b_c(Header_contentXlength&& headers, Body&& body, Response& response) {
 		headers, body, response;
-		Pa_b_c_hasGoodBody = body.IsGood;
+		Pa_b_c_hasGoodBody = IsGood(body);
 		Pa_b_c_invoked = true;
 	}
 	void Px___y(char const* p0, char const* q0, Header_contentXlength&& headers, Body&& body, Response& response) {
 		headers, body, response;
-		Px___y_hasGoodBody = body.IsGood;
+		Px___y_hasGoodBody = IsGood(body);
 		Px___y_p0 = p0;
 		Px___y_q0 = q0;
 	}
 	void Px_y___z(char const* p0, char const* q0, Header_contentXlength&& headers, Body&& body, Response& response) {
 		headers, body, response;
-		Px_y___z_hasGoodBody = body.IsGood;
+		Px_y___z_hasGoodBody = IsGood(body);
 		Px_y___z_p0 = p0;
 		Px_y___z_q0 = q0;
 	}
+}
+
+bool AtEndOfPath(char ch) {
+	return ch == '?' || ch == '#' || ch == ' ' || ch == '\r' || ch == '\n';
+}
+
+bool CollectParameter(char const*& p, size_t index, char const*& pn, char const*& qn) {
+	++CollectParameter_invocationCount;
+	pn = qn = p + index;
+	while (*qn != '?' && *qn != '/' && *qn != '#' && *qn != ' ' && *qn != '\r' && *qn != '\n') {
+		++qn;
+	}
+	if (pn == qn) {
+		return false;
+	}
+	p = qn - index - 1;
+	return true;
+}
+
+void FourExEx(Response& response, std::string const& statusLine, char const* message /*= nullptr*/) {
+	response, message;
+	FourExEx_result = statusLine;
 }
 
 #define DISPATCH
@@ -212,7 +186,7 @@ namespace mkapp_Test {
 			CollectParameter_invocationCount = 0;
 			CollectQueries_succeeded = false;
 			CollectQueries_failed = false;
-			FourExEx_invoked = std::string{};
+			FourExEx_result = std::string{};
 			root_invoked = false;
 			a_b_invoked = false;
 			a_bc_invoked = false;
@@ -237,10 +211,12 @@ namespace mkapp_Test {
 			m_m___a_q0 = nullptr;
 			m_m___b_p0 = nullptr;
 			m_m___b_q0 = nullptr;
-			Pa_b_invoked = false;
-			Pa_b_c_invoked = false;
+			Pa_b_hasGoodBody = Pa_b_invoked = false;
+			Pa_b_c_hasGoodBody = Pa_b_c_invoked = false;
+			Px___y_hasGoodBody = false;
 			Px___y_p0 = nullptr;
 			Px___y_q0 = nullptr;
+			Px_y___z_hasGoodBody = false;
 			Px_y___z_p0 = nullptr;
 			Px_y___z_q0 = nullptr;
 		}
@@ -255,7 +231,7 @@ public:
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsFalse(CollectQueries_succeeded);
 		Assert::IsFalse(CollectQueries_failed);
-		Assert::AreEqual(StatusLines::NotFound, FourExEx_invoked);
+		Assert::AreEqual(StatusLines::NotFound, FourExEx_result);
 	}
 
 	TEST_METHOD(FourZeroFour2) {
@@ -267,7 +243,7 @@ public:
 		Assert::AreEqual(CollectParameter_invocationCount, 0ull);
 		Assert::IsFalse(CollectQueries_succeeded);
 		Assert::IsFalse(CollectQueries_failed);
-		Assert::AreEqual(StatusLines::NotFound, FourExEx_invoked);
+		Assert::AreEqual(StatusLines::NotFound, FourExEx_result);
 	}
 
 	TEST_METHOD(root) {
