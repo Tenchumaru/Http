@@ -43,13 +43,17 @@ namespace {
 	std::streamsize const chunkedLengthSize = 6;
 	std::string const contentLengthKey = "Content-Length";
 	std::string const dateKey = "Date";
+	xstring const xdateKey{ dateKey.data(), dateKey.data() + dateKey.size() };
+	char dateValue[33];
 	std::string const serverKey = "Server";
+	xstring const xserverKey{ serverKey.data(), serverKey.data() + serverKey.size() };
 	std::string const transferEncodingKey = "Transfer-Encoding";
+	xstring const xtransferEncodingKey{ transferEncodingKey.data(), transferEncodingKey.data() + transferEncodingKey.size() };
 	enum { initialStateIndex, inHeadersStateIndex, sentSomeHeadersStateIndex, inChunkedBodyStateIndex, inBodyStateIndex };
 
 	// TODO:  consider creating a thread that runs once per second to update
 	// the time buffer.
-	std::string GetTime() {
+	xstring GetTime() {
 		time_t const t = time(nullptr);
 #ifdef _WIN32
 		tm m_;
@@ -58,9 +62,8 @@ namespace {
 #else
 		tm* const m = gmtime(&t);
 #endif
-		char buf[88];
-		strftime(buf, sizeof(buf), "%a, %d %b %Y %T GMT", m);
-		return buf;
+		auto n = std::strftime(dateValue, sizeof(dateValue), "%a, %d %b %Y %T GMT", m);
+		return{ dateValue, dateValue + n };
 	}
 
 	void LogicError(char const* message) {
@@ -184,10 +187,10 @@ void Response::nstreambuf::InternalWriteHeader(xstring const& name, xstring cons
 
 void Response::nstreambuf::WriteServerHeaders() {
 	auto const time = GetTime();
-	InternalWriteHeader({ dateKey.data(), dateKey.data() + dateKey.size() }, { time.data(), time.data() + time.size() }); // TODO:  replace std::string key values with xstring key values.
+	InternalWriteHeader(xdateKey, time);
 	if (!wroteServer) {
 		static char_type const p[] = "C++";
-		InternalWriteHeader({ serverKey.data(), serverKey.data() + serverKey.size() }, { p, p + sizeof(p) - 1 });
+		InternalWriteHeader(xserverKey, { p, p + sizeof(p) - 1 });
 	}
 }
 
@@ -246,7 +249,7 @@ void Response::nstreambuf::InHeadersWriteBody(char_type const* s, std::streamsiz
 	} else {
 		// There is no content length header.  Use "chunked" transfer.
 		static char_type const p[] = "chunked";
-		InternalWriteHeader({ transferEncodingKey.data(), transferEncodingKey.data() + transferEncodingKey.size() }, { p, p + sizeof(p) - 1 });
+		InternalWriteHeader(xtransferEncodingKey, { p, p + sizeof(p) - 1 });
 
 		// End the headers, send the buffer, and adjust it for the chunk length.
 		Write("\r\n", 2);
