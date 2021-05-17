@@ -1,4 +1,6 @@
 #include "pch.h"
+#include "HeaderBase.h"
+#include "StatusLines.h"
 #include "Response.h"
 
 std::array<Response::nstreambuf::StateFunctions, 5> Response::nstreambuf::states = {
@@ -51,21 +53,6 @@ namespace {
 	xstring const xtransferEncodingKey{ transferEncodingKey.data(), transferEncodingKey.data() + transferEncodingKey.size() };
 	enum { initialStateIndex, inHeadersStateIndex, sentSomeHeadersStateIndex, inChunkedBodyStateIndex, inBodyStateIndex };
 
-	// TODO:  consider creating a thread that runs once per second to update
-	// the time buffer.
-	xstring GetTime() {
-		time_t const t = time(nullptr);
-#ifdef _WIN32
-		tm m_;
-		gmtime_s(&m_, &t);
-		tm* const m = &m_;
-#else
-		tm* const m = gmtime(&t);
-#endif
-		auto n = std::strftime(dateValue, sizeof(dateValue), "%a, %d %b %Y %T GMT", m);
-		return{ dateValue, dateValue + n };
-	}
-
 	void LogicError(char const* message) {
 #ifdef _DEBUG
 		throw std::logic_error(message);
@@ -90,7 +77,7 @@ namespace {
 	}
 }
 
-Response::Response(TcpSocket& socket, char* begin, char* end) : outputStreamBuffer(socket, begin, end), responseStream(&outputStreamBuffer) {
+Response::Response(Date const& date, TcpSocket& socket, char* begin, char* end) : outputStreamBuffer(date, socket, begin, end), responseStream(&outputStreamBuffer) {
 	if (end - begin < MinimumBufferSize) {
 		throw std::runtime_error("MinimumBufferSize");
 	}
@@ -98,20 +85,25 @@ Response::Response(TcpSocket& socket, char* begin, char* end) : outputStreamBuff
 
 Response::Response(Response&& that) noexcept : outputStreamBuffer(std::move(that.outputStreamBuffer)), responseStream(&outputStreamBuffer) {}
 
-Response::nstreambuf::nstreambuf(TcpSocket& socket, char* begin, char* end) :
+Response::nstreambuf::nstreambuf(Date const& date, TcpSocket& socket, char* begin, char* end) :
+	date(date),
 	socket(socket),
 	begin(begin),
 	end(end) {
 	static_assert(sizeof(char_type) == sizeof(char));
 }
 
-Response::nstreambuf::nstreambuf(nstreambuf&& that) noexcept : socket(that.socket) {
+Response::nstreambuf::nstreambuf(nstreambuf&& that) noexcept : date(that.date), socket(that.socket) {
 	std::swap(begin, that.begin);
 	std::swap(next, that.next);
 	std::swap(end, that.end);
 	std::swap(contentLength, that.contentLength);
 	std::swap(stateIndex, that.stateIndex);
 	std::swap(wroteServer, that.wroteServer);
+}
+
+bool Response::nstreambuf::HandleExpectation(HeaderBase& headers) {
+	return headers.HandleExpectation(date, socket);
 }
 
 void Response::nstreambuf::WriteStatusLine(std::string const& statusLine) {
@@ -186,8 +178,8 @@ void Response::nstreambuf::InternalWriteHeader(xstring const& name, xstring cons
 }
 
 void Response::nstreambuf::WriteServerHeaders() {
-	auto const time = GetTime();
-	InternalWriteHeader(xdateKey, time);
+	auto const xdateValue = date();
+	InternalWriteHeader(xdateKey, xdateValue);
 	if (!wroteServer) {
 		static char_type const p[] = "C++";
 		InternalWriteHeader(xserverKey, { p, p + sizeof(p) - 1 });

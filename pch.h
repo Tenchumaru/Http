@@ -22,10 +22,12 @@
 #include <ctime>
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <codecvt>
 #include <fstream>
 #include <functional>
+#include <future>
 #include <iomanip>
 #include <iostream>
 #include <iterator>

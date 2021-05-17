@@ -116,6 +116,7 @@
   <ItemGroup>
     <ClInclude Include="Body.h" />
     <ClInclude Include="ClosableResponse.h" />
+    <ClInclude Include="Date.h" />
     <ClInclude Include="DynamicHttpServer.h" />
     <ClInclude Include="FibrousSocketServer.h" />
     <ClInclude Include="FibrousTcpSocket.h" />
@@ -140,6 +141,7 @@
     <ClInclude Include="xtypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Date.cc" />
     <ClCompile Include="DynamicHttpServer.cc" />
     <ClCompile Include="FibrousSocketServer.cc" />
     <ClCompile Include="FibrousTcpSocket.cc" />

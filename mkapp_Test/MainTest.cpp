@@ -9,11 +9,12 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace {
 	class TestResponse : public Response {
 	public:
-		TestResponse() : Response(socket, buffer.data(), buffer.data() + buffer.size()) {}
+		TestResponse() : Response(date, socket, buffer.data(), buffer.data() + buffer.size()) {}
 		~TestResponse() = default;
 
 	private:
 		static std::array<char, Response::MinimumBufferSize> buffer;
+		Date date;
 		static TcpSocket socket;
 	};
 

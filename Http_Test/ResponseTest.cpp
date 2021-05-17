@@ -10,7 +10,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Http_Test {
 	TEST_CLASS(ResponseTest) {
 public:
-
 	TEST_METHOD_INITIALIZE(Initialize) {
 		Sockets::Initialize();
 		Sockets::OnSend = [this](SOCKET s, char const* p, int len, int flags) {
@@ -25,7 +24,7 @@ public:
 	TEST_METHOD(ResponseClose) {
 		// Arrange
 		TcpSocket socket{ expectedSocket };
-		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
+		ClosableResponse response(date, socket, buffer.data(), buffer.data() + buffer.size());
 		auto statusLine = StatusLines::NoContent;
 
 		// Act
@@ -39,7 +38,7 @@ public:
 	TEST_METHOD(ResponseWriteStatusLine) {
 		// Arrange
 		TcpSocket socket{ expectedSocket };
-		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
+		ClosableResponse response(date, socket, buffer.data(), buffer.data() + buffer.size());
 		auto statusLine = StatusLines::NoContent;
 
 		// Act
@@ -54,7 +53,7 @@ public:
 	TEST_METHOD(ResponseChunked) {
 		// Arrange
 		TcpSocket socket{ expectedSocket };
-		ClosableResponse response(socket, buffer.data(), buffer.data() + buffer.size());
+		ClosableResponse response(date, socket, buffer.data(), buffer.data() + buffer.size());
 		std::string m(333, '.');
 		auto statusLine = StatusLines::OK;
 
@@ -75,6 +74,7 @@ public:
 private:
 	static constexpr SOCKET expectedSocket = 110;
 	std::array<char, Response::MinimumBufferSize> buffer;
+	Date date;
 	std::string text;
 
 	void AssertServerHeaders(std::string const& statusLine) {

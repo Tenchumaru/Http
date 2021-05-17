@@ -9,11 +9,12 @@ public:
 
 class TestResponse : public Response {
 public:
-	TestResponse() : Response(socket, buffer.data(), buffer.data() + buffer.size()) {}
+	TestResponse() : Response(date, socket, buffer.data(), buffer.data() + buffer.size()) {}
 	~TestResponse() = default;
 
 private:
 	std::array<char, MinimumBufferSize> buffer;
+	Date date;
 	TestSocket socket;
 };
 

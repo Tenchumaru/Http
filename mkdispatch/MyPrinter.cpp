@@ -78,7 +78,7 @@ namespace {
 				out << indent << "\t\t\tFourExEx(response, StatusLines::BadRequest, \"bad headers\");" << std::endl;
 				out << indent << "\t\t\treturn end;" << std::endl;
 				out << indent << "\t\t}" << std::endl;
-				out << indent << "\t\tif(!headers.HandleExpectation(socket)) {" << std::endl;
+				out << indent << "\t\tif(!response.HandleExpectation(headers)) {" << std::endl;
 				out << indent << "\t\t\tFourExEx(response, StatusLines::ExpectationFailed);" << std::endl;
 				out << indent << "\t\t\treturn end;" << std::endl;
 				out << indent << "\t\t}" << std::endl;

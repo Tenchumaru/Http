@@ -2,6 +2,7 @@
 
 #include "TcpSocket.h"
 #include "ClosableResponse.h"
+#include "StatusLines.h"
 #include "xtypes.h"
 
 class HeaderBase {
@@ -107,11 +108,11 @@ public:
 		return false;
 	}
 
-	bool HandleExpectation(TcpSocket& socket) {
+	bool HandleExpectation(Date const& date, TcpSocket& socket) {
 		bool rv = expect == xstring{};
 		if (!rv) {
 			std::array<char, Response::MinimumBufferSize> continueBuffer;
-			ClosableResponse continueResponse(socket, continueBuffer.data(), continueBuffer.data() + continueBuffer.size());
+			ClosableResponse continueResponse(date, socket, continueBuffer.data(), continueBuffer.data() + continueBuffer.size());
 			if (_strnicmp(expect.first, "100-continue", 12) == 0) {
 				continueResponse.WriteStatusLine(StatusLines::Continue);
 				rv = true;

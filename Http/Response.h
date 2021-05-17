@@ -1,19 +1,22 @@
 #pragma once
 
 #include "xtypes.h"
-#include "StatusLines.h"
+#include "Date.h"
 #include "TcpSocket.h"
+
+class HeaderBase;
 
 class Response {
 public:
 	constexpr static ptrdiff_t MinimumBufferSize = 512;
 
-	Response(TcpSocket& socket, char* begin, char* end);
+	Response(Date const& date, TcpSocket& socket, char* begin, char* end);
 	Response() = delete;
 	Response(Response const&) = delete;
 	Response(Response&& that) noexcept;
 	Response& operator=(Response const&) = delete;
 	Response& operator=(Response&&) noexcept = delete;
+	bool HandleExpectation(HeaderBase& headers) { return outputStreamBuffer.HandleExpectation(headers); }
 	void WriteStatusLine(std::string const& statusLine) { outputStreamBuffer.WriteStatusLine(statusLine); }
 	void WriteHeader(std::string const& name, std::string const& value) {
 		WriteHeader(xstring{ name.data(), name.data() + name.size() }, xstring{ value.data(), value.data() + value.size() });
@@ -36,12 +39,13 @@ protected:
 
 private:
 	struct nstreambuf : public std::streambuf {
-		nstreambuf(TcpSocket& socket, char* begin, char* end);
+		nstreambuf(Date const& date, TcpSocket& socket, char* begin, char* end);
 		nstreambuf() = delete;
 		nstreambuf(nstreambuf const&) = delete;
 		nstreambuf(nstreambuf&& that) noexcept;
 		nstreambuf& operator=(nstreambuf const&) = delete;
 		nstreambuf& operator=(nstreambuf&&) noexcept = delete;
+		bool HandleExpectation(HeaderBase& headers);
 		void WriteStatusLine(std::string const& statusLine);
 		void WriteHeader(xstring const& name, xstring const& value);
 		void Close();
@@ -66,6 +70,7 @@ private:
 		};
 
 		static std::array<StateFunctions, 5> states;
+		Date const& date;
 		TcpSocket& socket;
 		char* begin{};
 		char* next{};

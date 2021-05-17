@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SecureFibrousSocketServer.h"
+#include "Date.h"
 #include "Response.h"
 
 class HttpServer : public SecureFibrousSocketServer {
@@ -11,6 +12,9 @@ public:
 	HttpServer& operator=(HttpServer const&) = delete;
 	HttpServer& operator=(HttpServer&&) noexcept = default;
 	virtual ~HttpServer() = default;
+
+protected:
+	Date date;
 
 private:
 	char const* ProcessRequest(char const* begin, char const* body, char const* end, TcpSocket& clientSocket) const;

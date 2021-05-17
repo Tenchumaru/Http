@@ -47,7 +47,7 @@ char const* HttpServer::ProcessRequest(char const* begin, char const* body, char
 	// contains none, some, or all of the body.  If it contains all of the body, it
 	// is followed by zero or more full requests followed by nothing or a partial request.
 	std::array<char, 0x3800> buffer;
-	ClosableResponse response(clientSocket, buffer.data(), buffer.data() + buffer.size());
+	ClosableResponse response(date, clientSocket, buffer.data(), buffer.data() + buffer.size());
 
 	// Process the first request.  It also checks the Connection header value and
 	// returns nullptr to indicate closing the socket.
