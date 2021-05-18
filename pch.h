@@ -41,6 +41,9 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#ifdef __cpp_lib_variant
+# include <variant>
+#endif
 #include <vector>
 
 #ifdef _WIN32
