@@ -6,7 +6,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Http_Test {
 	TEST_CLASS(UriTest) {
 public:
-
 	TEST_METHOD(UriCreateEmpty) {
 		// Arrange
 		std::string s;

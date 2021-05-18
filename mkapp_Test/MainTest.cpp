@@ -182,7 +182,6 @@ void FourExEx(Response& response, std::string const& statusLine, char const* mes
 
 namespace mkapp_Test {
 	TEST_CLASS(MainTest) {
-
 		TEST_METHOD_INITIALIZE(Initialize) {
 			CollectParameter_invocationCount = 0;
 			CollectQueries_succeeded = false;

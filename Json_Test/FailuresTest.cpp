@@ -6,7 +6,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Json_Test {
 	TEST_CLASS(FailuresTest) {
 public:
-
 	TEST_METHOD(Failures) {
 		std::ifstream testCases("../../Json_test/failures.json.txt");
 		if (!testCases) {

@@ -2,7 +2,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace mkdispatch_Test {
 	TEST_CLASS(TestClassName) {
-
 		TEST_METHOD_INITIALIZE(Initialize) {
 			CollectParameter_invocationCount = 0;
 			CollectQueries_succeeded = false;

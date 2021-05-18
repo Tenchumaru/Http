@@ -7,7 +7,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Http_Test {
 	TEST_CLASS(TcpSocketTest) {
 public:
-
 	TEST_METHOD_INITIALIZE(Initialize) {
 		Sockets::Initialize();
 	}

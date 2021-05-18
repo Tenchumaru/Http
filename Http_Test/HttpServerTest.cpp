@@ -10,7 +10,6 @@ using Http_Test::Dispatch::ptr_t;
 namespace Http_Test {
 	TEST_CLASS(HttpServerTest) {
 public:
-
 	TEST_METHOD_INITIALIZE(Initialize) {
 		Sockets::Initialize();
 	}

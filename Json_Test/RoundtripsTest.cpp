@@ -6,7 +6,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Json_Test {
 	TEST_CLASS(RoundtripsTest) {
 public:
-
 	TEST_METHOD(Roundtrips) {
 		std::ifstream testCases("../../Json_test/roundtrips.json.txt");
 		if (!testCases) {

@@ -6,17 +6,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace Json_Test {
 	TEST_CLASS(WriteTest) {
-		char* stringValue = strdup("string");
-		wchar_t* wideStringValue = wcsdup(L"string");
-
-		template<typename T, typename U>
-		void WriteStringImpl(U u) {
-			std::stringstream ss;
-			T s = u;
-			WriteJson(ss, s);
-			Assert::AreEqual("\""s + stringValue + '"', ss.str());
-		}
-
 public:
 	TEST_METHOD(WriteUnorderedMap) {
 		std::stringstream ss;
@@ -229,6 +218,18 @@ public:
 
 	TEST_METHOD(WriteStringValue) {
 		WriteSomething(Value("string"s), "\""s + stringValue + '"');
+	}
+
+private:
+	char* stringValue = strdup("string");
+	wchar_t* wideStringValue = wcsdup(L"string");
+
+	template<typename T, typename U>
+	void WriteStringImpl(U u) {
+		std::stringstream ss;
+		T s = u;
+		WriteJson(ss, s);
+		Assert::AreEqual("\""s + stringValue + '"', ss.str());
 	}
 	};
 }
