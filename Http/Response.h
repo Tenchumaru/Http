@@ -1,31 +1,33 @@
 #pragma once
 
 #include "xtypes.h"
-#include "StatusLines.h"
+#include "Date.h"
 #include "TcpSocket.h"
+
+class HeaderBase;
 
 class Response {
 public:
-	// TODO:  consider creating a flushable response to allow for
-	// content larger than the provided buffer.
-	Response(TcpSocket& socket, char* begin, char* end);
+	constexpr static ptrdiff_t MinimumBufferSize = 512;
+
+	Response(Date const& date, TcpSocket& socket, char* begin, char* end);
 	Response() = delete;
 	Response(Response const&) = delete;
 	Response(Response&& that) noexcept;
 	Response& operator=(Response const&) = delete;
 	Response& operator=(Response&&) noexcept = delete;
-	void WriteStatus(StatusLines::StatusLine const& statusLine);
+	bool HandleExpectation(HeaderBase& headers) { return outputStreamBuffer.HandleExpectation(headers); }
+	void WriteStatusLine(std::string const& statusLine) { outputStreamBuffer.WriteStatusLine(statusLine); }
 	void WriteHeader(std::string const& name, std::string const& value) {
 		WriteHeader(xstring{ name.data(), name.data() + name.size() }, xstring{ value.data(), value.data() + value.size() });
 	}
 	void WriteHeader(std::string const& name, xstring const& value) {
 		WriteHeader(xstring{ name.data(), name.data() + name.size() }, value);
 	}
-	void WriteHeader(xstring const& name, xstring const& value);
-	bool Reset();
+	void WriteHeader(xstring const& name, xstring const& value) { outputStreamBuffer.WriteHeader(name, value); }
+	bool Reset() { return outputStreamBuffer.Reset(); }
 	template<typename T>
 	Response& operator<<(T t) {
-		inBody = true;
 		responseStream << t;
 		return *this;
 	}
@@ -33,55 +35,91 @@ public:
 protected:
 	// These are protected since derived classes control the response lifetime.
 	~Response() = default;
-	void Close();
+	void Close() { outputStreamBuffer.Close(); }
 
 private:
 	struct nstreambuf : public std::streambuf {
-		nstreambuf(Response& response, TcpSocket& socket);
+		nstreambuf(Date const& date, TcpSocket& socket, char* begin, char* end);
 		nstreambuf() = delete;
 		nstreambuf(nstreambuf const&) = delete;
 		nstreambuf(nstreambuf&& that) noexcept;
 		nstreambuf& operator=(nstreambuf const&) = delete;
 		nstreambuf& operator=(nstreambuf&&) noexcept = delete;
+		bool HandleExpectation(HeaderBase& headers);
+		void WriteStatusLine(std::string const& statusLine);
+		void WriteHeader(xstring const& name, xstring const& value);
 		void Close();
-		bool get_HasWritten() const { return hasWritten; }
-		__declspec(property(get = get_HasWritten)) bool const HasWritten;
+		bool Reset();
 		std::streamsize xsputn(char_type const* s, std::streamsize n) override;
 		int overflow(int c) override;
 
 	private:
-		using Fn0 = void(nstreambuf::*)();
-		using Fn2 = void(nstreambuf::*)(char_type const* s, std::streamsize n);
+		using WriteStatusLineFn = void(nstreambuf::*)(std::string const&);
+		using WriteHeaderFn = void(nstreambuf::*)(xstring const& name, xstring const& value);
+		using WriteBodyFn = void(nstreambuf::*)(char_type const* s, std::streamsize n);
+		using WriteFn = void(nstreambuf::*)(char_type const* s, std::streamsize n);
+		using CloseFn = void(nstreambuf::*)();
+		using ResetFn = bool(nstreambuf::*)();
 
-		Response& response;
+		struct StateFunctions {
+			WriteStatusLineFn WriteStatusLine;
+			WriteHeaderFn WriteHeader;
+			WriteBodyFn WriteBody;
+			WriteFn Write;
+			CloseFn Close;
+		};
+
+		static std::array<StateFunctions, 5> states;
+		Date const& date;
 		TcpSocket& socket;
-		Fn0 closeFn;
-		Fn0 internalSendBufferFn;
-		Fn2 internalSendFn;
-		Fn2 sendFn;
-		char* begin;
-		char* next;
-		char* end;
-		bool hasWritten{};
+		char* begin{};
+		char* next{};
+		char* end{};
+		std::optional<size_t> contentLength;
+		size_t stateIndex{};
+		bool wroteServer{};
 
-		void InitialSend(char_type const* s, std::streamsize n);
-		void Send(char_type const* s, std::streamsize n);
-		void ChunkedClose();
-		void SimpleClose();
-		void InternalSendBuffer();
-		void InternalSend(char_type const* s, std::streamsize n);
-		void InternalSendBufferChunk();
-		void InternalSendChunk(char_type const* s, std::streamsize n);
+		bool get_IsResettable() const;
+		__declspec(property(get = get_IsResettable)) bool const IsResettable;
+		void WriteBody(char_type const* s, std::streamsize n);
+		void Write(char_type const* s, std::streamsize n);
+		void CheckWriteHeader(xstring const& name, xstring const& value);
+		void InternalWriteHeader(xstring const& name, xstring const& value);
+		void WriteServerHeaders();
+		void SendBuffer();
+		void InternalReset();
+
+		void InitialWriteStatusLine(std::string const& statusLine);
+		void InitialWriteHeader(xstring const& name, xstring const& value);
+		void InitialWriteBody(char_type const* s, std::streamsize n);
+		void InitialWrite(char_type const* s, std::streamsize n);
+		void InitialClose();
+
+		void InHeadersWriteStatusLine(std::string const& statusLine);
+		void InHeadersWriteHeader(xstring const& name, xstring const& value);
+		void InHeadersWriteBody(char_type const* s, std::streamsize n);
+		void InHeadersWrite(char_type const* s, std::streamsize n);
+		void InHeadersClose();
+
+		void SentSomeHeadersWriteStatusLine(std::string const& statusLine);
+		void SentSomeHeadersWriteHeader(xstring const& name, xstring const& value);
+		void SentSomeHeadersWriteBody(char_type const* s, std::streamsize n);
+		void SentSomeHeadersWrite(char_type const* s, std::streamsize n);
+		void SentSomeHeadersClose();
+
+		void InChunkedBodyWriteStatusLine(std::string const& statusLine);
+		void InChunkedBodyWriteHeader(xstring const& name, xstring const& value);
+		void InChunkedBodyWriteBody(char_type const* s, std::streamsize n);
+		void InChunkedBodyWrite(char_type const* s, std::streamsize n);
+		void InChunkedBodyClose();
+
+		void InBodyWriteStatusLine(std::string const& statusLine);
+		void InBodyWriteHeader(xstring const& name, xstring const& value);
+		void InBodyWriteBody(char_type const* s, std::streamsize n);
+		void InBodyWrite(char_type const* s, std::streamsize n);
+		void InBodyClose();
 	};
 
-	char* begin{};
-	char* next{};
-	char* end{};
 	nstreambuf outputStreamBuffer;
 	std::ostream responseStream;
-	bool wroteContentLength{};
-	bool wroteServer{};
-	bool inBody{};
-
-	bool CompleteHeaders();
 };

@@ -1,15 +1,20 @@
 #include "pch.h"
+#include "Http.h"
 #include "HttpParser.h"
 
 using namespace std::literals;
 
 namespace {
 	constexpr size_t versionSize = 8; // Eight characters for "HTTP #.#".  See https://tools.ietf.org/html/rfc7230#appendix-B.
-	// TODO:  the following are configurable.
-	constexpr size_t maxNameSize = 222;
-	constexpr size_t maxValueSize = 888;
-	constexpr size_t maxContentLength = 1024 * 1024;
-	constexpr size_t maxHeaders = 99;
+
+	template<size_t N>
+	constexpr size_t CountDigits() {
+		if constexpr (N < 10) {
+			return 1;
+		} else {
+			return CountDigits<N / 10>() + 1;
+		}
+	}
 }
 
 char const* HttpParser::Add(char const* begin, char const* end) {
@@ -113,24 +118,16 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 				throw Exception(StatusLines::BadRequest, "malformed header");
 			}
 
-			// Get the content length, if any.
-			auto const it = headers.find("Content-Length"s);
-			contentLength = it == headers.cend() ? 0 : std::stoul(it->second);
-			if (contentLength == 0) {
-				// There isn't one or it's zero; assume there's no data.
-				isComplete = true;
-				return p + 1;
-			}
+			// Check for appropriate payload size headers.
+			contentLength = ValidateDataSizeHeaders();
 			if (contentLength > maxContentLength) {
 				// && .49999999999999
 				// : ]
 				throw Exception(StatusLines::PayloadTooLarge);
 			}
-			// TODO:  for requests, check for the "Expect: 100-continue" header.
 
-			// Start collecting the data.
-			data.clear();
-			fn = &HttpParser::CollectData;
+			// Complete the collection of data.
+			isComplete = true;
 			return p + 1;
 		} else if (isspace(*p)) {
 			if (name.empty()) {
@@ -141,7 +138,7 @@ char const* HttpParser::CollectHeaderName(char const* p, char const* const q) {
 		} else {
 			name += *p;
 			if (name.size() >= maxNameSize) {
-				throw Exception(StatusLines::BadRequest, "malformed header");
+				throw Exception(StatusLines::BadRequest, "header name too long");
 			}
 		}
 	}
@@ -166,29 +163,12 @@ char const* HttpParser::CollectHeaderValue(char const* p, char const* const q) {
 		} else if (!value.empty() || !isspace(*p)) {
 			value += *p;
 			if (value.size() >= maxValueSize) {
-				throw Exception(StatusLines::BadRequest, "malformed header");
+				throw Exception(StatusLines::BadRequest, "header value too long");
 			}
 		}
 		++p;
 	}
 	return p;
-}
-
-char const* HttpParser::CollectData(char const* p, char const* const q) {
-	// Determine the amout of data required and available.
-	auto const nRequired = contentLength - data.size();
-	decltype(nRequired) const nAvailable = q - p;
-
-	if (nAvailable >= nRequired) {
-		// Consume data necessary to complete the current message.
-		data.append(p, p + nRequired);
-		isComplete = true;
-		return p + nRequired;
-	} else {
-		// Consume all available data.
-		data.append(p, q);
-		return q;
-	}
 }
 
 bool HttpParser::ValidateVersion(std::string const& s) {
@@ -197,6 +177,31 @@ bool HttpParser::ValidateVersion(std::string const& s) {
 		isdigit(s[5]) &&
 		isdigit(s[7]) &&
 		strncmp(s.c_str(), "HTTP/", 5) == 0;
+}
+
+std::streamsize HttpParser::ValidateDataSizeHeaders() {
+	// Get the content length or transfer encoding, if any.  These two headers are mutually exclusive.
+	auto it = headers.find("Content-Length"s);
+	if (it == headers.cend()) {
+		// Check for a Transfer-Encoding header.
+		it = headers.find("Transfer-Encoding"s);
+		if (it == headers.cend()) {
+			// There isn't either header; assume there's no data.
+			return 0;
+		} else if (_stricmp(it->second.c_str(), "chunked")) {
+			throw Exception(StatusLines::BadRequest, "invalid transfer encoding");
+		} else {
+			// Signal a chunked transfer.
+			return -1;
+		}
+	} else if (headers.find("Transfer-Encoding"s) != headers.cend()) {
+		throw Exception(StatusLines::BadRequest, "invalid combination of content length and transfer encoding");
+	} else if (!std::all_of(it->second.cbegin(), it->second.cend(), [](char ch) { return std::isdigit(ch, std::locale()); })) {
+		throw Exception(StatusLines::BadRequest, "invalid content length");
+	} else if (it->second.size() > CountDigits<maxContentLength>()) {
+		throw Exception(StatusLines::PayloadTooLarge);
+	}
+	return std::stoll(it->second);
 }
 
 bool HttpParser::ValidateFirst(std::string const& s) {

@@ -18,7 +18,7 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
+    <ClInclude Include="Utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,15 +35,15 @@
     <ClCompile Include="SmDispatchTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="DispatchTest.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="myDispatch.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="Utils.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="segDispatch.inl">

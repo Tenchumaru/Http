@@ -1,46 +1,45 @@
 void TestDispatch(int count) {
 	std::cout << "Testing " << name << std::endl;
 	std::chrono::high_resolution_clock clock;
-	TcpSocket socket;
-	Response response;
-	char* next = nullptr;
+	TcpSocket socket(INVALID_SOCKET);
+	TestResponse response(socket);
 	auto before = clock.now();
-	for(int i = 0; i < count; ++i) {
-		Dispatch("POST /extensions/clientId/auth/secret\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /extensions/clientId/auth/secret\r", nullptr, next, nullptr, socket, response);
-		Dispatch("DELETE /extensions/clientId/auth/secret\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /extensions/clientId/live_activated_channels\r", nullptr, next, nullptr, socket, response);
-		Dispatch("PUT /extensions/clientId/version/required_configuration\r", nullptr, next, nullptr, socket, response);
-		Dispatch("PUT /extensions/clientId/configurations\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /extensions/clientId/configurations/channels/channelId\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /extensions/clientId/configurations/segments/broadcaster\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /extensions/clientId/configurations/segments/developer\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /extensions/clientId/configurations/segments/global\r", nullptr, next, nullptr, socket, response);
-		Dispatch("POST /extensions/message/channelId\r", nullptr, next, nullptr, socket, response);
-		Dispatch("POST /extensions/message/all\r", nullptr, next, nullptr, socket, response);
-		Dispatch("POST /extensions/clientId/version/channels/channelId/chat\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/analytics/extensions\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/analytics/games\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/bits/leaderboard\r", nullptr, next, nullptr, socket, response);
-		Dispatch("POST /helix/clips\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/clips\r", nullptr, next, nullptr, socket, response);
-		Dispatch("POST /helix/entitlements/upload\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/entitlements/codes\r", nullptr, next, nullptr, socket, response);
-		Dispatch("POST /helix/entitlements/codes\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/games/top\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/games\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/streams\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/streams/metadata\r", nullptr, next, nullptr, socket, response);
-		Dispatch("POST /helix/streams/markers\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/streams/markers\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/users\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/users/follows\r", nullptr, next, nullptr, socket, response);
-		Dispatch("PUT /helix/users\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/users/extensions/list\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/users/extensions\r", nullptr, next, nullptr, socket, response);
-		Dispatch("PUT /helix/users/extensions\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/videos\r", nullptr, next, nullptr, socket, response);
-		Dispatch("GET /helix/webhooks/subscriptions\r", nullptr, next, nullptr, socket, response);
+	for (int i = 0; i < count; ++i) {
+		Dispatch("POST /extensions/clientId/auth/secret\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /extensions/clientId/auth/secret\r", nullptr, nullptr, socket, response);
+		Dispatch("DELETE /extensions/clientId/auth/secret\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /extensions/clientId/live_activated_channels\r", nullptr, nullptr, socket, response);
+		Dispatch("PUT /extensions/clientId/version/required_configuration\r", nullptr, nullptr, socket, response);
+		Dispatch("PUT /extensions/clientId/configurations\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /extensions/clientId/configurations/channels/channelId\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /extensions/clientId/configurations/segments/broadcaster\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /extensions/clientId/configurations/segments/developer\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /extensions/clientId/configurations/segments/global\r", nullptr, nullptr, socket, response);
+		Dispatch("POST /extensions/message/channelId\r", nullptr, nullptr, socket, response);
+		Dispatch("POST /extensions/message/all\r", nullptr, nullptr, socket, response);
+		Dispatch("POST /extensions/clientId/version/channels/channelId/chat\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/analytics/extensions\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/analytics/games\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/bits/leaderboard\r", nullptr, nullptr, socket, response);
+		Dispatch("POST /helix/clips\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/clips\r", nullptr, nullptr, socket, response);
+		Dispatch("POST /helix/entitlements/upload\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/entitlements/codes\r", nullptr, nullptr, socket, response);
+		Dispatch("POST /helix/entitlements/codes\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/games/top\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/games\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/streams\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/streams/metadata\r", nullptr, nullptr, socket, response);
+		Dispatch("POST /helix/streams/markers\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/streams/markers\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/users\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/users/follows\r", nullptr, nullptr, socket, response);
+		Dispatch("PUT /helix/users\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/users/extensions/list\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/users/extensions\r", nullptr, nullptr, socket, response);
+		Dispatch("PUT /helix/users/extensions\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/videos\r", nullptr, nullptr, socket, response);
+		Dispatch("GET /helix/webhooks/subscriptions\r", nullptr, nullptr, socket, response);
 	}
 	auto after = clock.now();
 	std::chrono::duration<double> duration = after - before;
@@ -82,67 +81,67 @@ void TestDispatch(int count) {
 	std::cout << "PUT_helix_users_count:  " << PUT_helix_users_count << std::endl;
 
 	std::string DELETE_extensions__clientId_auth_secret_s0(DELETE_extensions__clientId_auth_secret_p0, DELETE_extensions__clientId_auth_secret_q0);
-	if(DELETE_extensions__clientId_auth_secret_s0 != "clientId") {
+	if (DELETE_extensions__clientId_auth_secret_s0 != "clientId") {
 		throw std::runtime_error("DELETE_extensions__clientId_auth_secret_s0");
 	}
 	std::string GET_extensions__clientId_auth_secret_s0(GET_extensions__clientId_auth_secret_p0, GET_extensions__clientId_auth_secret_q0);
-	if(GET_extensions__clientId_auth_secret_s0 != "clientId") {
+	if (GET_extensions__clientId_auth_secret_s0 != "clientId") {
 		throw std::runtime_error("GET_extensions__clientId_auth_secret_s0");
 	}
 	std::string GET_extensions__clientId_configurations_channels__channelId_s0(GET_extensions__clientId_configurations_channels__channelId_p0, GET_extensions__clientId_configurations_channels__channelId_q0);
-	if(GET_extensions__clientId_configurations_channels__channelId_s0 != "clientId") {
+	if (GET_extensions__clientId_configurations_channels__channelId_s0 != "clientId") {
 		throw std::runtime_error("GET_extensions__clientId_configurations_channels__channelId_s0");
 	}
 	std::string GET_extensions__clientId_configurations_channels__channelId_s1(GET_extensions__clientId_configurations_channels__channelId_p1, GET_extensions__clientId_configurations_channels__channelId_q1);
-	if(GET_extensions__clientId_configurations_channels__channelId_s1 != "channelId") {
+	if (GET_extensions__clientId_configurations_channels__channelId_s1 != "channelId") {
 		throw std::runtime_error("GET_extensions__clientId_configurations_channels__channelId_s1");
 	}
 	std::string GET_extensions__clientId_configurations_segments_broadcaster_s0(GET_extensions__clientId_configurations_segments_broadcaster_p0, GET_extensions__clientId_configurations_segments_broadcaster_q0);
-	if(GET_extensions__clientId_configurations_segments_broadcaster_s0 != "clientId") {
+	if (GET_extensions__clientId_configurations_segments_broadcaster_s0 != "clientId") {
 		throw std::runtime_error("GET_extensions__clientId_configurations_segments_broadcaster_s0");
 	}
 	std::string GET_extensions__clientId_configurations_segments_developer_s0(GET_extensions__clientId_configurations_segments_developer_p0, GET_extensions__clientId_configurations_segments_developer_q0);
-	if(GET_extensions__clientId_configurations_segments_developer_s0 != "clientId") {
+	if (GET_extensions__clientId_configurations_segments_developer_s0 != "clientId") {
 		throw std::runtime_error("GET_extensions__clientId_configurations_segments_developer_s0");
 	}
 	std::string GET_extensions__clientId_configurations_segments_global_s0(GET_extensions__clientId_configurations_segments_global_p0, GET_extensions__clientId_configurations_segments_global_q0);
-	if(GET_extensions__clientId_configurations_segments_global_s0 != "clientId") {
+	if (GET_extensions__clientId_configurations_segments_global_s0 != "clientId") {
 		throw std::runtime_error("GET_extensions__clientId_configurations_segments_global_s0");
 	}
 	std::string GET_extensions__clientId_live_activated_channels_s0(GET_extensions__clientId_live_activated_channels_p0, GET_extensions__clientId_live_activated_channels_q0);
-	if(GET_extensions__clientId_live_activated_channels_s0 != "clientId") {
+	if (GET_extensions__clientId_live_activated_channels_s0 != "clientId") {
 		throw std::runtime_error("GET_extensions__clientId_live_activated_channels_s0");
 	}
 	std::string POST_extensions__clientId__version_channels__channelId_chat_s0(POST_extensions__clientId__version_channels__channelId_chat_p0, POST_extensions__clientId__version_channels__channelId_chat_q0);
-	if(POST_extensions__clientId__version_channels__channelId_chat_s0 != "clientId") {
+	if (POST_extensions__clientId__version_channels__channelId_chat_s0 != "clientId") {
 		throw std::runtime_error("POST_extensions__clientId__version_channels__channelId_chat_s0");
 	}
 	std::string POST_extensions__clientId__version_channels__channelId_chat_s1(POST_extensions__clientId__version_channels__channelId_chat_p1, POST_extensions__clientId__version_channels__channelId_chat_q1);
-	if(POST_extensions__clientId__version_channels__channelId_chat_s1 != "version") {
+	if (POST_extensions__clientId__version_channels__channelId_chat_s1 != "version") {
 		throw std::runtime_error("POST_extensions__clientId__version_channels__channelId_chat_s1");
 	}
 	std::string POST_extensions__clientId__version_channels__channelId_chat_s2(POST_extensions__clientId__version_channels__channelId_chat_p2, POST_extensions__clientId__version_channels__channelId_chat_q2);
-	if(POST_extensions__clientId__version_channels__channelId_chat_s2 != "channelId") {
+	if (POST_extensions__clientId__version_channels__channelId_chat_s2 != "channelId") {
 		throw std::runtime_error("POST_extensions__clientId__version_channels__channelId_chat_s2");
 	}
 	std::string POST_extensions__clientId_auth_secret_s0(POST_extensions__clientId_auth_secret_p0, POST_extensions__clientId_auth_secret_q0);
-	if(POST_extensions__clientId_auth_secret_s0 != "clientId") {
+	if (POST_extensions__clientId_auth_secret_s0 != "clientId") {
 		throw std::runtime_error("POST_extensions__clientId_auth_secret_s0");
 	}
 	std::string POST_extensions_message__channelId_s0(POST_extensions_message__channelId_p0, POST_extensions_message__channelId_q0);
-	if(POST_extensions_message__channelId_s0 != "channelId") {
+	if (POST_extensions_message__channelId_s0 != "channelId") {
 		throw std::runtime_error("POST_extensions_message__channelId_s0");
 	}
 	std::string PUT_extensions__clientId__version_required_configuration_s0(PUT_extensions__clientId__version_required_configuration_p0, PUT_extensions__clientId__version_required_configuration_q0);
-	if(PUT_extensions__clientId__version_required_configuration_s0 != "clientId") {
+	if (PUT_extensions__clientId__version_required_configuration_s0 != "clientId") {
 		throw std::runtime_error("PUT_extensions__clientId__version_required_configuration_s0");
 	}
 	std::string PUT_extensions__clientId__version_required_configuration_s1(PUT_extensions__clientId__version_required_configuration_p1, PUT_extensions__clientId__version_required_configuration_q1);
-	if(PUT_extensions__clientId__version_required_configuration_s1 != "version") {
+	if (PUT_extensions__clientId__version_required_configuration_s1 != "version") {
 		throw std::runtime_error("PUT_extensions__clientId__version_required_configuration_s1");
 	}
 	std::string PUT_extensions__clientId_configurations_s0(PUT_extensions__clientId_configurations_p0, PUT_extensions__clientId_configurations_q0);
-	if(PUT_extensions__clientId_configurations_s0 != "clientId") {
+	if (PUT_extensions__clientId_configurations_s0 != "clientId") {
 		throw std::runtime_error("PUT_extensions__clientId_configurations_s0");
 	}
 }

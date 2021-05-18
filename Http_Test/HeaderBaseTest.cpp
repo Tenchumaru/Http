@@ -6,7 +6,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Http_Test {
 	TEST_CLASS(HeaderBaseTest) {
 public:
-
 	TEST_METHOD(HeaderBaseSuccess) {
 		// Arrange
 		std::vector<std::pair<std::string, std::string>> expectedHeaders{

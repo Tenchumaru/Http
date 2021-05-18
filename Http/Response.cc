@@ -1,156 +1,133 @@
 #include "pch.h"
+#include "HeaderBase.h"
+#include "StatusLines.h"
 #include "Response.h"
 
+std::array<Response::nstreambuf::StateFunctions, 5> Response::nstreambuf::states = {
+	Response::nstreambuf::StateFunctions{
+		&Response::nstreambuf::InitialWriteStatusLine,
+		&Response::nstreambuf::InitialWriteHeader,
+		&Response::nstreambuf::InitialWriteBody,
+		&Response::nstreambuf::InitialWrite,
+		&Response::nstreambuf::InitialClose,
+	},
+	Response::nstreambuf::StateFunctions{
+		&Response::nstreambuf::InHeadersWriteStatusLine,
+		&Response::nstreambuf::InHeadersWriteHeader,
+		&Response::nstreambuf::InHeadersWriteBody,
+		&Response::nstreambuf::InHeadersWrite,
+		&Response::nstreambuf::InHeadersClose,
+	},
+	Response::nstreambuf::StateFunctions{
+		&Response::nstreambuf::SentSomeHeadersWriteStatusLine,
+		&Response::nstreambuf::SentSomeHeadersWriteHeader,
+		&Response::nstreambuf::SentSomeHeadersWriteBody,
+		&Response::nstreambuf::SentSomeHeadersWrite,
+		&Response::nstreambuf::SentSomeHeadersClose,
+	},
+	Response::nstreambuf::StateFunctions{
+		&Response::nstreambuf::InChunkedBodyWriteStatusLine,
+		&Response::nstreambuf::InChunkedBodyWriteHeader,
+		&Response::nstreambuf::InChunkedBodyWriteBody,
+		&Response::nstreambuf::InChunkedBodyWrite,
+		&Response::nstreambuf::InChunkedBodyClose,
+	},
+	Response::nstreambuf::StateFunctions{
+		&Response::nstreambuf::InBodyWriteStatusLine,
+		&Response::nstreambuf::InBodyWriteHeader,
+		&Response::nstreambuf::InBodyWriteBody,
+		&Response::nstreambuf::InBodyWrite,
+		&Response::nstreambuf::InBodyClose,
+	},
+};
+
 namespace {
+	std::streamsize const chunkedLengthSize = 6;
 	std::string const contentLengthKey = "Content-Length";
+	std::string const dateKey = "Date";
+	xstring const xdateKey{ dateKey.data(), dateKey.data() + dateKey.size() };
+	char dateValue[33];
 	std::string const serverKey = "Server";
-	constexpr ptrdiff_t minimumHeaderBufferSize = 512;
+	xstring const xserverKey{ serverKey.data(), serverKey.data() + serverKey.size() };
+	std::string const transferEncodingKey = "Transfer-Encoding";
+	xstring const xtransferEncodingKey{ transferEncodingKey.data(), transferEncodingKey.data() + transferEncodingKey.size() };
+	enum { initialStateIndex, inHeadersStateIndex, sentSomeHeadersStateIndex, inChunkedBodyStateIndex, inBodyStateIndex };
 
-	// TODO:  consider creating a thread that runs once per second to update
-	// the time buffer.
-	std::string GetTime() {
-		time_t const t = time(nullptr);
-#ifdef _WIN32
-		tm m_;
-		gmtime_s(&m_, &t);
-		tm* const m = &m_;
+	void LogicError(char const* message) {
+#ifdef _DEBUG
+		throw std::logic_error(message);
 #else
-		tm* const m = gmtime(&t);
+		std::cerr << message << std::endl;
 #endif
-		char buf[88];
-		strftime(buf, sizeof(buf), "%a, %d %b %Y %T GMT", m);
-		return buf;
 	}
-}
 
-Response::Response(TcpSocket& socket, char* begin, char* end) :
-	begin(begin),
-	next(begin),
-	end(end),
-	outputStreamBuffer(*this, socket),
-	responseStream(&outputStreamBuffer) {
-	if (end - begin < minimumHeaderBufferSize) {
-		throw std::runtime_error("minimumHeaderBufferSize");
+	inline char AsHexDigit(std::streamsize value) noexcept {
+		value &= 0x0f;
+		return static_cast<char>(value < 10 ? value + '0' : value - 10 + 'A');
 	}
-}
 
-Response::Response(Response&& that) noexcept : outputStreamBuffer(std::move(that.outputStreamBuffer)), responseStream(&outputStreamBuffer) {
-	std::swap(begin, that.begin);
-	std::swap(next, that.next);
-	std::swap(end, that.end);
-	std::swap(wroteContentLength, that.wroteContentLength);
-	std::swap(wroteServer, that.wroteServer);
-	std::swap(inBody, that.inBody);
-}
-
-void Response::WriteStatus(StatusLines::StatusLine const& statusLine) {
-	if (next != begin) {
-		throw std::logic_error("cannot write Status line more than once");
-	}
-	memcpy(begin, statusLine.first, statusLine.second);
-	next = begin + statusLine.second;
-}
-
-void Response::WriteHeader(xstring const& name, xstring const& value) {
-	if (next == begin) {
-		WriteStatus(StatusLines::OK);
-	}
-	auto const nameSize = name.second - name.first;
-	auto const valueSize = value.second - value.first;
-	if (nameSize + valueSize + 4 >= end - next) {
-		throw std::runtime_error("Response::WriteHeader");
-	}
-	if (contentLengthKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, contentLengthKey.c_str()) == 0) {
-		if (wroteContentLength) {
-			throw std::logic_error("cannot write Content-Length header more than once");
+	void SetLength(char* p, std::streamsize value) {
+		p += 4;
+		p[0] = '\r';
+		p[1] = '\n';
+		for (auto i = 0; i < 4; ++i) {
+			*--p = AsHexDigit(value);
+			value >>= 4;
 		}
-		wroteContentLength = true;
-	} else if (serverKey.size() == static_cast<size_t>(nameSize) && _strcmpi(name.first, serverKey.c_str()) == 0) {
-		if (wroteServer) {
-			throw std::logic_error("cannot write Server header more than once");
-		}
-		wroteServer = true;
 	}
-	next = std::copy(name.first, name.second, next);
-	*next++ = ':';
-	*next++ = ' ';
-	next = std::copy(value.first, value.second, next);
-	*next++ = '\r';
-	*next++ = '\n';
 }
 
-bool Response::Reset() {
-	if (outputStreamBuffer.HasWritten) {
-		return false;
+Response::Response(Date const& date, TcpSocket& socket, char* begin, char* end) : outputStreamBuffer(date, socket, begin, end), responseStream(&outputStreamBuffer) {
+	if (end - begin < MinimumBufferSize) {
+		throw std::runtime_error("MinimumBufferSize");
 	}
-	next = begin;
-	wroteContentLength = false;
-	wroteServer = false;
-	inBody = false;
-	return true;
 }
 
-void Response::Close() {
-	if (!inBody && next != begin && !wroteContentLength) {
-		static constexpr char zero = '0';
-		WriteHeader(contentLengthKey, xstring{ &zero, &zero + sizeof(zero) });
-	}
-	outputStreamBuffer.Close();
-	Reset();
-}
+Response::Response(Response&& that) noexcept : outputStreamBuffer(std::move(that.outputStreamBuffer)), responseStream(&outputStreamBuffer) {}
 
-bool Response::CompleteHeaders() {
-	// Write the required headers.
-	WriteHeader("Date", GetTime());
-	if (!wroteServer) {
-		WriteHeader("Server", "C++");
-	}
-	bool const isChunked = !wroteContentLength;
-	if (isChunked) {
-		WriteHeader("Transfer-Encoding", "chunked");
-	}
-
-	// Write "end of headers."
-	*next++ = '\r';
-	*next++ = '\n';
-	return isChunked;
-}
-
-Response::nstreambuf::nstreambuf(Response& response, TcpSocket& socket) :
-	response(response),
+Response::nstreambuf::nstreambuf(Date const& date, TcpSocket& socket, char* begin, char* end) :
+	date(date),
 	socket(socket),
-	closeFn(&nstreambuf::SimpleClose),
-	internalSendBufferFn(&nstreambuf::InternalSendBuffer),
-	internalSendFn(&nstreambuf::InternalSend),
-	sendFn(&nstreambuf::InitialSend),
-	begin(response.begin),
-	next(response.next),
-	end(response.end) {
+	begin(begin),
+	end(end) {
 	static_assert(sizeof(char_type) == sizeof(char));
 }
 
-Response::nstreambuf::nstreambuf(nstreambuf&& that) noexcept : response(that.response), socket(that.socket) {
-	std::swap(closeFn, that.closeFn);
-	std::swap(internalSendBufferFn, that.internalSendBufferFn);
-	std::swap(internalSendFn, that.internalSendFn);
-	std::swap(sendFn, that.sendFn);
+Response::nstreambuf::nstreambuf(nstreambuf&& that) noexcept : date(that.date), socket(that.socket) {
 	std::swap(begin, that.begin);
 	std::swap(next, that.next);
 	std::swap(end, that.end);
-	std::swap(hasWritten, that.hasWritten);
+	std::swap(contentLength, that.contentLength);
+	std::swap(stateIndex, that.stateIndex);
+	std::swap(wroteServer, that.wroteServer);
+}
+
+bool Response::nstreambuf::HandleExpectation(HeaderBase& headers) {
+	return headers.HandleExpectation(date, socket);
+}
+
+void Response::nstreambuf::WriteStatusLine(std::string const& statusLine) {
+	(this->*states[stateIndex].WriteStatusLine)(statusLine);
+}
+
+void Response::nstreambuf::WriteHeader(xstring const& name, xstring const& value) {
+	(this->*states[stateIndex].WriteHeader)(name, value);
 }
 
 void Response::nstreambuf::Close() {
-	(this->*closeFn)();
-	closeFn = &nstreambuf::SimpleClose;
-	internalSendBufferFn = &nstreambuf::InternalSendBuffer;
-	internalSendFn = &nstreambuf::InternalSend;
-	sendFn = &nstreambuf::InitialSend;
-	hasWritten = false;
+	(this->*states[stateIndex].Close)();
+}
+
+bool Response::nstreambuf::Reset() {
+	if (stateIndex == initialStateIndex || stateIndex == inHeadersStateIndex) {
+		InternalReset();
+		return true;
+	}
+	return false;
 }
 
 std::streamsize Response::nstreambuf::xsputn(char_type const* s, std::streamsize n) {
-	(this->*sendFn)(s, n);
+	WriteBody(s, n);
 	return n;
 }
 
@@ -162,99 +139,275 @@ int Response::nstreambuf::overflow(int c) {
 	return c;
 }
 
-void Response::nstreambuf::InitialSend(char_type const* s, std::streamsize n) {
-	// Have the Response object complete its headers.
-	sendFn = &nstreambuf::Send;
-	bool const isChunked = response.CompleteHeaders();
-
-	// Send the headers.
-	begin = response.begin;
-	end = response.end;
-	InternalSend(begin, response.next - begin);
-	next = begin;
-
-	// If this is a chunked response, switch to ChunkedSend and ChunkedClose.
-	if (isChunked) {
-		closeFn = &nstreambuf::ChunkedClose;
-		internalSendBufferFn = &nstreambuf::InternalSendBufferChunk;
-		internalSendFn = &nstreambuf::InternalSendChunk;
-	}
-
-	// Send the data provided in [s, s + n).
-	Send(s, n);
-	hasWritten = true;
+bool Response::nstreambuf::get_IsResettable() const {
+	return stateIndex == initialStateIndex;
 }
 
-void Response::nstreambuf::Send(char_type const* s, std::streamsize n) {
-	// If the buffer can hold the provided data, copy it in.  Otherwise, send
-	// the buffer.
-	if (end - next >= n) {
-		memcpy(next, s, n);
-		next += n;
+void Response::nstreambuf::WriteBody(char_type const* s, std::streamsize n) {
+	(this->*states[stateIndex].WriteBody)(s, n);
+}
+
+void Response::nstreambuf::Write(char_type const* s, std::streamsize n) {
+	(this->*states[stateIndex].Write)(s, n);
+}
+
+void Response::nstreambuf::CheckWriteHeader(xstring const& name, xstring const& value) {
+	size_t nameSize = name.second - name.first;
+	if (contentLengthKey.size() == static_cast<size_t>(nameSize) && _strnicmp(name.first, contentLengthKey.c_str(), nameSize) == 0) {
+		if (contentLength) {
+			return LogicError("cannot write Content-Length header more than once");
+		}
+		contentLength = std::strtoull(value.first, nullptr, 10);
+	} else if (serverKey.size() == static_cast<size_t>(nameSize) && _strnicmp(name.first, serverKey.c_str(), nameSize) == 0) {
+		if (wroteServer) {
+			return LogicError("cannot write Server header more than once");
+		}
+		wroteServer = true;
+	} else if (transferEncodingKey.size() == static_cast<size_t>(nameSize) && _strnicmp(name.first, transferEncodingKey.c_str(), nameSize) == 0) {
+		return LogicError("cannot write Transfer-Encoding header");
+	} else if (dateKey.size() == static_cast<size_t>(nameSize) && _strnicmp(name.first, dateKey.c_str(), nameSize) == 0) {
+		return LogicError("cannot write Date header");
+	}
+}
+
+void Response::nstreambuf::InternalWriteHeader(xstring const& name, xstring const& value) {
+	Write(name.first, name.second - name.first);
+	Write(": ", 2);
+	Write(value.first, value.second - value.first);
+	Write("\r\n", 2);
+}
+
+void Response::nstreambuf::WriteServerHeaders() {
+	auto const xdateValue = date();
+	InternalWriteHeader(xdateKey, xdateValue);
+	if (!wroteServer) {
+		static char_type const p[] = "C++";
+		InternalWriteHeader(xserverKey, { p, p + sizeof(p) - 1 });
+	}
+}
+
+void Response::nstreambuf::SendBuffer() {
+	socket.Send(begin, next - begin);
+	next = begin;
+}
+
+void Response::nstreambuf::InternalReset() {
+	stateIndex = initialStateIndex;
+	next = begin;
+}
+
+void Response::nstreambuf::InitialWriteStatusLine(std::string const& statusLine) {
+	statusLine.copy(begin, statusLine.size());
+	next = begin + statusLine.size();
+}
+
+void Response::nstreambuf::InitialWriteHeader(xstring const& name, xstring const& value) {
+	WriteStatusLine(StatusLines::OK);
+	stateIndex = inHeadersStateIndex;
+	WriteHeader(name, value);
+}
+
+void Response::nstreambuf::InitialWriteBody(char_type const* s, std::streamsize n) {
+	WriteStatusLine(StatusLines::OK);
+	stateIndex = inHeadersStateIndex;
+	WriteBody(s, n);
+}
+
+void Response::nstreambuf::InitialWrite(char_type const* /*s*/, std::streamsize /*n*/) {
+	assert(false);
+}
+
+void Response::nstreambuf::InitialClose() {
+	WriteStatusLine(StatusLines::NoContent);
+	stateIndex = inHeadersStateIndex;
+	Close();
+}
+
+void Response::nstreambuf::InHeadersWriteStatusLine(std::string const& /*statusLine*/) {
+	LogicError("cannot write status line after headers");
+}
+
+void Response::nstreambuf::InHeadersWriteHeader(xstring const& name, xstring const& value) {
+	CheckWriteHeader(name, value);
+	InternalWriteHeader(name, value);
+}
+
+void Response::nstreambuf::InHeadersWriteBody(char_type const* s, std::streamsize n) {
+	WriteServerHeaders();
+	if (contentLength) {
+		// End the headers.
+		Write("\r\n", 2);
+		stateIndex = inBodyStateIndex;
 	} else {
-		(this->*internalSendBufferFn)();
+		// There is no content length header.  Use "chunked" transfer.
+		static char_type const p[] = "chunked";
+		InternalWriteHeader(xtransferEncodingKey, { p, p + sizeof(p) - 1 });
 
-		// If the buffer can hold the provided data, copy it in.  Otherwise,
-		// send the data.
-		if (end - begin >= n) {
-			memcpy(next, s, n);
+		// End the headers, send the buffer, and adjust it for the chunk length.
+		Write("\r\n", 2);
+		SendBuffer();
+		next += chunkedLengthSize;
+		stateIndex = inChunkedBodyStateIndex;
+	}
+	WriteBody(s, n);
+}
+
+void Response::nstreambuf::InHeadersWrite(char_type const* s, std::streamsize n) {
+	auto navailable = end - next;
+	if (navailable < n) {
+		// Copy as much data into the buffer as possible.
+		memcpy_s(next, navailable, s, navailable);
+		next += navailable;
+
+		// Send the buffer.
+		SendBuffer();
+
+		// Set the state to "sent some headers".
+		stateIndex = sentSomeHeadersStateIndex;
+
+		// Write the remaining data.
+		Write(s + navailable, n - navailable);
+	} else {
+		// Copy all data into the buffer.
+		memcpy_s(next, navailable, s, n);
+		next += n;
+	}
+}
+
+void Response::nstreambuf::InHeadersClose() {
+	WriteServerHeaders();
+	Write("\r\n", 2);
+	SendBuffer();
+	stateIndex = initialStateIndex;
+}
+
+void Response::nstreambuf::SentSomeHeadersWriteStatusLine(std::string const& /*statusLine*/) {
+	return LogicError("cannot write status line after some headers sent");
+}
+
+void Response::nstreambuf::SentSomeHeadersWriteHeader(xstring const& name, xstring const& value) {
+	InHeadersWriteHeader(name, value);
+}
+
+void Response::nstreambuf::SentSomeHeadersWriteBody(char_type const* s, std::streamsize n) {
+	InHeadersWriteBody(s, n);
+}
+
+void Response::nstreambuf::SentSomeHeadersWrite(char_type const* s, std::streamsize n) {
+	for (;;) {
+		auto navailable = end - next;
+		if (navailable < n) {
+			// Copy as much data into the buffer as possible.
+			memcpy_s(next, navailable, s, navailable);
+			next += navailable;
+
+			// Send the buffer.
+			SendBuffer();
+
+			// Adjust the parameters.
+			s += navailable;
+			n -= navailable;
+		} else {
+			// Copy all data into the buffer.
+			memcpy_s(next, navailable, s, n);
 			next += n;
+			break;
+		}
+	}
+}
+
+void Response::nstreambuf::SentSomeHeadersClose() {
+	InHeadersClose();
+}
+
+void Response::nstreambuf::InChunkedBodyWriteStatusLine(std::string const& /*statusLine*/) {
+	return LogicError("cannot write status line after some body sent");
+}
+
+void Response::nstreambuf::InChunkedBodyWriteHeader(xstring const& /*name*/, xstring const& /*value*/) {
+	return LogicError("cannot write headers after some body sent");
+}
+
+void Response::nstreambuf::InChunkedBodyWriteBody(char_type const* s, std::streamsize n) {
+	Write(s, n);
+}
+
+void Response::nstreambuf::InChunkedBodyWrite(char_type const* s, std::streamsize n) {
+	for (;;) {
+		// Chech availablility, accounting for CRLF.
+		auto navailable = end - next - 2;
+		if (navailable < n) {
+			// Copy as much data into the buffer as possible.
+			memcpy_s(next, navailable, s, navailable);
+
+			// Set the length in the buffer.
+			SetLength(begin, end - begin - chunkedLengthSize - 2);
+
+			// Add CRLF to the buffer.
+			end[-2] = '\r';
+			end[-1] = '\n';
+
+			// Send the buffer.
+			next = end;
+			SendBuffer();
+			next += chunkedLengthSize;
+
+			// Adjust the parameters.
+			s += navailable;
+			n -= navailable;
 		} else {
-			(this->*internalSendFn)(s, n);
+			// Copy all data into the buffer.
+			memcpy_s(next, navailable, s, n);
+			next += n;
+			break;
 		}
 	}
 }
 
-void Response::nstreambuf::ChunkedClose() {
-	// Send any remaining data as a chunk.
-	InternalSendBufferChunk();
+void Response::nstreambuf::InChunkedBodyClose() {
+	if (begin + chunkedLengthSize < next) {
+		// Set the length in the buffer.
+		SetLength(begin, next - begin - chunkedLengthSize);
 
-	// Send the "last-chunk" and CRLF.
-	InternalSend("0\r\n\r\n", 5);
-}
+		// Add CRLF to the buffer.
+		next[0] = '\r';
+		next[1] = '\n';
+		next += 2;
 
-void Response::nstreambuf::SimpleClose() {
-	// If there are no data in the response, do nothing.
-	if (response.next != begin) {
-		// If there are data but none has been sent, the headers have not yet
-		// been completed.
-		if (sendFn == &nstreambuf::InitialSend) {
-			response.CompleteHeaders();
-			next = response.next;
+		// Send the buffer if necessary.
+		if (end - next < 5) {
+			SendBuffer();
 		}
-
-		// Send any remaining data.
-		InternalSendBuffer();
+	} else {
+		next = begin;
 	}
+
+	// Add 0 CRLF CRLF to buffer.
+	memcpy_s(next, 5, "0\r\n\r\n", 5);
+	next += 5;
+
+	// Send the buffer.
+	SendBuffer();
+	stateIndex = initialStateIndex;
 }
 
-void Response::nstreambuf::InternalSendBuffer() {
-	InternalSend(begin, next - begin);
-	next = begin;
+void Response::nstreambuf::InBodyWriteStatusLine(std::string const& /*statusLine*/) {
+	return LogicError("cannot write status line after some body sent");
 }
 
-void Response::nstreambuf::InternalSend(char_type const* s, std::streamsize n) {
-	for (decltype(n) i = 0; i < n;) {
-		auto [v, errorCode] = socket.Send(s + i, n - i);
-		if (v > 0) {
-			i += v;
-		} else {
-			throw std::runtime_error("Response::nstreambuf::InternalSend");
-		}
-	}
+void Response::nstreambuf::InBodyWriteHeader(xstring const& /*name*/, xstring const& /*value*/) {
+	return LogicError("cannot write headers after some body sent");
 }
 
-void Response::nstreambuf::InternalSendBufferChunk() {
-	InternalSendChunk(begin, next - begin);
-	next = begin;
+void Response::nstreambuf::InBodyWriteBody(char_type const* s, std::streamsize n) {
+	Write(s, n);
 }
 
-void Response::nstreambuf::InternalSendChunk(char_type const* s, std::streamsize n) {
-	if (n > 0) {
-		char chunkSize[16];
-		unsigned const count = snprintf(chunkSize, _countof(chunkSize), "%llx\r\n", n);
-		InternalSend(chunkSize, count);
-		InternalSend(s, n);
-		InternalSend("\r\n", 2);
-	}
+void Response::nstreambuf::InBodyWrite(char_type const* s, std::streamsize n) {
+	SentSomeHeadersWrite(s, n);
+}
+
+void Response::nstreambuf::InBodyClose() {
+	SendBuffer();
+	stateIndex = initialStateIndex;
 }

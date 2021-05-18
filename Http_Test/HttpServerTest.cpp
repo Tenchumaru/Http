@@ -10,7 +10,6 @@ using Http_Test::Dispatch::ptr_t;
 namespace Http_Test {
 	TEST_CLASS(HttpServerTest) {
 public:
-
 	TEST_METHOD_INITIALIZE(Initialize) {
 		Sockets::Initialize();
 	}
@@ -62,9 +61,9 @@ public:
 			return size;
 		};
 		std::string actualRequest;
-		Dispatch::OnDispatch = [&actualRequest](ptr_t begin, ptr_t body, char* next, ptr_t end, TcpSocket& socket, Response& response) {
+		Dispatch::OnDispatch = [&actualRequest](ptr_t begin, ptr_t body, ptr_t end, TcpSocket& socket, Response& response) {
 			actualRequest.assign(begin, body);
-			return next;
+			return end;
 		};
 		StaticHttpServer server;
 

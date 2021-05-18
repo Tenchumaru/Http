@@ -4,10 +4,11 @@
 #include "Request.h"
 #include "RequestParser.h"
 #include "ClosableResponse.h"
+#include "Body.h"
 
 class DynamicHttpServer : public HttpServer {
 public:
-	using fn_t = std::function<void(Request const&, Response&)>;
+	using fn_t = std::function<void(Request const&, Body&&, Response&)>;
 
 	DynamicHttpServer() = default;
 	DynamicHttpServer(DynamicHttpServer const&) = delete;
@@ -22,6 +23,5 @@ private:
 	Request request;
 	RequestParser parser;
 
-	char const* DispatchRequest(char const* begin, char const* body, char* next, char const* end, TcpSocket& socket, Response& response) const override;
-	bool InternalHandle(Response& response) const;
+	char const* DispatchRequest(char const* begin, char const* body, char const* end, TcpSocket& socket, Response& response) const override;
 };

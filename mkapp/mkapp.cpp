@@ -106,6 +106,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	*pout << "// This is an auto-generated file.  Do not edit." << std::endl;
 	*pout << "#ifndef DISPATCH" << std::endl;
 	using issit_t = std::istream_iterator<std::string>;
 	std::string line;

@@ -19,4 +19,5 @@ private:
 
 	bool ValidateNext(std::string const& s) override;
 	bool ValidateLast(std::string const& s) override;
+	std::streamsize ValidateDataSizeHeaders() override;
 };
