@@ -21,6 +21,7 @@ std::pair<SOCKET, socklen_t> SocketServer::Open(char const* service) {
 	// Create and bind the server socket.
 	addrinfo hints{};
 	hints.ai_family = AF_UNSPEC; // Allow IPv4 or IPv6.
+	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE; // Use INADDR_ANY for the resulting addresses.
 	addrinfo* addresses;
@@ -77,6 +78,7 @@ std::unique_ptr<TcpSocket> SocketServer::Connect(char const* nodeName, char cons
 	// Create and connect a client socket.
 	addrinfo hints{};
 	hints.ai_family = AF_UNSPEC; // Allow IPv4 or IPv6.
+	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_socktype = SOCK_STREAM;
 	addrinfo* addresses;
 	if (getaddrinfo(nodeName, serviceName, &hints, &addresses)) {

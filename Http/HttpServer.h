@@ -8,9 +8,7 @@ class HttpServer : public SecureFibrousSocketServer {
 public:
 	HttpServer() = default;
 	HttpServer(HttpServer const&) = delete;
-	HttpServer(HttpServer&&) noexcept = default;
 	HttpServer& operator=(HttpServer const&) = delete;
-	HttpServer& operator=(HttpServer&&) noexcept = default;
 	virtual ~HttpServer() = default;
 
 protected:

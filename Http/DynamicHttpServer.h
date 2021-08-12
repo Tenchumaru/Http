@@ -12,9 +12,7 @@ public:
 
 	DynamicHttpServer() = default;
 	DynamicHttpServer(DynamicHttpServer const&) = delete;
-	DynamicHttpServer(DynamicHttpServer&&) noexcept = default;
 	DynamicHttpServer& operator=(DynamicHttpServer const&) = delete;
-	DynamicHttpServer& operator=(DynamicHttpServer&&) noexcept = default;
 	~DynamicHttpServer() = default;
 	void Add(char const* path, fn_t fn);
 

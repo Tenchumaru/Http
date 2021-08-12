@@ -9,6 +9,7 @@
 # include <tchar.h>
 # include <crtdbg.h>
 #else
+# include <arpa/inet.h>
 # include <fcntl.h>
 # include <poll.h>
 # include <string.h>
@@ -34,16 +35,12 @@
 #include <locale>
 #include <map>
 #include <memory>
-#ifdef __cpp_lib_optional
-# include <optional>
-#endif
+#include <optional>
 #include <set>
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#ifdef __cpp_lib_variant
-# include <variant>
-#endif
+#include <variant>
 #include <vector>
 
 #ifdef _WIN32
@@ -70,8 +67,31 @@
 # define INVALID_SOCKET (-1)
 # define WINAPI
 # define sprintf_s sprintf
+# define _strnicmp strncasecmp
 
-using nullptr_t = decltype(nullptr);
+union SOCKADDR_INET {
+	sockaddr_in Ipv4;
+	sockaddr_in6 Ipv6;
+	sa_family_t si_family;
+};
+
+inline error_t memcpy_s(void* p, size_t n, void const* q, size_t m) {
+	if (n < m) {
+		assert(m >= n);
+		return ENOSPC;
+	}
+	memcpy(p, q, m);
+	return 0;
+}
+
+inline error_t memmove_s(void* p, size_t n, void const* q, size_t m) {
+	if (n < m) {
+		assert(m >= n);
+		return ENOSPC;
+	}
+	memmove(p, q, m);
+	return 0;
+}
 #endif
 
 template<typename T>

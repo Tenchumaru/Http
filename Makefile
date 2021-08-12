@@ -4,12 +4,12 @@ endif
 
 all:
 	cd Http && $(MAKE) "Configuration=$(Configuration)"
-	cd Json && $(MAKE) "Configuration=$(Configuration)"
-	cd App && $(MAKE) "Configuration=$(Configuration)"
+	cd StaticApp && $(MAKE) "Configuration=$(Configuration)"
+	cd DynamicApp && $(MAKE) "Configuration=$(Configuration)"
 
 clean:
 	cd Http && $(MAKE) clean "Configuration=$(Configuration)"
-	cd Json && $(MAKE) clean "Configuration=$(Configuration)"
-	cd App && $(MAKE) clean "Configuration=$(Configuration)"
+	cd StaticApp && $(MAKE) clean "Configuration=$(Configuration)"
+	cd DynamicApp && $(MAKE) clean "Configuration=$(Configuration)"
 
 .PHONY: all clean

@@ -40,7 +40,7 @@ public:
 			++p;
 		}
 		q.second = p;
-		while (q.second[-1] == ' ' || q.second[-1] == '\t' && q.first < q.second) {
+		while ((q.second[-1] == ' ' || q.second[-1] == '\t') && q.first < q.second) {
 			--q.second;
 		}
 		if (*p == '\r') {

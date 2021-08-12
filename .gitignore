@@ -1,10 +1,10 @@
 # Ignore temporary files.
+*.[ado]
 *.sw[op]
 
 # Ignore most INL files since some of my projects generate them as part of the
 # build process.
 *.inl
-!Http/ResultCodes.inl
 !mkdispatch_Speed/Dispatch.inl
 !mkdispatch_Test/DispatchTest.inl
 !mkdispatch_Test/Utils.inl

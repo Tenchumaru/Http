@@ -20,7 +20,6 @@ protected:
 	std::pair<size_t, int> InternalSend(char const* buffer, size_t bufferSize) override;
 
 private:
-	static BIO_METHOD* bioMethod;
 	SSL* ssl{};
 
 	int Invoke(std::function<int()> fn);

@@ -7,16 +7,6 @@ using FiberFn = LPFIBER_START_ROUTINE;
 # include "Fiber.h"
 #endif
 
-namespace {
-	constexpr size_t stackSize = 0x10000;
-
-#ifdef _WIN32
-	inline int poll(_Inout_ LPWSAPOLLFD fdArray, _In_ size_t fds, _In_ INT timeout) {
-		return WSAPoll(fdArray, static_cast<ULONG>(fds), timeout);
-	}
-#endif
-}
-
 std::unique_ptr<TcpSocket> SecureFibrousSocketServer::MakeSocketImpl(SOCKET socket) const {
 	auto socket_ = std::unique_ptr<FibrousTcpSocket>(static_cast<FibrousTcpSocket*>(FibrousSocketServer::MakeSocketImpl(socket).release()));
 	return std::make_unique<SecureFibrousTcpSocket>(std::move(*socket_), sslContext.get());

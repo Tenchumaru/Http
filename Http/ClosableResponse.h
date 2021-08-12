@@ -9,7 +9,7 @@ public:
 	ClosableResponse(ClosableResponse const&) = delete;
 	ClosableResponse(ClosableResponse&&) noexcept = default;
 	ClosableResponse& operator=(ClosableResponse const&) = delete;
-	ClosableResponse& operator=(ClosableResponse&&) noexcept = default;
+	ClosableResponse& operator=(ClosableResponse&&) noexcept = delete;
 	~ClosableResponse() = default;
 
 	using Response::Close;

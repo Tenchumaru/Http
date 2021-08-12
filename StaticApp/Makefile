@@ -4,7 +4,7 @@ OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.d)
 LDFLAGS = -L../Http -L../Json
 LIBS = -lhttp -ljson
-CXXFLAGS := -g -fdeclspec -fexceptions -pipe -std=c++14 -Wall -Werror $(CFLAGS)
+CXXFLAGS := -I /local/include -g -fdeclspec -fexceptions -pipe -std=c++17 -Wall -Werror $(CFLAGS)
 
 ifeq "$(Configuration)" "Release"
 	CXXFLAGS := $(CXXFLAGS) -O3 -DNDEBUG
@@ -12,7 +12,7 @@ else
 	CXXFLAGS := $(CXXFLAGS) -O0 -D_DEBUG -DDEBUG
 endif
 
-app: $(OBJS)
+static-app: $(OBJS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(LIBS)
 
 %.o: %.cc
@@ -28,6 +28,6 @@ app: $(OBJS)
 
 # $(RM) is rm -f by default
 clean:
-	$(RM) $(OBJS) $(DEPS) app
+	$(RM) $(OBJS) $(DEPS) static-app
 
 -include $(DEPS)

@@ -7,6 +7,7 @@ Date::Date() : p(a), q(b), r(a) {
 	static_assert(decltype(isShuttingDown)::is_always_lock_free);
 	static_assert(decltype(p)::is_always_lock_free);
 	static_assert(sizeof(a) == sizeof(b));
+	SetTime();
 	task = std::async(std::launch::async, [this] { Tick(); });
 }
 
@@ -16,9 +17,7 @@ Date::~Date() {
 	task.wait();
 }
 
-void Date::Tick() {
-	std::unique_lock<std::mutex> lock(mutex);
-	do {
+void Date::SetTime() {
 		time_t const t = time(nullptr);
 #ifdef _WIN32
 		tm m_;
@@ -30,5 +29,11 @@ void Date::Tick() {
 		n = std::strftime(q, sizeof(a), "%a, %d %b %Y %T GMT", m);
 		p.store(q);
 		std::swap(q, r);
+}
+
+void Date::Tick() {
+	std::unique_lock<std::mutex> lock(mutex);
+	do {
+		SetTime();
 	} while (!cv.wait_for(lock, 1s, [this] { return isShuttingDown.load(); }));
 }

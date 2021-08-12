@@ -46,7 +46,6 @@ namespace {
 	std::string const contentLengthKey = "Content-Length";
 	std::string const dateKey = "Date";
 	xstring const xdateKey{ dateKey.data(), dateKey.data() + dateKey.size() };
-	char dateValue[33];
 	std::string const serverKey = "Server";
 	xstring const xserverKey{ serverKey.data(), serverKey.data() + serverKey.size() };
 	std::string const transferEncodingKey = "Transfer-Encoding";
