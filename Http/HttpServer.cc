@@ -57,11 +57,19 @@ int HttpServer::Run(std::uint16_t port) {
 				auto [errorCode, clientSocket] = serverSocket->Accept();
 				if (errorCode) {
 					std::cerr << "[HttpServer::Run.Accept] error " << errorCode << std::endl;
-				}
-				try {
-					HandleClient(std::move(clientSocket));
-				} catch (std::exception const& ex) {
-					std::cerr << "[HttpServer::Run.HandleClient] exception \"" << ex.what() << '"' << std::endl;
+				} else {
+					auto fn = [this, clientSocket_ = clientSocket.release()]{
+						auto clientSocket = std::unique_ptr<ClientSocket>(clientSocket_);
+						try {
+							HandleClient(std::move(clientSocket));
+						} catch (std::exception const& ex) {
+							std::cerr << "[HttpServer::Run.HandleClient] exception \"" << ex.what() << '"' << std::endl;
+						}
+					};
+					errorCode = factory.Launch(std::move(fn));
+					if (errorCode) {
+						std::cerr << "[HttpServer::Run.Launch] error " << errorCode << std::endl;
+					}
 				}
 			}
 		};
