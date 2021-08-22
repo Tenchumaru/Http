@@ -58,14 +58,15 @@
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\local\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Adrezdi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\local\lib\$(Configuration)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
       <Command>"$(ProjectDir)Pre-Build.cmd" "$(SolutionDir)"</Command>
@@ -91,6 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\local\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -99,8 +101,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)packages\openssl-vc140-static-32_64.1.1.1.1\lib\native\libs\$(PlatformTarget)\static\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Adrezdi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\local\lib\$(Configuration)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
       <Command>"$(ProjectDir)Pre-Build.cmd" "$(SolutionDir)"</Command>
@@ -118,8 +120,6 @@
     <ClInclude Include="ClosableResponse.h" />
     <ClInclude Include="Date.h" />
     <ClInclude Include="DynamicHttpServer.h" />
-    <ClInclude Include="FibrousSocketServer.h" />
-    <ClInclude Include="FibrousTcpSocket.h" />
     <ClInclude Include="HeaderBase.h" />
     <ClInclude Include="HeaderMap.h" />
     <ClInclude Include="Http.h" />
@@ -130,21 +130,13 @@
     <ClInclude Include="Request.h" />
     <ClInclude Include="RequestParser.h" />
     <ClInclude Include="Response.h" />
-    <ClInclude Include="SecureFibrousSocketServer.h" />
-    <ClInclude Include="SecureFibrousTcpSocket.h" />
-    <ClInclude Include="Socket.h" />
-    <ClInclude Include="SocketServer.h" />
     <ClInclude Include="StaticHttpServer.h" />
     <ClInclude Include="StatusLines.h" />
-    <ClInclude Include="TcpSocket.h" />
-    <ClInclude Include="Uri.h" />
     <ClInclude Include="xtypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Date.cc" />
     <ClCompile Include="DynamicHttpServer.cc" />
-    <ClCompile Include="FibrousSocketServer.cc" />
-    <ClCompile Include="FibrousTcpSocket.cc" />
     <ClCompile Include="Http.cc" />
     <ClCompile Include="HttpParser.cc" />
     <ClCompile Include="HttpServer.cc" />
@@ -154,14 +146,8 @@
     </ClCompile>
     <ClCompile Include="RequestParser.cc" />
     <ClCompile Include="Response.cc" />
-    <ClCompile Include="SecureFibrousSocketServer.cc" />
-    <ClCompile Include="SecureFibrousTcpSocket.cc" />
-    <ClCompile Include="Socket.cc" />
-    <ClCompile Include="SocketServer.cc" />
     <ClCompile Include="StaticHttpServer.cc" />
     <ClCompile Include="StatusLines.cc" />
-    <ClCompile Include="TcpSocket.cc" />
-    <ClCompile Include="Uri.cc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

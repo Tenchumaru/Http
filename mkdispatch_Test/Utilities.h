@@ -1,9 +1,9 @@
 #include "../Http/Response.h"
 #include "../Http/Http.h"
 
-class TestSocket : public TcpSocket {
+class TestSocket : public ClientSocket {
 public:
-	TestSocket() : TcpSocket(INVALID_SOCKET) {}
+	TestSocket() : ClientSocket(INVALID_SOCKET) {}
 	~TestSocket() = default;
 };
 

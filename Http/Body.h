@@ -1,10 +1,10 @@
 #pragma once
 
-#include "TcpSocket.h"
+#include <ClientSocket.h>
 
 class Body {
 public:
-	Body(char const* begin, char const* end, int size, TcpSocket& socket) : begin(begin), end(end), size(size), socket(socket) {}
+	Body(char const* begin, char const* end, int size, ClientSocket& socket) : begin(begin), end(end), size(size), socket(socket) {}
 	Body() = delete;
 	Body(Body const&) = delete;
 	Body(Body&& that) noexcept : begin(that.begin), end(that.end), size(that.size), socket(that.socket) {}
@@ -16,5 +16,5 @@ private:
 	char const* begin;
 	char const* end;
 	int size;
-	TcpSocket& socket;
+	ClientSocket& socket;
 };

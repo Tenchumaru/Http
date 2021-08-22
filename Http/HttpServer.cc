@@ -8,7 +8,7 @@ namespace {
 	std::boyer_moore_searcher searcher(pattern.begin(), pattern.end());
 }
 
-void HttpServer::InternalHandleImpl(std::unique_ptr<FibrousTcpSocket> clientSocket) {
+void HttpServer::HandleClient(std::unique_ptr<ClientSocket>&& clientSocket) {
 	std::array<char, 0x3800> buffer;
 	auto* const begin = buffer.data();
 	auto const size = buffer.size();
@@ -33,16 +33,48 @@ void HttpServer::InternalHandleImpl(std::unique_ptr<FibrousTcpSocket> clientSock
 			next = begin;
 		} else {
 			// Read more data from the client socket.
-			auto [n, errorCode] = clientSocket->Receive(next, end - next);
-			if (n == 0 || errorCode) {
+			auto result = clientSocket->Receive(next, end - next);
+			if (result <= 0) {
 				return;
 			}
-			next += n;
+			next += result;
 		}
 	}
 }
 
-char const* HttpServer::ProcessRequest(char const* begin, char const* body, char const* end, TcpSocket& clientSocket) const {
+void HttpServer::ConfigureSecurity(char const* certificateChainFile, char const* privateKeyFile) {
+	factory.ConfigureSecurity(certificateChainFile, privateKeyFile);
+}
+
+int HttpServer::Run(std::uint16_t port) {
+	Socket::Activate();
+	auto [errorCode, serverSocket] = factory.CreateServer(port);
+	if (!errorCode) {
+		// Moving the server unique pointer into the closure renders the function non-trivial.
+		auto fn = [this, serverSocket_ = serverSocket.release()]{
+			auto serverSocket = std::unique_ptr<ServerSocket>(serverSocket_);
+			for (;;) {
+				auto [errorCode, clientSocket] = serverSocket->Accept();
+				if (errorCode) {
+					std::cerr << "[HttpServer::Run.Accept] error " << errorCode << std::endl;
+				}
+				try {
+					HandleClient(std::move(clientSocket));
+				} catch (std::exception const& ex) {
+					std::cerr << "[HttpServer::Run.HandleClient] exception \"" << ex.what() << '"' << std::endl;
+				}
+			}
+		};
+		errorCode = factory.Launch(std::move(fn));
+		if (!errorCode) {
+			factory.Run();
+		}
+	}
+	Socket::Deactivate();
+	return errorCode;
+}
+
+char const* HttpServer::ProcessRequest(char const* begin, char const* body, char const* end, ClientSocket& clientSocket) const {
 	// begin through body contains the start line and headers.  body through end
 	// contains none, some, or all of the body.  If it contains all of the body, it
 	// is followed by zero or more full requests followed by nothing or a partial request.
@@ -61,7 +93,7 @@ char const* HttpServer::ProcessRequest(char const* begin, char const* body, char
 		message = ex.Message;
 	} catch (std::exception const& ex) {
 		statusLine = StatusLines::InternalServerError;
-		std::cerr << "DispatchRequest threw an exception:  " << ex.what() << std::endl;
+		std::cerr << "[HttpServer::ProcessRequest.DispatchRequest] exception \"" << ex.what() << '"' << std::endl;
 	}
 	if (statusLine != std::string{}) {
 		// Respond with the appropriate status code if possible.

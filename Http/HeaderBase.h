@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TcpSocket.h"
+#include <ClientSocket.h>
 #include "ClosableResponse.h"
 #include "StatusLines.h"
 #include "xtypes.h"
@@ -108,7 +108,7 @@ public:
 		return false;
 	}
 
-	bool HandleExpectation(Date const& date, TcpSocket& socket) {
+	bool HandleExpectation(Date const& date, ClientSocket& socket) {
 		bool rv = expect == xstring{};
 		if (!rv) {
 			std::array<char, Response::MinimumBufferSize> continueBuffer;

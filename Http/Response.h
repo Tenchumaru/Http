@@ -1,8 +1,8 @@
 #pragma once
 
+#include <ClientSocket.h>
 #include "xtypes.h"
 #include "Date.h"
-#include "TcpSocket.h"
 
 class HeaderBase;
 
@@ -10,7 +10,7 @@ class Response {
 public:
 	constexpr static ptrdiff_t MinimumBufferSize = 512;
 
-	Response(Date const& date, TcpSocket& socket, char* begin, char* end);
+	Response(Date const& date, ClientSocket& socket, char* begin, char* end);
 	Response() = delete;
 	Response(Response const&) = delete;
 	Response(Response&& that) noexcept;
@@ -39,7 +39,7 @@ protected:
 
 private:
 	struct nstreambuf : public std::streambuf {
-		nstreambuf(Date const& date, TcpSocket& socket, char* begin, char* end);
+		nstreambuf(Date const& date, ClientSocket& socket, char* begin, char* end);
 		nstreambuf() = delete;
 		nstreambuf(nstreambuf const&) = delete;
 		nstreambuf(nstreambuf&& that) noexcept;
@@ -71,7 +71,7 @@ private:
 
 		static std::array<StateFunctions, 5> states;
 		Date const& date;
-		TcpSocket& socket;
+		ClientSocket& socket;
 		char* begin{};
 		char* next{};
 		char* end{};

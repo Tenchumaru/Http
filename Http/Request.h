@@ -1,7 +1,7 @@
 #pragma once
 
+#include <Uri.h>
 #include "HeaderMap.h"
-#include "Uri.h"
 
 class Request {
 public:

@@ -1,8 +1,8 @@
 #pragma once
 
+#include <Uri.h>
 #include "HttpParser.h"
 #include "Request.h"
-#include "Uri.h"
 
 class RequestParser : public HttpParser {
 public:

@@ -1,7 +1,7 @@
 #include "pch.h"
+#include <ClientSocket.h>
 #include "Sockets.h"
 #include "../Http/Http.h"
-#include "../Http/TcpSocket.h"
 #include "../Http/ClosableResponse.h"
 
 using namespace std::literals;
@@ -23,7 +23,7 @@ public:
 
 	TEST_METHOD(ResponseClose) {
 		// Arrange
-		TcpSocket socket{ expectedSocket };
+		ClientSocket socket{ expectedSocket };
 		ClosableResponse response(date, socket, buffer.data(), buffer.data() + buffer.size());
 		auto statusLine = StatusLines::NoContent;
 
@@ -37,7 +37,7 @@ public:
 
 	TEST_METHOD(ResponseWriteStatusLine) {
 		// Arrange
-		TcpSocket socket{ expectedSocket };
+		ClientSocket socket{ expectedSocket };
 		ClosableResponse response(date, socket, buffer.data(), buffer.data() + buffer.size());
 		auto statusLine = StatusLines::NoContent;
 
@@ -52,7 +52,7 @@ public:
 
 	TEST_METHOD(ResponseChunked) {
 		// Arrange
-		TcpSocket socket{ expectedSocket };
+		ClientSocket socket{ expectedSocket };
 		ClosableResponse response(date, socket, buffer.data(), buffer.data() + buffer.size());
 		std::string m(333, '.');
 		auto statusLine = StatusLines::OK;

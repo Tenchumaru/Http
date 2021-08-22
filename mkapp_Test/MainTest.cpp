@@ -15,11 +15,11 @@ namespace {
 	private:
 		static std::array<char, Response::MinimumBufferSize> buffer;
 		Date date;
-		static TcpSocket socket;
+		static ClientSocket socket;
 	};
 
 	std::array<char, Response::MinimumBufferSize> TestResponse::buffer;
-	TcpSocket TestResponse::socket = TcpSocket(0);
+	ClientSocket TestResponse::socket = ClientSocket(0);
 
 	size_t CollectParameter_invocationCount;
 	bool CollectQueries_succeeded;
@@ -223,7 +223,7 @@ namespace mkapp_Test {
 
 public:
 	TEST_METHOD(FourZeroFour1) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /j HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -235,7 +235,7 @@ public:
 	}
 
 	TEST_METHOD(FourZeroFour2) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("O /j HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -247,7 +247,7 @@ public:
 	}
 
 	TEST_METHOD(root) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G / HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -257,7 +257,7 @@ public:
 	}
 
 	TEST_METHOD(a_b) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /a/b HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -267,7 +267,7 @@ public:
 	}
 
 	TEST_METHOD(a_bc) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /a/bc HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -277,7 +277,7 @@ public:
 	}
 
 	TEST_METHOD(x_y) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /x/y HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -287,7 +287,7 @@ public:
 	}
 
 	TEST_METHOD(xy_z) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /xy/z HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -297,7 +297,7 @@ public:
 	}
 
 	TEST_METHOD(r___p) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /r/abc/p HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -308,7 +308,7 @@ public:
 	}
 
 	TEST_METHOD(q____) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /q/abc/xyz HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -321,7 +321,7 @@ public:
 	}
 
 	TEST_METHOD(q__) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /q/abc HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -332,7 +332,7 @@ public:
 	}
 
 	TEST_METHOD(z____y) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /z/abc/xyz/y HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -345,7 +345,7 @@ public:
 	}
 
 	TEST_METHOD(m_m_) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /m/m/ HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -354,7 +354,7 @@ public:
 	}
 
 	TEST_METHOD(m_m__) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /m/m/abc HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -365,7 +365,7 @@ public:
 	}
 
 	TEST_METHOD(m_m___a) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /m/m/abc/a HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -376,7 +376,7 @@ public:
 	}
 
 	TEST_METHOD(m_m___b) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("G /m/m/abc/b HTTP/1.1\r\n\r\n-");
 		char* p = &request.back();
@@ -387,7 +387,7 @@ public:
 	}
 
 	TEST_METHOD(Pa_b) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("P /a/b HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
@@ -398,7 +398,7 @@ public:
 	}
 
 	TEST_METHOD(Pa_b_c) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("P /a/b/c HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
@@ -409,7 +409,7 @@ public:
 	}
 
 	TEST_METHOD(Px___y) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("P /x/y/y HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();
@@ -421,7 +421,7 @@ public:
 	}
 
 	TEST_METHOD(Px_y___z) {
-		TcpSocket socket(0);
+		ClientSocket socket(0);
 		TestResponse response;
 		std::string request("P /x/y/y/z HTTP/1.1\r\nContent-Length: 4\r\n\r\nbody-");
 		char* p = &request.back();

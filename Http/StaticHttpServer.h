@@ -10,5 +10,5 @@ public:
 	~StaticHttpServer() override = default;
 
 private:
-	char const* DispatchRequest(char const* begin, char const* body, char const* end, TcpSocket& socket, Response& response) const override;
+	char const* DispatchRequest(char const* begin, char const* body, char const* end, ClientSocket& socket, Response& response) const override;
 };

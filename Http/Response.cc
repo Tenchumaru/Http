@@ -76,7 +76,7 @@ namespace {
 	}
 }
 
-Response::Response(Date const& date, TcpSocket& socket, char* begin, char* end) : outputStreamBuffer(date, socket, begin, end), responseStream(&outputStreamBuffer) {
+Response::Response(Date const& date, ClientSocket& socket, char* begin, char* end) : outputStreamBuffer(date, socket, begin, end), responseStream(&outputStreamBuffer) {
 	if (end - begin < MinimumBufferSize) {
 		throw std::runtime_error("MinimumBufferSize");
 	}
@@ -84,7 +84,7 @@ Response::Response(Date const& date, TcpSocket& socket, char* begin, char* end) 
 
 Response::Response(Response&& that) noexcept : outputStreamBuffer(std::move(that.outputStreamBuffer)), responseStream(&outputStreamBuffer) {}
 
-Response::nstreambuf::nstreambuf(Date const& date, TcpSocket& socket, char* begin, char* end) :
+Response::nstreambuf::nstreambuf(Date const& date, ClientSocket& socket, char* begin, char* end) :
 	date(date),
 	socket(socket),
 	begin(begin),

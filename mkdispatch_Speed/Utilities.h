@@ -2,7 +2,7 @@
 
 class TestResponse : public Response {
 public:
-	TestResponse(TcpSocket& socket);
+	TestResponse(ClientSocket& socket);
 	~TestResponse() {}
 
 private:

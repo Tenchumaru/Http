@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Utilities.h"
 
-TestResponse::TestResponse(TcpSocket& socket) : Response(date, socket, nullptr, nullptr) {}
+TestResponse::TestResponse(ClientSocket& socket) : Response(date, socket, nullptr, nullptr) {}
 
 char const* CollectParameter(char const*& p, size_t index) {
 	char const* q = p + index;

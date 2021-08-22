@@ -61,7 +61,7 @@ public:
 			return size;
 		};
 		std::string actualRequest;
-		Dispatch::OnDispatch = [&actualRequest](ptr_t begin, ptr_t body, ptr_t end, TcpSocket& socket, Response& response) {
+		Dispatch::OnDispatch = [&actualRequest](ptr_t begin, ptr_t body, ptr_t end, ClientSocket& socket, Response& response) {
 			actualRequest.assign(begin, body);
 			return end;
 		};
