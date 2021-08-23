@@ -30,14 +30,6 @@ namespace {
 		}
 		return variableName.str();
 	}
-
-	std::string AsManifestConstant(std::string const& name) {
-		std::string manifestConstant;
-		std::transform(name.cbegin(), name.cend(), std::back_inserter(manifestConstant), [](char ch) {
-			return ch == '-' ? '_' : toupper(ch);
-		});
-		return manifestConstant;
-	}
 }
 
 std::string mkheader(std::set<std::string, HeaderNameLess> const& names, std::ostream& out) {
@@ -92,7 +84,7 @@ std::string mkheader(std::set<std::string, HeaderNameLess> const& names, std::os
 		}
 		out << "\t\t}" << std::endl;
 	}
-	out << "\t\treturn __super::CollectHeaderName(p, q);" << std::endl;
+	out << "\t\treturn HeaderBase::CollectHeaderName(p, q);" << std::endl;
 	out << "\t}" << std::endl;
 
 	// Print the member variables.

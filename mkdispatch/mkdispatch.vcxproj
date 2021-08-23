@@ -94,8 +94,8 @@
     <ClInclude Include="SmPrinter.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\mkapp\MyPrinter.cpp" />
-    <ClCompile Include="..\mkapp\Printer.cpp" />
+    <ClCompile Include="..\mkapp\MyPrinter.cc" />
+    <ClCompile Include="..\mkapp\Printer.cc" />
     <ClCompile Include="mkdispatch.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

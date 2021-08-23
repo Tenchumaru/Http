@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef _WIN32
+# define _strcmpi strcasecmp
+#endif
+
 struct HeaderNameLess {
 	bool operator()(std::string const& left, std::string const& right) const {
 		return _strcmpi(left.c_str(), right.c_str()) < 0;

@@ -4,11 +4,13 @@ endif
 
 all:
 	cd Http && $(MAKE) "Configuration=$(Configuration)"
+	cd mkapp && $(MAKE) "Configuration=$(Configuration)"
 	cd StaticApp && $(MAKE) "Configuration=$(Configuration)"
 	cd DynamicApp && $(MAKE) "Configuration=$(Configuration)"
 
 clean:
 	cd Http && $(MAKE) clean "Configuration=$(Configuration)"
+	cd mkapp && $(MAKE) clean "Configuration=$(Configuration)"
 	cd StaticApp && $(MAKE) clean "Configuration=$(Configuration)"
 	cd DynamicApp && $(MAKE) clean "Configuration=$(Configuration)"
 

@@ -7,9 +7,9 @@ SRCS = $(wildcard *.cc)
 OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.d)
 LDFLAGS = -L/local/lib/$(Configuration)
-LIBS = -lhttp -ladrezdi -lssl -lcrypto -lpthread
+#LIBS = -lhttp -ladrezdi -lssl -lcrypto -lpthread
 CXXFLAGS := -I /local/include -g -fdeclspec -fexceptions -pipe -std=c++17 -Wall -Werror $(CFLAGS)
-OUTPUT = ../x64/$(Configuration)/static-app
+OUTPUT = ../x64/$(Configuration)/mkapp
 
 ifeq "$(Configuration)" "Release"
 	CXXFLAGS := $(CXXFLAGS) -O3 -DNDEBUG
@@ -28,9 +28,6 @@ $(OUTPUT): $(OBJS)
 
 %.o: %.s
 	as -g -o $@ $<
-
-StaticApp.inl: StaticApp.txt
-	../x64/$(Configuration)/mkapp -s $< $@
 
 .PHONY: clean
 

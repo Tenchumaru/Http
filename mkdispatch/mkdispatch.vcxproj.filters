@@ -47,10 +47,10 @@
     <ClCompile Include="SegPrinter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mkapp\MyPrinter.cpp">
+    <ClCompile Include="..\mkapp\MyPrinter.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mkapp\Printer.cpp">
+    <ClCompile Include="..\mkapp\Printer.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

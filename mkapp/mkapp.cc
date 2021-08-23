@@ -115,6 +115,9 @@ int main(int argc, char* argv[]) {
 	std::set<std::set<std::string, HeaderNameLess>> headerNamesSet;
 	for(int lineNumber = 1; std::getline(*pin, line); ++lineNumber) {
 		// Read the path-function pairs.
+		if (!line.empty() && line.back() == '\r') {
+			line.pop_back();
+		}
 		auto it = line.find('\t');
 		if(it == line.npos) {
 			std::cerr << prog << ": malformed input file at line " << lineNumber << std::endl;
@@ -127,6 +130,9 @@ int main(int argc, char* argv[]) {
 		if(!std::getline(*pin, line)) {
 			std::cerr << prog << ": malformed input file at line " << lineNumber << std::endl;
 			return 1;
+		}
+		if (!line.empty() && line.back() == '\r') {
+			line.pop_back();
 		}
 		if(!line.empty()) {
 			// Print the query collection function.
@@ -152,6 +158,9 @@ int main(int argc, char* argv[]) {
 		if(!std::getline(*pin, line)) {
 			std::cerr << prog << ": malformed input file at line " << lineNumber << std::endl;
 			return 1;
+		}
+		if (!line.empty() && line.back() == '\r') {
+			line.pop_back();
 		}
 		if(!line.empty()) {
 			// Print the header collection function.
