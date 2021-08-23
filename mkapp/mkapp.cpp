@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "../mkdispatch/MyPrinter.h"
+#include "MyPrinter.h"
 #include "mkapp.h"
 
 std::string Capitalize(std::string const& s) {

@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "Options.h"
-#include "MyPrinter.h"
+#include "../mkapp/Options.h"
+#include "../mkapp/MyPrinter.h"
 #include "SegPrinter.h"
 #include "SmPrinter.h"
 

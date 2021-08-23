@@ -86,21 +86,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="MyPrinter.h" />
-    <ClInclude Include="Options.h" />
+    <ClInclude Include="..\mkapp\MyPrinter.h" />
+    <ClInclude Include="..\mkapp\Options.h" />
+    <ClInclude Include="..\mkapp\Printer.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Printer.h" />
     <ClInclude Include="SegPrinter.h" />
     <ClInclude Include="SmPrinter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\mkapp\MyPrinter.cpp" />
+    <ClCompile Include="..\mkapp\Printer.cpp" />
     <ClCompile Include="mkdispatch.cpp" />
-    <ClCompile Include="MyPrinter.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Printer.cpp" />
     <ClCompile Include="SegPrinter.cpp" />
     <ClCompile Include="SmPrinter.cpp" />
   </ItemGroup>
