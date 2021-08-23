@@ -80,7 +80,7 @@ std::string mkquery(std::set<std::string> const& names, std::ostream& out) {
 		}
 		out << "\t\t}" << std::endl;
 	}
-	out << "\t\treturn __super::CollectQueryName(p, q);" << std::endl;
+	out << "\t\treturn QueryBase::CollectQueryName(p, q);" << std::endl;
 	out << "\t}" << std::endl;
 
 	// Print the member variables.

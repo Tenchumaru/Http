@@ -1,10 +1,15 @@
+ifeq "$(Configuration)" ""
+	Configuration=Debug
+endif
+
 CXX  = clang++
 SRCS = $(wildcard *.cc)
 OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.d)
-LDFLAGS = -L../Http -L../Json
-LIBS = -lhttp -ljson
+LDFLAGS = -L/local/lib/$(Configuration)
+LIBS = -lhttp -ladrezdi -lssl -lcrypto -lpthread
 CXXFLAGS := -I /local/include -g -fdeclspec -fexceptions -pipe -std=c++17 -Wall -Werror $(CFLAGS)
+OUTPUT = ../x64/$(Configuration)/dynamic-app
 
 ifeq "$(Configuration)" "Release"
 	CXXFLAGS := $(CXXFLAGS) -O3 -DNDEBUG
@@ -12,7 +17,7 @@ else
 	CXXFLAGS := $(CXXFLAGS) -O0 -D_DEBUG -DDEBUG
 endif
 
-dynamic-app: $(OBJS)
+$(OUTPUT): $(OBJS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(LIBS)
 
 %.o: %.cc
@@ -28,6 +33,6 @@ dynamic-app: $(OBJS)
 
 # $(RM) is rm -f by default
 clean:
-	$(RM) $(OBJS) $(DEPS) dynamic-app
+	$(RM) $(OBJS) $(DEPS) $(OUTPUT)
 
 -include $(DEPS)

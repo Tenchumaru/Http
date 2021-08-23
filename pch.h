@@ -63,8 +63,6 @@
 # include <cmath>
 
 # define _countof(ar) (sizeof(ar) / sizeof((ar)[0]))
-# define SOCKET int
-# define INVALID_SOCKET (-1)
 # define WINAPI
 # define sprintf_s sprintf
 # define _strnicmp strncasecmp
