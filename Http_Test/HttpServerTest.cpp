@@ -26,37 +26,56 @@ public:
 			"Connection: keep-alive\r\n"
 			"Upgrade-Insecure-Requests: 1\r\n"
 			"\r\n";
+		std::optional<bool> pollValuesValid;
 		Sockets::OnPoll = [&](_Inout_ LPWSAPOLLFD fdArray, _In_ size_t fds, _In_ INT timeout) {
 			if (fds == 1) {
+				if (!pollValuesValid) {
+					pollValuesValid = true;
+				}
 				fdArray->revents = fdArray->events & (POLLIN | POLLOUT);
 				return 0;
 			}
+			pollValuesValid = false;
 			return -1;
 		};
 		SOCKET expectedSocket = INVALID_SOCKET;
+		auto* mainFiber = ConvertThreadToFiber(nullptr);
+		int acceptInvocationCount = 0;
+		bool acceptValuesValid = true;
 		Sockets::OnAccept = [&](SOCKET s, sockaddr* addr, int* addrlen) {
-			if (addr == nullptr || addrlen == nullptr) {
+			if (addr || addrlen) {
+				WSASetLastError(10001);
+				acceptValuesValid = false;
 				return INVALID_SOCKET;
 			}
-			if (expectedSocket != INVALID_SOCKET) {
-				throw std::runtime_error("exit");
+			switch (++acceptInvocationCount) {
+			case 1:
+				WSASetLastError(WSAEWOULDBLOCK);
+				return INVALID_SOCKET;
+			case 2:
+				expectedSocket = s | 0x10000;
+				return expectedSocket;
+			default:
+				SwitchToFiber(mainFiber);
 			}
-			expectedSocket = s | 0x10000;
-			return expectedSocket;
+			throw std::logic_error("unexpected acceptInvocationCount");
 		};
-		bool invoked = false;
+		std::optional<bool> receiveValuesValid;
 		Sockets::OnReceive = [&](SOCKET s, char* buf, int len, int flags) {
 			if (expectedSocket != s || flags != 0) {
+				WSASetLastError(10010);
+				receiveValuesValid = false;
 				return -1;
 			}
-			if (invoked) {
+			if (receiveValuesValid.has_value()) {
 				return 0;
 			}
 			constexpr int size = _countof(request) - 1;
 			if (len < size) {
+				receiveValuesValid = false;
 				return -1;
 			}
-			invoked = true;
+			receiveValuesValid = true;
 			memcpy_s(buf, len, request, size);
 			return size;
 		};
@@ -68,9 +87,14 @@ public:
 		StaticHttpServer server;
 
 		// Act
+		std::string actualMessage;
 		server.Run(6006);
 
 		// Assert
+		Assert::AreEqual(3, acceptInvocationCount);
+		Assert::IsTrue(acceptValuesValid);
+		Assert::IsTrue(pollValuesValid.has_value() && pollValuesValid.value());
+		Assert::IsTrue(receiveValuesValid.has_value() && receiveValuesValid.value());
 		Assert::AreEqual(std::string(request), actualRequest);
 	}
 	};
