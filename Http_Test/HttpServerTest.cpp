@@ -27,7 +27,7 @@ public:
 			"Upgrade-Insecure-Requests: 1\r\n"
 			"\r\n";
 		std::optional<bool> pollValuesValid;
-		Sockets::OnPoll = [&](_Inout_ LPWSAPOLLFD fdArray, _In_ size_t fds, _In_ INT timeout) {
+		Sockets::OnPoll = [&](pollfd* fdArray, std::uint32_t fds, int timeout) {
 			if (fds == 1) {
 				if (!pollValuesValid) {
 					pollValuesValid = true;
@@ -42,7 +42,7 @@ public:
 		auto* mainFiber = ConvertThreadToFiber(nullptr);
 		int acceptInvocationCount = 0;
 		bool acceptValuesValid = true;
-		Sockets::OnAccept = [&](SOCKET s, sockaddr* addr, int* addrlen) {
+		Sockets::OnAccept = [&](SOCKET s, sockaddr* addr, socklen_t* addrlen) {
 			if (addr || addrlen) {
 				WSASetLastError(10001);
 				acceptValuesValid = false;
