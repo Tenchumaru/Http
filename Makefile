@@ -3,6 +3,7 @@ ifeq "$(Configuration)" ""
 endif
 
 all:
+	mkdir -p "x64/$(Configuration)"
 	cd Http && $(MAKE) "Configuration=$(Configuration)"
 	cd mkapp && $(MAKE) "Configuration=$(Configuration)"
 	cd StaticApp && $(MAKE) "Configuration=$(Configuration)"
@@ -13,5 +14,6 @@ clean:
 	cd mkapp && $(MAKE) clean "Configuration=$(Configuration)"
 	cd StaticApp && $(MAKE) clean "Configuration=$(Configuration)"
 	cd DynamicApp && $(MAKE) clean "Configuration=$(Configuration)"
+	$(RM) -r "x64/$(Configuration)"
 
 .PHONY: all clean

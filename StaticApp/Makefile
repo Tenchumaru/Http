@@ -9,7 +9,8 @@ DEPS = $(SRCS:.cc=.d)
 LDFLAGS = -L/local/lib/$(Configuration)
 LIBS = -lhttp -ladrezdi -lssl -lcrypto -lpthread
 CXXFLAGS := -I /local/include -g -fdeclspec -fexceptions -pipe -std=c++17 -Wall -Werror $(CFLAGS)
-OUTPUT = ../x64/$(Configuration)/static-app
+OUTDIR = ../x64/$(Configuration)
+OUTPUT = $(OUTDIR)/static-app
 
 ifeq "$(Configuration)" "Release"
 	CXXFLAGS := $(CXXFLAGS) -O3 -DNDEBUG
@@ -18,6 +19,7 @@ else
 endif
 
 $(OUTPUT): $(OBJS)
+	mkdir -p $(OUTDIR)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(LIBS)
 
 %.o: %.cc
@@ -30,7 +32,7 @@ $(OUTPUT): $(OBJS)
 	as -g -o $@ $<
 
 StaticApp.inl: StaticApp.txt
-	../x64/$(Configuration)/mkapp -s $< $@
+	$(OUTDIR)/mkapp -s $< $@
 
 .PHONY: clean
 
