@@ -19,6 +19,7 @@ public:
 			text.append(p, len);
 			return len;
 		};
+		text.clear();
 	}
 
 	TEST_METHOD(ResponseClose) {
