@@ -89,15 +89,15 @@ namespace Microsoft {
 				template<typename T>
 				static void AreEqual(T const& expected, T const& actual, char const* s) {
 					if (expected != actual) {
-						std::cerr << "\tequality assertion failure in " << s << std::endl;
-						std::cerr << "\texpected: \"" << AsString(expected) << "\", actual: \"" << AsString(actual) << '"' << std::endl;
+						std::cout << "\tequality assertion failure in " << s << std::endl;
+						std::cout << "\texpected: \"" << AsString(expected) << "\", actual: \"" << AsString(actual) << '"' << std::endl;
 					}
 				}
 
 				static void AreEqual(char const* expected, char const* actual, char const* s) {
 					if (strcmp(expected, actual)) {
-						std::cerr << "\tequality assertion failure in " << s << std::endl;
-						std::cerr << "\texpected: \"" << expected << "\", actual: \"" << actual << '"' << std::endl;
+						std::cout << "\tequality assertion failure in " << s << std::endl;
+						std::cout << "\texpected: \"" << expected << "\", actual: \"" << actual << '"' << std::endl;
 					}
 				}
 # define AreEqual(a,b) AreEqual(a, b, __func__)
@@ -105,36 +105,36 @@ namespace Microsoft {
 				template<typename T>
 				static void AreNotEqual(T const& expected, T const& actual, char const* s) {
 					if (expected == actual) {
-						std::cerr << "\tinequality assertion failure in " << s << std::endl;
-						std::cerr << "\tnot expected: \"" << AsString(expected) << '"' << std::endl;
+						std::cout << "\tinequality assertion failure in " << s << std::endl;
+						std::cout << "\tnot expected: \"" << AsString(expected) << '"' << std::endl;
 					}
 				}
 # define AreNotEqual(a,b) AreNotEqual(a, b, __func__)
 
 				static void IsFalse(bool b, char const* s) {
 					if (b) {
-						std::cerr << "\tfalsity assertion failure in " << s << std::endl;
+						std::cout << "\tfalsity assertion failure in " << s << std::endl;
 					}
 				}
 # define IsFalse(v) IsFalse(v, __func__)
 
 				static void IsNotNull(void const* p, char const* s) {
 					if (!p) {
-						std::cerr << "\tnot null assertion failure in " << s << std::endl;
+						std::cout << "\tnot null assertion failure in " << s << std::endl;
 					}
 				}
 # define IsNotNull(v) IsNotNull(v, __func__)
 
 				static void IsNull(void const* p, char const* s) {
 					if (p) {
-						std::cerr << "\tnull assertion failure in " << s << std::endl;
+						std::cout << "\tnull assertion failure in " << s << std::endl;
 					}
 				}
 # define IsNull(v) IsNull(v, __func__)
 
 				static void IsTrue(bool b, char const* s) {
 					if (!b) {
-						std::cerr << "\ttruth assertion failure in " << s << std::endl;
+						std::cout << "\ttruth assertion failure in " << s << std::endl;
 					}
 				}
 # define IsTrue(v) IsTrue(v, __func__)
@@ -143,17 +143,17 @@ namespace Microsoft {
 				static void ExpectException(F f, wchar_t const* message) {
 					try {
 						f();
-						std::cerr << "\tno";
+						std::cout << "\tno";
 					} catch (E) {
 						return;
 					} catch (...) {
-						std::cerr << "\tunexpected";
+						std::cout << "\tunexpected";
 					}
-					std::cerr << " exception";
+					std::cout << " exception";
 					if (message) {
-						std::cerr << ":  " << message;
+						std::cout << ":  " << message;
 					}
-					std::cerr << std::endl;
+					std::cout << std::endl;
 				}
 			};
 		}
