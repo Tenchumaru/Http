@@ -11,7 +11,7 @@ namespace {
 void HttpServer::HandleClient(std::unique_ptr<ClientSocket>&& clientSocket) {
 	std::array<char, 0x3800> buffer;
 	auto* const begin = buffer.data();
-	auto const size = buffer.size();
+	constexpr auto size = buffer.size();
 	auto* const end = begin + size;
 	for (auto* next = begin;;) {
 		// Check if the buffer contains at least the start line and the headers.
@@ -103,7 +103,7 @@ char const* HttpServer::ProcessRequest(char const* begin, char const* body, char
 		statusLine = StatusLines::InternalServerError;
 		std::cerr << "[HttpServer::ProcessRequest.DispatchRequest] exception \"" << ex.what() << '"' << std::endl;
 	}
-	if (statusLine != std::string{}) {
+	if (!statusLine.empty()) {
 		// Respond with the appropriate status code if possible.
 		if (response.Reset()) {
 			response.WriteStatusLine(statusLine);
