@@ -24,7 +24,7 @@ $(OUTDIR)/results: $(OUTDIR)/run-tests
 	cat $@
 
 $(OUTDIR)/run-tests: $(OUTDIR)/run-tests.cc $(OUTDIR)/run-tests.inl /local/lib/$(Configuration)/libhttp.a $(HEADERS)
-	$(CXX) $(CXXFLAGS) -MMD -MP -o $@ $(OUTDIR)/run-tests.cc /local/lib/$(Configuration)/libhttp.a /local/lib/$(Configuration)/libadrezdi.a -lcrypto -lssl -lpthread
+	$(CXX) $(CXXFLAGS) -L /local/lib/$(Configuration) -MMD -MP -o $@ $(OUTDIR)/run-tests.cc -lhttp -ladrezdi -lcrypto -lssl -lpthread
 
 $(OUTDIR)/run-tests.cc: $(OUTDIR)/run-tests.inl $(OUTDIR)/mkrun-tests
 	grep -h TEST_ $(INLS) | sed -e 's/.*TEST_\(.\)[^_(]*.\([^)]*\).*/\1\2/' -e 's/^MINITIALIZE(/I/' | $(OUTDIR)/mkrun-tests > $@
