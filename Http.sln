@@ -17,6 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Makefile = Makefile
 		pch.h = pch.h
 		Pre-build.cmd = Pre-build.cmd
+		README.md = README.md
 		RunDockerImage.cmd = RunDockerImage.cmd
 		targetver.h = targetver.h
 	EndProjectSection
