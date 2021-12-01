@@ -1,16 +1,16 @@
+CXX := clang++
+HEADERS := $(wildcard *.h)
+INLS := $(wildcard *.cpp)
 ifeq "$(Configuration)" ""
-	Configuration=Debug
-endif
-CXX  = clang++
-HEADERS = $(wildcard *.h)
-INLS = $(wildcard *.cpp)
-CXXFLAGS := -g -fdeclspec -fexceptions -pipe -std=c++17 -Wall -Werror -D_AMD64_ -I. -I/local/include $(CFLAGS)
-ifeq "$(Configuration)" "Release"
-	CXXFLAGS := $(CXXFLAGS) -O3 -DNDEBUG
-else
-	CXXFLAGS := $(CXXFLAGS) -O0 -D_DEBUG -DDEBUG
+	Configuration := Debug
 endif
 OUTDIR = x64/$(Configuration)
+CXXFLAGS := -g -fdeclspec -fexceptions -pipe -std=c++17 -Wall -Werror -D_AMD64_ -I. -I/local/include $(CFLAGS)
+ifeq "$(Configuration)" "Debug"
+	CXXFLAGS := $(CXXFLAGS) -O0 -D_DEBUG -DDEBUG
+else
+	CXXFLAGS := $(CXXFLAGS) -O3 -DNDEBUG
+endif
 
 .PHONY: all
 
