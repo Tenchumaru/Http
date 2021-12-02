@@ -64,15 +64,19 @@ void GET_json(Header_origin&& headers, Response& response) {
 	std::unordered_map<std::string, std::string> object;
 	object.insert({ "message", "Hello, World!" });
 	WriteJson(ss, object);
-	response.WriteHeader("Access-Control-Allow-Credentials", "true");
-	response.WriteHeader("Access-Control-Allow-Origin", headers.Origin);
+	if (headers.Origin.first) {
+		response.WriteHeader("Access-Control-Allow-Credentials", "true");
+		response.WriteHeader("Access-Control-Allow-Origin", headers.Origin);
+	}
 	response.WriteHeader("Content-Type", "application/json");
 	response << ss.str();
 }
 
 void GET_text(Header_origin&& headers, Response& response) {
-	response.WriteHeader("Access-Control-Allow-Credentials", "true");
-	response.WriteHeader("Access-Control-Allow-Origin", headers.Origin);
+	if (headers.Origin.first) {
+		response.WriteHeader("Access-Control-Allow-Credentials", "true");
+		response.WriteHeader("Access-Control-Allow-Origin", headers.Origin);
+	}
 	response.WriteHeader("Content-Type", "text/plain");
 	response << "Hello, World!";
 }
