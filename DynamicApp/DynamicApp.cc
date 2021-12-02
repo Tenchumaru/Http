@@ -3,6 +3,8 @@
 #include "../Http/Http.h"
 #include "../Http/DynamicHttpServer.h"
 
+constexpr auto defaultPort = static_cast<std::uint16_t>(6102);
+
 void HandleJson(Request const& request, Body&&, Response& response) {
 	std::stringstream ss;
 	std::unordered_map<std::string, std::string> object;
@@ -44,6 +46,7 @@ int main(int argc, char* argv[]) {
 	}
 	server.Add("/json", HandleJson);
 	server.Add("/plaintext", HandlePlainText);
-	server.Run(6006);
+	auto port = argv[1] ? static_cast<std::uint16_t>(atoi(argv[1])) : defaultPort;
+	server.Run(port ? port : defaultPort);
 	return 0;
 }

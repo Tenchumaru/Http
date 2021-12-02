@@ -4,6 +4,8 @@
 #include "../Http/StaticHttpServer.h"
 #include "../Http/ClosableResponse.h"
 
+constexpr auto defaultPort = static_cast<std::uint16_t>(6102);
+
 // First, include it for the classes.
 #include "StaticApp.inl"
 
@@ -93,6 +95,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "usage: " << prog << " [certificateChainFile privateKeyFile]" << std::endl;
 		return 2;
 	}
-	server.Run(6006);
+	auto port = argv[1] ? static_cast<std::uint16_t>(atoi(argv[1])) : defaultPort;
+	server.Run(port ? port : defaultPort);
 	return 0;
 }
