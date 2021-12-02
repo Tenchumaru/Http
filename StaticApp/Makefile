@@ -1,3 +1,4 @@
+CXX := clang++
 SRCS := $(wildcard *.cc)
 OBJS := $(SRCS:.cc=.o)
 DEPS := $(SRCS:.cc=.d)
@@ -14,6 +15,8 @@ ifeq "$(Configuration)" "Debug"
 else
 	CXXFLAGS := $(CXXFLAGS) -O3 -DNDEBUG
 endif
+
+all: StaticApp.inl $(OUTPUT)
 
 $(OUTPUT): $(OBJS)
 	mkdir -p $(OUTDIR)

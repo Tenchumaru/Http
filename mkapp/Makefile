@@ -6,7 +6,6 @@ ifeq "$(Configuration)" ""
 	Configuration := Debug
 endif
 LDFLAGS := -L/local/lib/$(Configuration)
-#LIBS := -lhttp -ladrezdi -lssl -lcrypto -lpthread
 OUTDIR := ../x64/$(Configuration)
 OUTPUT := $(OUTDIR)/mkapp
 CXXFLAGS := -I /local/include -g -fdeclspec -fexceptions -pipe -std=c++17 -Wall -Werror $(CFLAGS)
