@@ -73,7 +73,7 @@ union SOCKADDR_INET {
 	sa_family_t si_family;
 };
 
-inline error_t memcpy_s(void* p, size_t n, void const* q, size_t m) {
+inline int memcpy_s(void* p, size_t n, void const* q, size_t m) {
 	if (n < m) {
 		assert(m >= n);
 		return ENOSPC;
@@ -82,7 +82,7 @@ inline error_t memcpy_s(void* p, size_t n, void const* q, size_t m) {
 	return 0;
 }
 
-inline error_t memmove_s(void* p, size_t n, void const* q, size_t m) {
+inline int memmove_s(void* p, size_t n, void const* q, size_t m) {
 	if (n < m) {
 		assert(m >= n);
 		return ENOSPC;
